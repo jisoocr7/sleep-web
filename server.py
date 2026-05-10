@@ -304,6 +304,7 @@ def api_upload():
         "explanation_text": "",
         "epochs": epochs_list[:200],
         "epochs_total": len(epochs_list),
+        "sleep_start_time": fmt_meta.get("sleep_start_time"),
     })
 
 

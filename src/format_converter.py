@@ -237,7 +237,7 @@ def parse_apple_health_xml(file_bytes: bytes) -> pd.DataFrame:
             "t": i * epoch_sec,
         })
 
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows), t_min
 
 
 def parse_autosleep_csv(file_bytes: bytes) -> pd.DataFrame:
@@ -271,12 +271,15 @@ def parse_autosleep_csv(file_bytes: bytes) -> pd.DataFrame:
     df = df.rename(columns=col_map)
 
     rows = []
+    first_bedtime = None
     for _, night in df.iterrows():
         if pd.isna(night.get("asleep")) or pd.isna(night.get("bedtime")):
             continue
 
         # Parse times
         bedtime = pd.Timestamp(night.get("bedtime"))
+        if first_bedtime is None:
+            first_bedtime = bedtime
         waketime = pd.Timestamp(night.get("waketime", bedtime + pd.Timedelta(hours=8)))
         if waketime <= bedtime:
             waketime = bedtime + pd.Timedelta(hours=8)
@@ -355,7 +358,7 @@ def parse_autosleep_csv(file_bytes: bytes) -> pd.DataFrame:
     if not rows:
         raise ValueError("No sleep records found in AutoSleep file.")
 
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows), first_bedtime
 
 
 def parse_sleep_cycle_csv(file_bytes: bytes) -> pd.DataFrame:
@@ -391,12 +394,15 @@ def parse_sleep_cycle_csv(file_bytes: bytes) -> pd.DataFrame:
 
     rows = []
     epoch_sec = 30
+    first_start = None
 
     for _, night in df.iterrows():
         if pd.isna(night.get("start")) or pd.isna(night.get("end")):
             continue
 
         start = pd.Timestamp(night["start"])
+        if first_start is None:
+            first_start = start
         end = pd.Timestamp(night["end"])
         if end <= start:
             continue
@@ -461,7 +467,7 @@ def parse_sleep_cycle_csv(file_bytes: bytes) -> pd.DataFrame:
     if not rows:
         raise ValueError("No sleep records found in Sleep Cycle file.")
 
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows), first_start
 
 
 def parse_health_auto_export_csv(file_bytes: bytes) -> pd.DataFrame:
@@ -563,7 +569,7 @@ def parse_health_auto_export_csv(file_bytes: bytes) -> pd.DataFrame:
             "t": i * epoch_sec,
         })
 
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows), t_min
 
 
 def convert_to_epoch_features(file_bytes: bytes, filename: str) -> dict:
@@ -602,7 +608,7 @@ def convert_to_epoch_features(file_bytes: bytes, filename: str) -> dict:
         "autosleep_csv": parse_autosleep_csv,
         "sleep_cycle_csv": parse_sleep_cycle_csv,
         "health_auto_export_csv": parse_health_auto_export_csv,
-        "raw_epoch": lambda b: pd.read_csv(io.BytesIO(b)),
+        "raw_epoch": lambda b: (pd.read_csv(io.BytesIO(b)), None),
     }
 
     format_labels = {
@@ -632,7 +638,7 @@ def convert_to_epoch_features(file_bytes: bytes, filename: str) -> dict:
         return result
 
     try:
-        df = parser_map[format_name](file_bytes)
+        df, sleep_start_time = parser_map[format_name](file_bytes)
     except ValueError as e:
         result["error"] = str(e)
         return result
@@ -643,6 +649,10 @@ def convert_to_epoch_features(file_bytes: bytes, filename: str) -> dict:
     if df.empty:
         result["error"] = "转换后无有效数据。请检查文件是否包含睡眠记录。"
         return result
+
+    # Store sleep start time for hypnogram clock display
+    if sleep_start_time is not None:
+        result["metadata"]["sleep_start_time"] = sleep_start_time.isoformat() if hasattr(sleep_start_time, 'isoformat') else str(sleep_start_time)
 
     # Check required columns
     missing = [f for f in REQUIRED_FEATURES if f not in df.columns]

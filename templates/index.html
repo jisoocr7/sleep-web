@@ -907,7 +907,7 @@ function renderResults(data) {
   document.getElementById('scoreSummary').textContent = data.summary?.plain_summary || '';
 
   // Hypnogram (horizontal timeline bar)
-  renderHypnogram(data.epochs, data.epochs_total || data.row_count_context);
+  renderHypnogram(data.epochs, data.epochs_total || data.row_count_context, data.sleep_start_time);
 
   // Metrics
   renderMetrics(data.metrics, data.ref_comparison);
@@ -972,7 +972,7 @@ function renderScore(scoreData) {
   }).join('');
 }
 
-function renderHypnogram(epochs, totalEpochs) {
+function renderHypnogram(epochs, totalEpochs, startTime) {
   const canvas = document.getElementById('hypnoBar');
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
@@ -1011,15 +1011,40 @@ function renderHypnogram(epochs, totalEpochs) {
 
   const labelsDiv = document.getElementById('hypnoLabels');
 
-  // Time ruler: show 0, 1h, 2h, ... total
-  let rulerMarks = '<span style="position:absolute;left:0;transform:translateX(-50%);font-size:0.85rem;color:var(--text-muted);">0</span>';
-  if (hrs >= 2) {
-    for (let i = 1; i < hrs; i++) {
-      const pct = (i * 60 / totalMin * 100).toFixed(1);
-      rulerMarks += `<span style="position:absolute;left:${pct}%;transform:translateX(-50%);font-size:0.85rem;color:var(--text-muted);">${i}h</span>`;
+  // Time ruler with clock times if startTime is available
+  const hasClock = !!startTime;
+  const baseTime = hasClock ? new Date(startTime) : null;
+  const fmt = (minsFromStart) => {
+    if (!hasClock) return null;
+    const t = new Date(baseTime.getTime() + minsFromStart * 60000);
+    const hh = String(t.getHours()).padStart(2, '0');
+    const mm = String(t.getMinutes()).padStart(2, '0');
+    return `${hh}:${mm}`;
+  };
+
+  let rulerMarks = '';
+  if (hasClock) {
+    // Start mark
+    rulerMarks = `<span style="position:absolute;left:0;transform:translateX(-50%);font-size:0.85rem;color:var(--text-muted);">${fmt(0)}</span>`;
+    // Hourly marks
+    if (totalMin >= 120) {
+      for (let m = 60; m < totalMin; m += 60) {
+        const pct = (m / totalMin * 100).toFixed(1);
+        rulerMarks += `<span style="position:absolute;left:${pct}%;transform:translateX(-50%);font-size:0.85rem;color:var(--text-muted);">${fmt(m)}</span>`;
+      }
     }
+    // End mark
+    rulerMarks += `<span style="position:absolute;right:0;transform:translateX(50%);font-size:0.85rem;color:var(--text-muted);">${fmt(totalMin)}</span>`;
+  } else {
+    rulerMarks = '<span style="position:absolute;left:0;transform:translateX(-50%);font-size:0.85rem;color:var(--text-muted);">0</span>';
+    if (hrs >= 2) {
+      for (let i = 1; i < hrs; i++) {
+        const pct = (i * 60 / totalMin * 100).toFixed(1);
+        rulerMarks += `<span style="position:absolute;left:${pct}%;transform:translateX(-50%);font-size:0.85rem;color:var(--text-muted);">${i}h</span>`;
+      }
+    }
+    rulerMarks += `<span style="position:absolute;right:0;transform:translateX(50%);font-size:0.85rem;color:var(--text-muted);">${hrs}h${mins > 0 ? mins + 'm' : ''}</span>`;
   }
-  rulerMarks += `<span style="position:absolute;right:0;transform:translateX(50%);font-size:0.85rem;color:var(--text-muted);">${hrs}h${mins > 0 ? mins + 'm' : ''}</span>`;
 
   // Remove epochCount badge (we show duration here)
   document.getElementById('epochCount').textContent = '';
@@ -1187,7 +1212,7 @@ function renderRecommendations(recs) {
 // ── Resize handler for hypnogram ──
 window.addEventListener('resize', () => {
   if (App.currentData && App.currentData.epochs) {
-    renderHypnogram(App.currentData.epochs);
+    renderHypnogram(App.currentData.epochs, App.currentData.epochs_total, App.currentData.sleep_start_time);
   }
 });
 
