@@ -669,18 +669,12 @@ h4 { font-size: 1.4rem; font-weight: 600; }
       <div id="recommendationsList"></div>
     </div>
 
-    <!-- SHAP + Plain Summary -->
-    <div class="results-grid">
-      <div class="card">
-        <div class="card-header"><h3>特征归因分析</h3></div>
-        <div id="shapBars"></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>通俗解读</h3></div>
-        <div class="plain-summary" id="plainSummary"></div>
-        <div style="margin-top:12px; font-size:0.9rem; color:var(--warning); line-height:1.7; padding:12px; background:oklch(0.75 0.12 80 / 0.1); border-radius:var(--radius-sm);">
-          本结果基于可穿戴设备信号算法估计，不等同于临床多导睡眠图（PSG）诊断。仅供健康管理参考，不构成医疗诊断。
-        </div>
+    <!-- Plain Summary -->
+    <div class="card full-width">
+      <div class="card-header"><h3>通俗解读</h3></div>
+      <div class="plain-summary" id="plainSummary"></div>
+      <div style="margin-top:12px; font-size:0.9rem; color:var(--warning); line-height:1.7; padding:12px; background:oklch(0.75 0.12 80 / 0.1); border-radius:var(--radius-sm);">
+        本结果基于可穿戴设备信号算法估计，不等同于临床多导睡眠图（PSG）诊断。仅供健康管理参考，不构成医疗诊断。
       </div>
     </div>
 
@@ -817,7 +811,7 @@ h4 { font-size: 1.4rem; font-weight: 600; }
   <!-- I. Footer -->
   <footer class="footer">
     <strong>睡眠分期分析</strong> &nbsp;·&nbsp; 基于 Sleep-Accel 公开数据集训练<br>
-    模型: HGB + Context (±2) &nbsp;·&nbsp; SHAP 可解释性<br>
+    模型: HGB + Context (±2)<br>
     仅供健康管理参考，不构成医疗诊断
   </footer>
 </div>
@@ -909,45 +903,9 @@ function renderResults(data) {
   // Recommendations
   renderRecommendations(data.recommendations);
 
-  // SHAP
-  renderSHAP(data.shap_top);
-  if (!data.shap_ready && data.session_id) {
-    pollSHAP(data.session_id);
-  }
-
   // Plain summary
   document.getElementById('plainSummary').innerHTML =
     `<p><strong>${data.summary?.score_summary || ''}</strong></p><p>${data.summary?.plain_summary || ''}</p>`;
-}
-
-function pollSHAP(sessionId) {
-  // Show loading state
-  document.getElementById('shapBars').innerHTML =
-    '<p style="color:var(--text-muted);font-size:0.85rem;">特征归因分析计算中...</p>';
-
-  let attempts = 0;
-  const maxAttempts = 30;
-  const interval = 2000;
-
-  function check() {
-    if (attempts >= maxAttempts) return;
-    attempts++;
-    fetch('/api/shap-status/' + sessionId)
-      .then(r => r.json())
-      .then(d => {
-        if (d.shap_ready) {
-          renderSHAP(d.shap_top);
-          if (d.explanation_text) {
-            document.getElementById('plainSummary').innerHTML +=
-              '<p style="margin-top:12px;font-size:0.85rem;">' + d.explanation_text + '</p>';
-          }
-        } else {
-          setTimeout(check, interval);
-        }
-      })
-      .catch(() => setTimeout(check, interval));
-  }
-  setTimeout(check, interval);
 }
 
 function renderScore(scoreData) {
@@ -1088,25 +1046,6 @@ function renderRecommendations(recs) {
       <div class="rec-ref">参考: ${r.reference || ''}</div>
     </div>
   `).join('');
-}
-
-function renderSHAP(shapTop) {
-  const container = document.getElementById('shapBars');
-  if (!shapTop || shapTop.length === 0) {
-    container.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">SHAP 不可用</p>';
-    return;
-  }
-  const maxImp = shapTop[0].importance;
-  container.innerHTML = shapTop.map(f => {
-    const w = maxImp > 0 ? (f.importance / maxImp * 100) : 0;
-    const hue = f.feature.includes('hr_') ? 0 : (f.feature.includes('acc_') ? 210 : 160);
-    const color = `oklch(0.65 0.18 ${hue})`;
-    return `<div class="shap-bar">
-      <span class="bar-label">${f.feature}</span>
-      <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${color}"></div></div>
-      <span class="bar-value">${f.importance.toFixed(4)}</span>
-    </div>`;
-  }).join('');
 }
 
 // ── Report Downloads ──
