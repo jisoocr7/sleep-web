@@ -14,6 +14,7 @@ from io import BytesIO
 import numpy as np
 import pandas as pd
 from flask import Flask, request, jsonify, send_file, render_template
+from flask_cors import CORS
 
 BASE_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(BASE_DIR))
@@ -44,6 +45,9 @@ from src.report import (
 
 app = Flask(__name__)
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+
+# Enable CORS for all routes (allow cross-origin requests from frontend)
+CORS(app)
 
 # Session storage with TTL
 SESSION = {}
