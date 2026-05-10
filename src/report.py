@@ -16,7 +16,7 @@ plt.rcParams["axes.unicode_minus"] = False
 
 # Warm palette for sleep stages
 STAGE_COLORS = {0: "#E8904C", 1: "#5DAF8B", 2: "#8B7EC8"}  # Wake=warm amber, NREM=sage, REM=soft purple
-STAGE_NAMES = {0: "清醒", 1: "NREM", 2: "REM"}
+STAGE_NAMES = {0: "清醒", 1: "深睡眠", 2: "做梦期"}
 
 
 def plot_hypnogram(predictions: pd.DataFrame, figsize=(12, 4)) -> plt.Figure:
@@ -44,16 +44,16 @@ def plot_hypnogram(predictions: pd.DataFrame, figsize=(12, 4)) -> plt.Figure:
 
     ax.set_ylim(-0.5, 2.5)
     ax.set_yticks([0, 1, 2])
-    ax.set_yticklabels(["REM", "NREM", "清醒"])
+    ax.set_yticklabels(["做梦期", "深睡眠", "清醒"])
     ax.set_xlabel("时间 (小时)", color="#6D5C4F")
     ax.set_ylabel("睡眠阶段", color="#6D5C4F")
-    ax.set_title("整夜睡眠分期图", color="#3E2E22", fontweight="bold")
+    ax.set_title("整晚睡眠一览", color="#3E2E22", fontweight="bold")
     ax.tick_params(colors="#6D5C4F")
 
     legend_patches = [
-        mpatches.Patch(color=STAGE_COLORS[0], label="清醒 (Wake)"),
-        mpatches.Patch(color=STAGE_COLORS[1], label="NREM"),
-        mpatches.Patch(color=STAGE_COLORS[2], label="REM"),
+        mpatches.Patch(color=STAGE_COLORS[0], label="清醒"),
+        mpatches.Patch(color=STAGE_COLORS[1], label="深睡眠"),
+        mpatches.Patch(color=STAGE_COLORS[2], label="做梦期"),
     ]
     ax.legend(handles=legend_patches, loc="upper right", fontsize=8)
 
