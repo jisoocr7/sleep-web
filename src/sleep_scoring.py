@@ -268,7 +268,7 @@ def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
             "category": "rem",
             "issue": f"做梦期占比仅 {rem_pct:.0f}%，低于正常 20-25% 范围",
             "advice": (
-                "做梦期（REM 睡眠）对情绪调节和记忆巩固至关重要，就像大脑在夜间"整理文件"。偏少常见原因："
+                "做梦期（REM 睡眠）对情绪调节和记忆巩固至关重要，就像大脑在夜间「整理文件」。偏少常见原因："
                 "① 饮酒（即使一杯也会抑制做梦）；"
                 "② 某些药物（如抗抑郁药）；"
                 "③ 作息不规律；"
@@ -284,7 +284,7 @@ def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
         recommendations.append({
             "priority": 3,
             "category": "rem",
-            "issue": f"做梦期占比偏高 ({rem_pct:.0f}%)，可能是身体在"补觉"",
+            "issue": f"做梦期占比偏高 ({rem_pct:.0f}%)，可能是身体在「补觉」",
             "advice": (
                 "做梦期偏高通常发生在之前睡眠不足或做梦被抑制（如饮酒）后的恢复期，"
                 "身体在自动补偿之前欠下的做梦时间，属于正常的生理调节，一般不用担心。"
