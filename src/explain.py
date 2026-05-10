@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 from pathlib import Path
 
 try:
@@ -17,9 +18,31 @@ except ImportError:
     def load_schema():
         return None
 
-# CJK-friendly font setup
-plt.rcParams["font.family"] = "sans-serif"
-plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "DejaVu Sans"]
+# CJK-friendly font setup - dynamic detection
+_chinese_fonts = []
+for f in fm.findSystemFonts():
+    try:
+        name = fm.FontProperties(fname=f).get_name()
+        if any(k in name.lower() for k in ['hei', 'song', 'kai', 'ming', 'noto sans cjk', 'wenquanyi', 'microsoft yahei', 'simhei', 'simsun']):
+            _chinese_fonts.append(name)
+    except:
+        pass
+
+if _chinese_fonts:
+    # Prefer SimHei or Microsoft YaHei for best CJK support
+    preferred_font = None
+    for pref in ['SimHei', 'Microsoft YaHei', 'Microsoft JhengHei']:
+        if pref in _chinese_fonts:
+            preferred_font = pref
+            break
+    if preferred_font is None:
+        preferred_font = _chinese_fonts[0]
+    
+    plt.rcParams["font.family"] = preferred_font
+    plt.rcParams["font.sans-serif"] = [preferred_font]
+else:
+    plt.rcParams["font.family"] = "DejaVu Sans"
+    plt.rcParams["font.sans-serif"] = ["DejaVu Sans"]
 plt.rcParams["axes.unicode_minus"] = False
 
 MODEL_DIR = Path(__file__).resolve().parents[1] / "models"

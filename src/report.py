@@ -21,11 +21,22 @@ for f in fm.findSystemFonts():
     except:
         pass
 
+# Set font configuration - use explicit font name
 if _chinese_fonts:
-    plt.rcParams["font.family"] = "sans-serif"
-    plt.rcParams["font.sans-serif"] = _chinese_fonts[:5] + ["DejaVu Sans"]
+    # Prefer SimHei or Microsoft YaHei for best CJK support
+    preferred_font = None
+    for pref in ['SimHei', 'Microsoft YaHei', 'Microsoft JhengHei']:
+        if pref in _chinese_fonts:
+            preferred_font = pref
+            break
+    if preferred_font is None:
+        preferred_font = _chinese_fonts[0]
+    
+    plt.rcParams["font.family"] = preferred_font
+    plt.rcParams["font.sans-serif"] = [preferred_font]
 else:
-    plt.rcParams["font.family"] = "sans-serif"
+    # Fallback: use DejaVu Sans which has good Unicode support
+    plt.rcParams["font.family"] = "DejaVu Sans"
     plt.rcParams["font.sans-serif"] = ["DejaVu Sans"]
 plt.rcParams["axes.unicode_minus"] = False
 
