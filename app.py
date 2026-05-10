@@ -5,6 +5,7 @@ Upload wearable epoch features → Predict Wake/NREM/REM → Hypnogram → Metri
 import sys
 from pathlib import Path
 import io
+import os
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -12,6 +13,76 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import streamlit as st
 import pandas as pd
 import numpy as np
+
+# --- Chinese font setup for matplotlib (must be before any plot imports) ---
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.font_manager as fm
+import platform
+
+_system = platform.system()
+_font_set = False
+
+if _system == 'Windows':
+    _cjk_font_candidates = ['Microsoft YaHei', 'SimHei', 'Microsoft JhengHei']
+    for _font_name in _cjk_font_candidates:
+        try:
+            fp = fm.FontProperties(family=_font_name)
+            test_family = fp.get_family()
+            if test_family and test_family != ['sans-serif']:
+                import matplotlib.pyplot as plt
+                plt.rcParams["font.family"] = _font_name
+                plt.rcParams["font.sans-serif"] = [_font_name]
+                _font_set = True
+                break
+        except Exception:
+            continue
+else:
+    # Linux (PythonAnywhere): use AR PL fonts
+    _linux_cjk_font_paths = [
+        '/usr/share/fonts/truetype/arphic/uming.ttc',
+        '/usr/share/fonts/truetype/arphic-gkai00mp/gkai00mp.ttf',
+        '/usr/share/fonts/truetype/arphic-bsmi00lp/bsmi00lp.ttf',
+    ]
+    for _font_path in _linux_cjk_font_paths:
+        try:
+            if os.path.exists(_font_path):
+                fm.fontManager.addfont(_font_path)
+                _fp = fm.FontProperties(fname=_font_path)
+                _font_name = _fp.get_name()
+                import matplotlib.pyplot as plt
+                plt.rcParams["font.family"] = _font_name
+                plt.rcParams["font.sans-serif"] = [_font_name]
+                _font_set = True
+                print(f"[app.py Font] Using CJK font: {_font_name} from {_font_path}")
+                break
+        except Exception as e:
+            print(f"[app.py Font] Failed to load {_font_path}: {e}")
+            continue
+    
+    if not _font_set:
+        for _f in fm.findSystemFonts():
+            try:
+                _fp = fm.FontProperties(fname=_f)
+                _name = _fp.get_name()
+                if any(_k in _name.lower() for _k in ['wqy', 'wenquan', 'noto', 'droid', 'hei', 'yahei', 'ming', 'song', 'arphic']):
+                    fm.fontManager.addfont(_f)
+                    import matplotlib.pyplot as plt
+                    plt.rcParams["font.family"] = _name
+                    plt.rcParams["font.sans-serif"] = [_name]
+                    _font_set = True
+                    print(f"[app.py Font] Using CJK font (fallback): {_name}")
+                    break
+            except Exception:
+                continue
+
+if not _font_set:
+    import matplotlib.pyplot as plt
+    plt.rcParams["font.family"] = "DejaVu Sans"
+    plt.rcParams["font.sans-serif"] = ["DejaVu Sans"]
+    print("[app.py Font] Warning: No CJK font found, using DejaVu Sans as fallback")
+
+plt.rcParams["axes.unicode_minus"] = False
 
 from src.data_check import validate_csv, REQUIRED_BASE_FEATURES
 from src.feature_builder import build_context_features, BASE_FEATURES, CONTEXT_FEATURES

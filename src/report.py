@@ -1,6 +1,7 @@
 """Generate rich sleep analysis reports as HTML or DOCX."""
 from datetime import datetime
 import base64
+import os
 from io import BytesIO
 
 import matplotlib
@@ -15,7 +16,9 @@ import numpy as np
 import platform
 _system = platform.system()
 
-# Priority list based on OS
+_font_set = False
+_cjk_font_prop = None  # 全局中文字体属性对象
+
 if _system == 'Windows':
     # Windows: prefer built-in fonts
     _cjk_font_candidates = [
@@ -23,52 +26,79 @@ if _system == 'Windows':
         'SimHei',
         'Microsoft JhengHei',
     ]
-else:
-    # Linux (PythonAnywhere): use open-source fonts
-    _cjk_font_candidates = [
-        'WenQuanYi Micro Hei',  # Common on Ubuntu/Debian
-        'WenQuanYi Zen Hei',
-        'Droid Sans Fallback',
-        'Noto Sans CJK SC',
-        'SimHei',
-    ]
-
-_font_set = False
-for _font_name in _cjk_font_candidates:
-    try:
-        # Try to create FontProperties with this font name
-        fp = fm.FontProperties(family=_font_name)
-        # Test if matplotlib can actually use it by checking if it resolves
-        test_family = fp.get_family()
-        if test_family and test_family != ['sans-serif']:
-            plt.rcParams["font.family"] = _font_name
-            plt.rcParams["font.sans-serif"] = [_font_name]
-            _font_set = True
-            break
-    except Exception:
-        continue
-
-if not _font_set:
-    # Last resort: scan all system fonts for CJK support
-    for _f in fm.findSystemFonts():
+    for _font_name in _cjk_font_candidates:
         try:
-            _fp = fm.FontProperties(fname=_f)
-            _name = _fp.get_name()
-            if any(_k in _name.lower() for _k in ['wqy', 'wenquan', 'noto', 'droid', 'hei', 'yahei', 'ming', 'song']):
-                fm.fontManager.addfont(_f)
-                plt.rcParams["font.family"] = _name
-                plt.rcParams["font.sans-serif"] = [_name]
+            fp = fm.FontProperties(family=_font_name)
+            test_family = fp.get_family()
+            if test_family and test_family != ['sans-serif']:
+                plt.rcParams["font.family"] = _font_name
+                plt.rcParams["font.sans-serif"] = [_font_name]
+                _cjk_font_prop = fp
                 _font_set = True
                 break
         except Exception:
             continue
+else:
+    # Linux (PythonAnywhere): use AR PL fonts directly by path
+    # These are pre-installed on PythonAnywhere
+    _linux_cjk_font_paths = [
+        '/usr/share/fonts/truetype/arphic/uming.ttc',  # AR PL UMing CN (宋体)
+        '/usr/share/fonts/truetype/arphic-gkai00mp/gkai00mp.ttf',  # AR PL KaitiM GB
+        '/usr/share/fonts/truetype/arphic-bsmi00lp/bsmi00lp.ttf',  # AR PL Mingti2L Big5
+        '/usr/share/fonts/truetype/arphic/gbsn00lp.ttf',  # AR PL SungtiL GB
+    ]
+    
+    # 清除matplotlib字体缓存并重建
+    try:
+        fm.fontManager = fm.FontManager()
+    except:
+        pass
+    
+    for _font_path in _linux_cjk_font_paths:
+        try:
+            if os.path.exists(_font_path):
+                fm.fontManager.addfont(_font_path)
+                _fp = fm.FontProperties(fname=_font_path)
+                _font_name = _fp.get_name()
+                plt.rcParams["font.family"] = _font_name
+                plt.rcParams["font.sans-serif"] = [_font_name]
+                _cjk_font_prop = _fp
+                _font_set = True
+                print(f"[report.py Font] ✓ Using CJK font: {_font_name} from {_font_path}")
+                break
+        except Exception as e:
+            print(f"[report.py Font] ✗ Failed to load {_font_path}: {e}")
+            continue
+    
+    # Fallback: scan all system fonts for CJK support
+    if not _font_set:
+        for _f in fm.findSystemFonts():
+            try:
+                _fp = fm.FontProperties(fname=_f)
+                _name = _fp.get_name()
+                if any(_k in _name.lower() for _k in ['wqy', 'wenquan', 'noto', 'droid', 'hei', 'yahei', 'ming', 'song', 'arphic', 'kai', 'gbsn']):
+                    fm.fontManager.addfont(_f)
+                    plt.rcParams["font.family"] = _name
+                    plt.rcParams["font.sans-serif"] = [_name]
+                    _cjk_font_prop = _fp
+                    _font_set = True
+                    print(f"[report.py Font] ✓ Using CJK font (fallback): {_name} from {_f}")
+                    break
+            except Exception:
+                continue
 
 if not _font_set:
     # Ultimate fallback - use DejaVu Sans which has basic Unicode support
     plt.rcParams["font.family"] = "DejaVu Sans"
     plt.rcParams["font.sans-serif"] = ["DejaVu Sans"]
+    _cjk_font_prop = fm.FontProperties(family="DejaVu Sans")
+    print("[Font] Warning: No CJK font found, using DejaVu Sans as fallback")
 
 plt.rcParams["axes.unicode_minus"] = False
+
+# 如果没有找到合适的字体，创建一个默认的FontProperties
+if _cjk_font_prop is None:
+    _cjk_font_prop = fm.FontProperties(family=plt.rcParams["font.family"])
 
 # Warm palette for sleep stages
 STAGE_COLORS = {0: "#E8904C", 1: "#5DAF8B", 2: "#8B7EC8"}  # Wake=warm amber, NREM=sage, REM=soft purple
