@@ -6,7 +6,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import shap
+try:
+    import shap
+    HAS_SHAP = True
+except ImportError:
+    HAS_SHAP = False
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.utils.class_weight import compute_sample_weight
 
@@ -80,49 +84,46 @@ def main():
         json.dump(schema, f, ensure_ascii=False, indent=2)
     print(f"Saved schema to: {schema_path}")
 
-    # Compute SHAP explainer on a balanced subset
-    print("\nComputing SHAP explainer...")
-    rng = np.random.RandomState(42)
-    indices = []
-    for cls in [0, 1, 2]:
-        cls_idx = np.where(y == cls)[0]
-        n_sample = min(200, len(cls_idx))
-        indices.extend(rng.choice(cls_idx, size=n_sample, replace=False))
-    X_sample = X.iloc[indices]
-    print(f"  Background sample: {X_sample.shape[0]} rows")
+    # Compute SHAP explainer on a balanced subset (skip if shap not installed)
+    if HAS_SHAP:
+        print("\nComputing SHAP explainer...")
+        rng = np.random.RandomState(42)
+        indices = []
+        for cls in [0, 1, 2]:
+            cls_idx = np.where(y == cls)[0]
+            n_sample = min(200, len(cls_idx))
+            indices.extend(rng.choice(cls_idx, size=n_sample, replace=False))
+        X_sample = X.iloc[indices]
+        print(f"  Background sample: {X_sample.shape[0]} rows")
 
-    explainer = shap.TreeExplainer(model, X_sample)
-    shap_path = MODEL_DIR / "shap_explainer.pkl"
-    with open(shap_path, "wb") as f:
-        pickle.dump(explainer, f)
-    print(f"Saved SHAP explainer to: {shap_path}")
+        explainer = shap.TreeExplainer(model, X_sample)
+        shap_path = MODEL_DIR / "shap_explainer.pkl"
+        with open(shap_path, "wb") as f:
+            pickle.dump(explainer, f)
+        print(f"Saved SHAP explainer to: {shap_path}")
 
-    # Save global SHAP values for pre-computed feature importance
-    shap_values = explainer.shap_values(X_sample, check_additivity=False)
-    if isinstance(shap_values, list):
-        shap_values = shap_values[1]  # class 1 for multi-class
+        # Save global SHAP values for pre-computed feature importance
+        shap_values = explainer.shap_values(X_sample, check_additivity=False)
+        if isinstance(shap_values, list):
+            shap_values = shap_values[1]  # class 1 for multi-class
 
-    # Handle different SHAP output shapes
-    if shap_values.ndim == 3:
-        # (samples, features, classes) → average over samples and classes
-        importance_arr = np.abs(shap_values).mean(axis=(0, 2))
+        if shap_values.ndim == 3:
+            importance_arr = np.abs(shap_values).mean(axis=(0, 2))
+        else:
+            importance_arr = np.abs(shap_values).mean(axis=0)
+
+        global_importance = pd.DataFrame({
+            "feature": CONTEXT_FEATURES,
+            "importance": importance_arr,
+        }).sort_values("importance", ascending=False)
+
+        importance_path = MODEL_DIR / "global_shap_importance.csv"
+        global_importance.to_csv(importance_path, index=False)
+        print(f"Saved SHAP importance to: {importance_path}")
     else:
-        importance_arr = np.abs(shap_values).mean(axis=0)
-
-    global_importance = pd.DataFrame({
-        "feature": CONTEXT_FEATURES,
-        "importance": importance_arr,
-    }).sort_values("importance", ascending=False)
-
-    importance_path = MODEL_DIR / "global_shap_importance.csv"
-    global_importance.to_csv(importance_path, index=False)
-    print(f"Saved SHAP importance to: {importance_path}")
+        print("\nSkipping SHAP (shap not installed)...")
 
     print("\nDone! All artifacts saved to models/")
-    print(f"  - hgb_context_model.pkl")
-    print(f"  - feature_schema.json")
-    print(f"  - shap_explainer.pkl")
-    print(f"  - global_shap_importance.csv")
 
 if __name__ == "__main__":
     main()
