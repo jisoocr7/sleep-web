@@ -43,11 +43,12 @@ from src.report import (
 )
 
 app = Flask(__name__)
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 # Session storage with TTL
 SESSION = {}
 SESSION_LOCK = threading.Lock()
-SESSION_TTL = 3600  # 1 hour
+SESSION_TTL = 86400  # 24 hours
 
 
 def cleanup_sessions():

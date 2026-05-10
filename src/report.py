@@ -208,21 +208,34 @@ def generate_html_report(
     # Score gauge: simple SVG circular gauge
     gauge_svg = _generate_score_gauge_svg(total, badge_color)
 
-    # Metrics table
+    # Metrics table — with friendly names
+    friendly_names = {
+        "总睡眠时长 TST (分钟)": "睡了多久",
+        "睡眠效率 SE (%)": "睡眠质量",
+        "入睡后清醒 WASO (分钟)": "中途清醒",
+        "入睡潜伏期 (分钟)": "多久入睡",
+        "REM 潜伏期 (分钟)": "做梦潜伏期",
+        "NREM 占比 (%)": "深睡眠比例",
+        "REM 占比 (%)": "做梦比例",
+        "阶段转换次数": "阶段转换",
+        "睡眠周期数": "睡眠周期",
+        "总记录时长 (分钟)": "总记录时长",
+    }
     metrics_rows = ""
-    status_icons = {"normal": "&#9675;", "borderline": "&#9681;", "concerning": "&#9673;", "unknown": "&#9679;"}
+    status_icons = {"normal": "&#10003;", "borderline": "&#9888;", "concerning": "&#10007;", "unknown": "&#9679;"}
     status_colors_css = {"normal": "#5DAF8B", "borderline": "#E8904C", "concerning": "#D35D47", "unknown": "#AAA"}
-    status_labels_zh = {"normal": "正常", "borderline": "临界", "concerning": "需关注", "unknown": "未知"}
+    status_labels_zh = {"normal": "正常", "borderline": "偏高/偏低", "concerning": "需关注", "unknown": "未知"}
 
     for key, rc in ref_comparison.items():
         status = rc["status"]
         icon = status_icons.get(status, "")
         color = status_colors_css.get(status, "#AAA")
         label = status_labels_zh.get(status, "")
+        friendly_key = friendly_names.get(key, key)
         metrics_rows += f"""
         <tr>
             <td style="padding:10px 14px;border-bottom:1px solid #EDE0D4;">
-                <strong>{key}</strong>
+                <strong>{friendly_key}</strong>
                 <div style="font-size:0.78rem;color:#A38B78;">{rc['interpretation']}</div>
             </td>
             <td style="padding:10px 14px;border-bottom:1px solid #EDE0D4;text-align:center;font-weight:700;font-size:1.1rem;">
@@ -232,24 +245,39 @@ def generate_html_report(
                 {rc['reference_range']}
             </td>
             <td style="padding:10px 14px;border-bottom:1px solid #EDE0D4;text-align:center;">
-                <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{color};margin-right:6px;"></span>
-                <span style="color:{color};font-weight:600;">{label}</span>
+                <span style="color:{color};font-weight:600;">{icon} {label}</span>
             </td>
         </tr>"""
 
-    # Recommendations section
+    # Recommendations section — conversational tone
+    icon_map = {"efficiency": "&#128164;", "fragmentation": "&#128564;", "latency": "&#9200;", "rem": "&#127752;", "general": "&#128161;"}
+    conversational = {
+        "efficiency": lambda se: f"你的睡眠效率是 {se}%，躺在床上的时间有 {100 - int(float(se))}% 没有真正睡着。建议只在困了才上床，醒了就起来，别在床上刷手机。",
+        "fragmentation": lambda waso: f"你昨晚中途醒了 {waso} 分钟，睡眠被打断了。睡前少喝水、保持房间安静黑暗，可能会有帮助。",
+        "latency": lambda lat: f"你花了 {lat} 分钟才入睡，有点慢。睡前一小时放下手机，试试深呼吸或泡个热水脚。",
+        "rem": lambda pct: f"你的做梦期只占 {pct}%，比正常偏低。减少饮酒、保持规律作息，做梦时间会慢慢恢复。",
+    }
+    import re
     recs_html = ""
     for i, rec in enumerate(recommendations):
         sev_colors = {"critical": "#D35D47", "warning": "#E8904C", "info": "#5DAF8B"}
-        sev_labels = {"critical": "重点关注", "warning": "建议改善", "info": "温馨提示"}
+        cat = rec.get("category", "general")
+        icon = icon_map.get(cat, icon_map["general"])
+        advice = rec["advice"]
+        # Try conversational rewrite
+        if cat in conversational:
+            nums = re.findall(r'(\d+)', rec["issue"])
+            if nums:
+                advice = conversational[cat](nums[0])
         recs_html += f"""
         <div style="background:#FEFAF5;border:1px solid #EDE0D4;border-radius:12px;padding:16px;margin-bottom:12px;border-left:4px solid {sev_colors.get(rec['severity'], '#999')};">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                <span style="background:{sev_colors.get(rec['severity'], '#999')};color:#fff;padding:2px 10px;border-radius:100px;font-size:0.72rem;font-weight:600;">{sev_labels.get(rec['severity'], '')}</span>
-                <span style="font-weight:600;color:#3E2E22;">{rec['issue']}</span>
+            <div style="display:flex;align-items:flex-start;gap:12px;">
+                <span style="font-size:1.6rem;line-height:1;">{icon}</span>
+                <div style="flex:1;">
+                    <div style="font-weight:600;color:#3E2E22;margin-bottom:4px;">{rec['issue']}</div>
+                    <p style="color:#6D5C4F;line-height:1.7;margin:0;">{advice}</p>
+                </div>
             </div>
-            <p style="color:#6D5C4F;line-height:1.7;margin:0;">{rec['advice']}</p>
-            <div style="font-size:0.72rem;color:#A38B78;margin-top:8px;">参考: {rec.get('reference', '')}</div>
         </div>"""
 
     # Data quality notes
@@ -438,10 +466,9 @@ def generate_html_report(
 
   <!-- Cover -->
   <div class="cover">
-    <h1>睡眠分析报告</h1>
+    <h1>我的睡眠报告</h1>
     <div class="meta">
-      生成时间: {now_str} &nbsp;|&nbsp; 数据来源: {upload_filename or "上传数据"}<br>
-      模型: HGB + Context (±2) &nbsp;|&nbsp; 基于 Sleep-Accel 数据集训练
+      生成时间: {now_str} &nbsp;|&nbsp; 数据来源: {upload_filename or "上传数据"}
     </div>
   </div>
 
@@ -459,7 +486,7 @@ def generate_html_report(
 
   <!-- Hypnogram -->
   <div class="section">
-    <h3>整夜睡眠分期图</h3>
+    <h3>整晚睡眠一览</h3>
     <img src="data:image/png;base64,{hypo_b64}" alt="睡眠分期图">
   </div>
 
@@ -471,7 +498,7 @@ def generate_html_report(
 
   <!-- Metrics Dashboard -->
   <div class="section">
-    <h3>指标仪表盘</h3>
+    <h3>核心指标</h3>
     <table class="metrics-table">
       <thead><tr>
         <th>指标</th>
@@ -485,16 +512,14 @@ def generate_html_report(
 
   <!-- Recommendations -->
   <div class="section">
-    <h3>个性化改善建议</h3>
+    <h3>睡眠小贴士</h3>
     {recs_html}
   </div>
 
-  <!-- Plain Language Summary -->
+  <!-- Key Insights -->
   <div class="section">
-    <h3>通俗解读</h3>
+    <h3>关键发现</h3>
     <div class="plain-summary">
-      <p style="margin-bottom:8px;">{summary.get('score_summary', '')}</p>
-      <p>{summary.get('plain_summary', '')}</p>
       {_generate_plain_language_extra_html(metrics)}
     </div>
   </div>
@@ -533,16 +558,13 @@ def generate_html_report(
     # Disclaimer
     html += f"""
   <div class="disclaimer">
-    <strong>重要说明</strong><br>
-    本报告基于可穿戴设备信号进行算法估计，不等同于临床多导睡眠图（PSG）诊断。<br>
-    当前模型为整晚数据上传后的离线睡眠分期分析，使用了未来 epoch 的上下文信息（±2 窗口），不属于实时分析。<br>
-    模型在 Sleep-Accel 公开数据集（31 名受试者）上训练，未进行外部验证。本结果仅供健康管理参考，不构成医疗诊断。<br>
-    如有睡眠问题困扰，请咨询睡眠专科医生。
+    <strong>温馨提示</strong><br>
+    本报告基于你的可穿戴设备数据，通过算法估算你的睡眠情况。它不能代替医院的专业睡眠检测（多导睡眠图）。<br>
+    如果你有长期睡眠问题（如严重失眠、打鼾、白天嗜睡），建议咨询睡眠专科医生。
   </div>
 
   <div class="footer">
-    睡眠分期模型: HGB + Context (±2) &nbsp;|&nbsp; SHAP 可解释性 &nbsp;|&nbsp; 生成于 {now_str}<br>
-    仅供研究参考，不构成医疗建议
+    生成于 {now_str} &nbsp;|&nbsp; 仅供健康管理参考，不构成医疗建议
   </div>
 
 </div>
@@ -582,23 +604,40 @@ def _generate_score_gauge_svg(score: int, color: str) -> str:
 def _generate_subscore_bars_html(subscores: dict) -> str:
     """Generate HTML for subscore progress bars."""
     labels = {
-        "sleep_efficiency": "睡眠效率",
+        "sleep_efficiency": "睡眠质量",
         "total_sleep_time": "睡眠时长",
-        "waso": "夜间清醒",
+        "waso": "中途清醒",
         "sleep_latency": "入睡速度",
-        "rem_proportion": "REM 占比",
+        "rem_proportion": "做梦比例",
+    }
+    icons = {
+        "sleep_efficiency": "&#127775;",
+        "total_sleep_time": "&#128164;",
+        "waso": "&#128564;",
+        "sleep_latency": "&#9200;",
+        "rem_proportion": "&#127752;",
     }
     html = ""
     for key, data in subscores.items():
         label = labels.get(key, key)
+        icon = icons.get(key, "&#9679;")
         score = data.get("score", 0)
         max_s = data.get("max", 1)
         pct = score / max_s * 100 if max_s > 0 else 0
+        if pct >= 80:
+            status_text, status_color = "优秀", "#5DAF8B"
+        elif pct >= 60:
+            status_text, status_color = "良好", "#5DAF8B"
+        elif pct >= 40:
+            status_text, status_color = "一般", "#E8904C"
+        else:
+            status_text, status_color = "待改善", "#D35D47"
         html += f"""
         <div class="subscore-bar">
+          <span style="font-size:1.1rem;">{icon}</span>
           <span class="subscore-label">{label}</span>
-          <div class="subscore-track"><div class="subscore-fill" style="width:{pct}%"></div></div>
-          <span class="subscore-val">{score}/{max_s}</span>
+          <div class="subscore-track"><div class="subscore-fill" style="width:{pct}%;background:{status_color}"></div></div>
+          <span class="subscore-val" style="color:{status_color};font-weight:600;">{status_text}</span>
         </div>"""
     return html
 
@@ -609,21 +648,22 @@ def _generate_plain_language_extra_html(metrics: dict) -> str:
 
     tst = metrics.get("总睡眠时长 TST (分钟)", 0)
     if isinstance(tst, (int, float)) and tst > 0:
-        hours = tst / 60
-        parts.append(f"您昨晚总共睡了约 <strong>{hours:.1f} 小时</strong>。")
+        hrs = int(tst // 60)
+        mins = int(tst % 60)
+        parts.append(f"你昨晚睡了 <strong>{hrs} 小时 {mins} 分钟</strong>。")
 
     se = metrics.get("睡眠效率 SE (%)", 0)
     if isinstance(se, (int, float)) and se > 0:
         if se >= 90:
-            parts.append("您的睡眠效率很高，大部分在床上的时间都用在了实际睡眠上。")
+            parts.append("睡眠效率很高，躺在床上的时间大部分都用在了实际睡眠上。")
         elif se >= 80:
-            parts.append("您的睡眠效率尚可，但还有提升空间。")
+            parts.append("睡眠效率还不错，但还有提升空间。")
         else:
-            parts.append("您在床上清醒的时间偏多，可以考虑调整睡眠习惯来改善。")
+            parts.append("躺在床上的时间有一部分没睡着，可以试试只在困了才上床。")
 
     rem = metrics.get("REM 占比 (%)", 0)
     if isinstance(rem, (int, float)):
-        parts.append(f"REM 睡眠（做梦阶段）占 {rem:.0f}%，这个阶段对记忆和情绪调节很重要。")
+        parts.append(f"做梦期占 {rem:.0f}%，这个阶段对记忆和情绪调节很重要。")
 
     transitions = metrics.get("阶段转换次数", 0)
     if isinstance(transitions, (int, float)) and transitions > 60:

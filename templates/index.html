@@ -3,9 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>睡眠分期分析 — 了解你的睡眠</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 /* ── Design System: Premium Warm ── */
 :root {
@@ -252,9 +254,6 @@ h4 { font-size: 1.4rem; font-weight: 600; }
 }
 .card-header h3 { font-size: 1.4rem; }
 
-.results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-.results-grid .full-width { grid-column: 1 / -1; }
-
 /* ── Score Card ── */
 .score-display { text-align: center; padding: 12px 0 0; }
 .score-gauge { display: flex; justify-content: center; margin-bottom: 10px; }
@@ -282,28 +281,30 @@ h4 { font-size: 1.4rem; font-weight: 600; }
 .subscore-fill { height: 100%; border-radius: 5px; background: var(--accent); transition: width 0.8s var(--ease-spring); }
 .subscore-val { width: 64px; font-weight: 600; color: var(--text-muted); flex-shrink: 0; }
 
-/* ── Stage Summary ── */
-.stage-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.stage-chip {
-  text-align: center;
-  padding: 18px 10px;
-  border-radius: var(--radius);
-  background: var(--bg-cream);
-  border: 1px solid var(--border);
-  transition: all 0.2s var(--ease);
+/* ── Hypno Timeline Bar ── */
+.hypno-bar-wrap { position: relative; padding-bottom: 4px; }
+.hypno-bar-canvas { width: 100%; height: 56px; border-radius: var(--radius); display: block; }
+.hypno-bar-labels {
+  position: relative;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+  min-height: 24px;
 }
-.stage-chip:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-.stage-chip .chip-dot { display:inline-block; width:12px; height:12px; border-radius:50%; margin-bottom:8px; }
-.stage-chip .chip-label { font-size: 1.1rem; font-weight: 600; }
-.stage-chip .chip-count { font-size: 2rem; font-weight: 700; margin: 6px 0; }
-.stage-chip .chip-pct { font-size: 1rem; color: var(--text-muted); }
-
-/* ── Hypnogram ── */
-.hypno-container { position: relative; height: 320px; }
-.hypno-container canvas { width: 100% !important; height: 100% !important; }
+.hypno-bar-legend {
+  display: flex;
+  gap: 18px;
+  justify-content: center;
+  margin-top: 10px;
+  font-size: 1rem;
+}
+.hypno-bar-legend span { display: flex; align-items: center; gap: 6px; }
+.hypno-bar-legend .legend-dot {
+  width: 12px; height: 12px; border-radius: 50%; display: inline-block;
+}
 
 /* ── Metrics Grid ── */
-.metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .metric-card {
   background: var(--bg-cream);
   border: 1px solid var(--border);
@@ -320,6 +321,27 @@ h4 { font-size: 1.4rem; font-weight: 600; }
 .metric-status.normal { background: var(--success); }
 .metric-status.borderline { background: var(--warning); }
 .metric-status.concerning { background: var(--danger); }
+
+/* ── Big Metric Cards ── */
+.metric-big {
+  background: var(--bg-cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  text-align: center;
+  transition: all 0.2s var(--ease);
+}
+.metric-big:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
+.metric-big .mb-icon { font-size: 2.2rem; margin-bottom: 6px; }
+.metric-big .mb-title { font-size: 1.05rem; color: var(--text-muted); margin-bottom: 4px; }
+.metric-big .mb-value { font-family: var(--font-heading); font-size: 2.4rem; font-weight: 700; }
+.metric-big .mb-desc { font-size: 0.92rem; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
+.metric-big .mb-status { font-size: 1.2rem; margin-top: 4px; }
+.star-rating { color: #F9A825; font-size: 1.5rem; letter-spacing: 2px; }
+.pbar-track { height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; margin-top: 8px; }
+.pbar-fill { height: 100%; border-radius: 5px; transition: width 0.8s var(--ease-spring); }
+.pbar-fill.nrem { background: var(--nrem); }
+.pbar-fill.rem { background: var(--rem); }
 
 /* ── Recommendations ── */
 .rec-card {
@@ -349,6 +371,11 @@ h4 { font-size: 1.4rem; font-weight: 600; }
 .rec-issue { font-weight: 600; font-size: 1.25rem; }
 .rec-advice { color: var(--text-secondary); font-size: 1.15rem; line-height: 1.7; }
 .rec-ref { font-size: 0.95rem; color: var(--text-muted); margin-top: 8px; }
+.rec-card .rec-body-wrap { display: flex; align-items: flex-start; gap: 14px; }
+.rec-card .rec-icon { font-size: 2rem; flex-shrink: 0; line-height: 1; }
+.rec-card .rec-content { flex: 1; }
+.rec-card .rec-title { font-weight: 600; font-size: 1.2rem; margin-bottom: 4px; }
+.rec-card .rec-text { color: var(--text-secondary); font-size: 1.1rem; line-height: 1.7; }
 
 /* ── SHAP Bars ── */
 .shap-bar {
@@ -509,12 +536,11 @@ h4 { font-size: 1.4rem; font-weight: 600; }
 
 /* ── Responsive ── */
 @media (max-width: 1200px) {
-  .metrics-grid { grid-template-columns: repeat(4, 1fr); }
+  .metrics-grid { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 900px) {
   .steps-row { grid-template-columns: 1fr; }
   .format-grid { grid-template-columns: repeat(3, 1fr); }
-  .results-grid { grid-template-columns: 1fr; }
   .metrics-grid { grid-template-columns: repeat(2, 1fr); }
   .integration-grid { grid-template-columns: 1fr; }
   h1 { font-size: 3.2rem; }
@@ -526,7 +552,6 @@ h4 { font-size: 1.4rem; font-weight: 600; }
   .app-shell { padding: 12px 14px 28px; }
   .format-grid { grid-template-columns: repeat(2, 1fr); }
   .metrics-grid { grid-template-columns: 1fr; }
-  .stage-summary { grid-template-columns: repeat(3, 1fr); }
   h1 { font-size: 2.6rem; }
   h2 { font-size: 1.8rem; }
   .hero { padding: 20px 10px 16px; }
@@ -640,51 +665,56 @@ h4 { font-size: 1.4rem; font-weight: 600; }
       <div class="score-display">
         <div class="score-gauge" id="scoreGauge"></div>
         <div class="grade-badge" id="gradeBadge"></div>
+        <div style="font-size:1rem;color:var(--text-muted);margin-bottom:10px;">分数越高，睡眠越好</div>
         <div class="score-summary" id="scoreSummary"></div>
         <div class="subscore-bars" id="subscoreBars"></div>
       </div>
     </div>
 
-    <!-- Stage Summary + Hypnogram -->
-    <div class="results-grid">
-      <div class="card">
-        <div class="card-header"><h3>预测睡眠分期</h3><span class="badge" id="epochCount" style="font-size:0.85rem;color:var(--text-muted);"></span></div>
-        <div class="stage-summary" id="stageSummary"></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3>睡眠分期图</h3></div>
-        <div class="hypno-container"><canvas id="hypnoChart"></canvas></div>
+    <!-- Sleep Timeline -->
+    <div class="card full-width" style="margin-bottom:20px;">
+      <div class="card-header"><h3>整晚睡眠一览</h3><span class="badge" id="epochCount" style="font-size:0.85rem;color:var(--text-muted);"></span></div>
+      <div class="hypno-bar-wrap">
+        <canvas id="hypnoBar" class="hypno-bar-canvas"></canvas>
+        <div class="hypno-bar-labels" id="hypnoLabels"></div>
+        <div class="hypno-bar-legend">
+          <span><span class="legend-dot" style="background:var(--wake)"></span>清醒</span>
+          <span><span class="legend-dot" style="background:var(--nrem)"></span>深睡眠</span>
+          <span><span class="legend-dot" style="background:var(--rem)"></span>做梦期</span>
+        </div>
       </div>
     </div>
 
-    <!-- Metrics -->
+    <!-- Key Metrics -->
     <div class="card full-width" style="margin-bottom:20px;">
-      <div class="card-header"><h3>睡眠指标</h3></div>
+      <div class="card-header"><h3>核心指标</h3></div>
       <div class="metrics-grid" id="metricsGrid"></div>
     </div>
 
     <!-- Recommendations -->
     <div class="card full-width" style="margin-bottom:20px;">
-      <div class="card-header"><h3>个性化改善建议</h3></div>
+      <div class="card-header"><h3>睡眠小贴士</h3></div>
       <div id="recommendationsList"></div>
     </div>
 
-    <!-- Plain Summary -->
-    <div class="card full-width">
-      <div class="card-header"><h3>通俗解读</h3></div>
-      <div class="plain-summary" id="plainSummary"></div>
-      <div style="margin-top:12px; font-size:0.9rem; color:var(--warning); line-height:1.7; padding:12px; background:oklch(0.75 0.12 80 / 0.1); border-radius:var(--radius-sm);">
-        本结果基于可穿戴设备信号算法估计，不等同于临床多导睡眠图（PSG）诊断。仅供健康管理参考，不构成医疗诊断。
-      </div>
+    <!-- Summary -->
+    <div class="card full-width" style="margin-bottom:20px;">
+      <div class="card-header"><h3>总结</h3></div>
+      <div class="plain-summary" id="bottomSummary"></div>
     </div>
 
     <!-- Report Download -->
-    <div class="card full-width" style="margin-top:20px;">
+    <div class="card full-width" style="margin-bottom:20px;">
       <div class="card-header"><h3>下载报告</h3></div>
       <div class="btn-group">
         <button class="btn btn-primary btn-sm" id="btnHtmlReport">下载 HTML 报告</button>
         <button class="btn btn-outline btn-sm" id="btnDocxReport">下载 DOCX 报告</button>
       </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div style="font-size:0.9rem; color:var(--warning); line-height:1.7; padding:14px 18px; background:oklch(0.75 0.12 80 / 0.1); border-radius:var(--radius-sm);">
+      温馨提示：本结果基于可穿戴设备数据算法估算，仅供参考，不构成医疗诊断。如有长期睡眠问题，建议咨询医生。
     </div>
   </div>
 
@@ -826,7 +856,6 @@ h4 { font-size: 1.4rem; font-weight: 600; }
 const App = {
   sessionId: null,
   currentData: null,
-  hypnoChart: null,
 };
 
 // ── Upload ──
@@ -873,29 +902,12 @@ function renderResults(data) {
   const container = document.getElementById('resultsContainer');
   container.classList.add('visible');
 
-  // Epoch count
-  document.getElementById('epochCount').textContent = data.row_count_context + ' epochs';
-
   // Sleep Score
   renderScore(data.sleep_score);
   document.getElementById('scoreSummary').textContent = data.summary?.plain_summary || '';
 
-  // Stage summary
-  const total = (data.label_counts.Wake || 0) + (data.label_counts.NREM || 0) + (data.label_counts.REM || 0);
-  const chips = { Wake: { color: 'var(--wake)', label: '清醒' }, NREM: { color: 'var(--nrem)', label: 'NREM' }, REM: { color: 'var(--rem)', label: 'REM' } };
-  document.getElementById('stageSummary').innerHTML = ['Wake','NREM','REM'].map(stage => {
-    const count = data.label_counts[stage] || 0;
-    const pct = total > 0 ? (count / total * 100).toFixed(1) : '0.0';
-    return `<div class="stage-chip">
-      <div class="chip-dot" style="background:${chips[stage].color}"></div>
-      <div class="chip-label">${chips[stage].label}</div>
-      <div class="chip-count">${count}</div>
-      <div class="chip-pct">${pct}%</div>
-    </div>`;
-  }).join('');
-
-  // Hypnogram
-  renderHypnogram(data.epochs);
+  // Hypnogram (horizontal timeline bar)
+  renderHypnogram(data.epochs, data.epochs_total || data.row_count_context);
 
   // Metrics
   renderMetrics(data.metrics, data.ref_comparison);
@@ -903,9 +915,9 @@ function renderResults(data) {
   // Recommendations
   renderRecommendations(data.recommendations);
 
-  // Plain summary
-  document.getElementById('plainSummary').innerHTML =
-    `<p><strong>${data.summary?.score_summary || ''}</strong></p><p>${data.summary?.plain_summary || ''}</p>`;
+  // Bottom summary
+  document.getElementById('bottomSummary').innerHTML =
+    `<p>${data.summary?.bottom_summary || ''}</p>`;
 }
 
 function renderScore(scoreData) {
@@ -935,118 +947,242 @@ function renderScore(scoreData) {
       <text x="80" y="75" text-anchor="middle" font-family="Sora,sans-serif"
             font-size="34" font-weight="700" fill="${badgeColor}">${total_score}</text>
       <text x="80" y="90" text-anchor="middle" font-family="Outfit,sans-serif"
-            font-size="10" fill="#A38B78">/ 100</text>
+            font-size="10" fill="#A38B78">/ 100 分</text>
     </svg>`;
   document.getElementById('gradeBadge').style.background = badgeColor;
   document.getElementById('gradeBadge').textContent = `${grade} · ${grade_label}`;
 
-  // Subscore bars
-  const subLabels = { sleep_efficiency: '睡眠效率', total_sleep_time: '睡眠时长', waso: '夜间清醒', sleep_latency: '入睡速度', rem_proportion: 'REM 占比' };
+  // Subscore bars — color-coded with emoji status
+  const subLabels = { sleep_efficiency: '睡眠质量', total_sleep_time: '睡眠时长', waso: '中途清醒', sleep_latency: '入睡速度', rem_proportion: '做梦比例' };
+  const subIcons = { sleep_efficiency: '&#127775;', total_sleep_time: '&#128164;', waso: '&#128564;', sleep_latency: '&#9200;', rem_proportion: '&#127752;' };
   document.getElementById('subscoreBars').innerHTML = Object.entries(subscores || {}).map(([k, v]) => {
     const pct = v.max > 0 ? (v.score / v.max * 100) : 0;
-    return `<div class="subscore-row">
+    const icon = subIcons[k] || '&#9679;';
+    let statusText, statusColor, barColor;
+    if (pct >= 80) { statusText = '优秀'; statusColor = 'var(--success)'; barColor = 'var(--success)'; }
+    else if (pct >= 60) { statusText = '良好'; statusColor = 'var(--success)'; barColor = 'var(--success)'; }
+    else if (pct >= 40) { statusText = '一般'; statusColor = 'var(--warning)'; barColor = 'var(--warning)'; }
+    else { statusText = '待改善'; statusColor = 'var(--danger)'; barColor = 'var(--danger)'; }
+    return `<div class="subscore-row" style="margin-bottom:8px;">
+      <span style="font-size:1.1rem;">${icon}</span>
       <span class="subscore-label">${subLabels[k] || k}</span>
-      <div class="subscore-track"><div class="subscore-fill" style="width:${pct}%"></div></div>
-      <span class="subscore-val">${v.score}/${v.max}</span>
+      <div class="subscore-track"><div class="subscore-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      <span class="subscore-val" style="color:${statusColor};font-weight:600;font-size:0.95rem;">${statusText}</span>
     </div>`;
   }).join('');
 }
 
-function renderHypnogram(epochs) {
-  const ctx = document.getElementById('hypnoChart').getContext('2d');
-  if (App.hypnoChart) App.hypnoChart.destroy();
+function renderHypnogram(epochs, totalEpochs) {
+  const canvas = document.getElementById('hypnoBar');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const w = rect.width;
+  const h = 56;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  ctx.scale(dpr, dpr);
 
-  const step = Math.max(1, Math.floor(epochs.length / 600));
-  const sampledLabels = [], sampledValues = [];
-  for (let i = 0; i < epochs.length; i += step) { sampledLabels.push(i); sampledValues.push(epochs[i].predicted_label); }
+  const colors = ['rgba(232,144,76,0.85)', 'rgba(93,175,139,0.85)', 'rgba(139,126,200,0.85)'];
+  const n = epochs.length;
+  const segW = w / n;
+  for (let i = 0; i < n; i++) {
+    ctx.fillStyle = colors[epochs[i].predicted_label] || colors[0];
+    ctx.fillRect(i * segW, 0, Math.ceil(segW), h);
+  }
 
-  const textColor = 'rgba(100,80,60,0.5)';
-  const gridColor = 'rgba(0,0,0,0.04)';
+  // Use totalEpochs for accurate duration (epochs may be sampled to 200)
+  const totalMin = Math.round((totalEpochs || n) * 30 / 60);
+  const hrs = Math.floor(totalMin / 60);
+  const mins = totalMin % 60;
 
-  App.hypnoChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: sampledLabels,
-      datasets: [{
-        data: sampledValues,
-        borderColor: 'transparent',
-        borderWidth: 0,
-        pointRadius: 0,
-        stepped: true,
-        tension: 0,
-        fill: true,
-        segment: {
-          borderColor: ctx => {
-            const v = ctx.p0.parsed.y;
-            if (v === 0) return 'rgba(232,144,76,0.85)';
-            if (v === 1) return 'rgba(93,175,139,0.85)';
-            return 'rgba(139,126,200,0.85)';
-          },
-          backgroundColor: ctx => {
-            const v = ctx.p0.parsed.y;
-            if (v === 0) return 'rgba(232,144,76,0.15)';
-            if (v === 1) return 'rgba(93,175,139,0.15)';
-            return 'rgba(139,126,200,0.15)';
-          },
-          borderWidth: 14,
-        },
-      }],
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false, animation: { duration: 600 },
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: ctx => { const n = ['清醒', 'NREM', 'REM']; return n[ctx.parsed.y] || ''; } } }
-      },
-      scales: {
-        x: { display: true, title: { text: 'Epoch 序号', display: true, color: textColor, font: { size: 10 } },
-             ticks: { color: textColor, font: { size: 9 }, maxTicksLimit: 10 }, grid: { color: gridColor } },
-        y: { min: -0.3, max: 2.3, title: { text: '睡眠阶段', display: true, color: textColor, font: { size: 10 } },
-             ticks: { color: textColor, font: { size: 9 }, stepSize: 1, callback: v => { if (v===0) return '清醒'; if (v===1) return 'NREM'; if (v===2) return 'REM'; return ''; } },
-             grid: { color: gridColor } }
-      }
+  // Also count stage proportions from sampled epochs
+  let wakeN = 0, nremN = 0, remN = 0;
+  for (const e of epochs) {
+    if (e.predicted_label === 0) wakeN++;
+    else if (e.predicted_label === 1) nremN++;
+    else remN++;
+  }
+  const wakePct = (wakeN / n * 100).toFixed(0);
+  const nremPct = (nremN / n * 100).toFixed(0);
+  const remPct = (remN / n * 100).toFixed(0);
+
+  const labelsDiv = document.getElementById('hypnoLabels');
+
+  // Time ruler: show 0, 1h, 2h, ... total
+  let rulerMarks = '<span style="position:absolute;left:0;transform:translateX(-50%);font-size:0.85rem;color:var(--text-muted);">0</span>';
+  if (hrs >= 2) {
+    for (let i = 1; i < hrs; i++) {
+      const pct = (i * 60 / totalMin * 100).toFixed(1);
+      rulerMarks += `<span style="position:absolute;left:${pct}%;transform:translateX(-50%);font-size:0.85rem;color:var(--text-muted);">${i}h</span>`;
     }
-  });
+  }
+  rulerMarks += `<span style="position:absolute;right:0;transform:translateX(50%);font-size:0.85rem;color:var(--text-muted);">${hrs}h${mins > 0 ? mins + 'm' : ''}</span>`;
+
+  // Remove epochCount badge (we show duration here)
+  document.getElementById('epochCount').textContent = '';
+
+  labelsDiv.innerHTML = `
+    <div style="text-align:center;font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-bottom:6px;">
+      ${hrs} 小时 ${mins} 分钟
+    </div>
+    <div style="position:relative;width:100%;height:20px;margin-bottom:6px;">
+      ${rulerMarks}
+    </div>
+    <div style="display:flex;justify-content:center;gap:24px;font-size:0.95rem;color:var(--text-secondary);">
+      <span>清醒 ${wakePct}%</span>
+      <span>深睡眠 ${nremPct}%</span>
+      <span>做梦 ${remPct}%</span>
+    </div>
+  `;
 }
 
 function renderMetrics(metrics, refComp) {
   const grid = document.getElementById('metricsGrid');
-  const orderedKeys = [
-    '总睡眠时长 TST (分钟)', '睡眠效率 SE (%)', '入睡后清醒 WASO (分钟)',
-    '入睡潜伏期 (分钟)', 'REM 潜伏期 (分钟)', 'NREM 占比 (%)', 'REM 占比 (%)',
-    '阶段转换次数', '睡眠周期数', '总记录时长 (分钟)',
-  ];
 
-  grid.innerHTML = orderedKeys.filter(k => metrics[k] !== undefined).map(k => {
-    const val = metrics[k];
-    const rc = refComp ? refComp[k] : null;
-    const status = rc ? rc.status : 'unknown';
-    const refText = rc ? rc.reference_range : '';
-    return `<div class="metric-card">
-      <div class="metric-label">${k} <span class="metric-status ${status}"></span></div>
-      <div class="metric-value">${val}<span class="metric-unit"></span></div>
-      ${refText ? `<div class="metric-ref">参考: ${refText}</div>` : ''}
-    </div>`;
-  }).join('');
+  // 1. 睡了多久
+  const tst = parseFloat(metrics['总睡眠时长 TST (分钟)']) || 0;
+  const hrs = Math.floor(tst / 60);
+  const mins = Math.round(tst % 60);
+  const tstOk = tst >= 360 && tst <= 480;
+  const tstWarn = tst >= 300 && tst <= 540;
+  const tstIcon = tstOk ? '&#10003;' : (tstWarn ? '&#9888;' : '&#10007;');
+  const tstColor = tstOk ? 'var(--success)' : (tstWarn ? 'var(--warning)' : 'var(--danger)');
+  const tstDesc = tstOk ? '时长充足，身体有足够时间修复' : (tst < 360 ? '偏短，建议争取更多睡眠' : '偏长，注意是否白天嗜睡');
+
+  // 2. 睡眠质量 (efficiency as stars)
+  const se = parseFloat(metrics['睡眠效率 SE (%)']) || 0;
+  const stars = se >= 95 ? 5 : se >= 85 ? 4 : se >= 75 ? 3 : se >= 60 ? 2 : 1;
+  const starStr = '&#9733;'.repeat(stars) + '&#9734;'.repeat(5 - stars);
+  const seDesc = se >= 85 ? '入睡快、中途清醒少，质量不错' : '床上清醒时间偏多，睡眠效率待提升';
+
+  // 3. 多久入睡
+  const lat = parseFloat(metrics['入睡潜伏期 (分钟)']) || 0;
+  const latOk = lat <= 20;
+  const latWarn = lat <= 30;
+  const latIcon = latOk ? '&#10003;' : (latWarn ? '&#9888;' : '&#10007;');
+  const latColor = latOk ? 'var(--success)' : (latWarn ? 'var(--warning)' : 'var(--danger)');
+  const latDesc = latOk ? '入睡很快，说明身体放松' : '入睡偏慢，试试睡前少看手机';
+
+  // 4. 深度睡眠
+  const nremPct = parseFloat(metrics['NREM 占比 (%)']) || 0;
+  const nremOk = nremPct >= 70 && nremPct <= 85;
+  const nremIcon = nremOk ? '&#10003;' : '&#9888;';
+  const nremColor = nremOk ? 'var(--success)' : 'var(--warning)';
+  const nremDesc = nremOk ? '深睡眠充足，身体修复得很好' : '深睡眠比例偏低，注意作息规律';
+
+  // 5. 做梦时间
+  const remPct = parseFloat(metrics['REM 占比 (%)']) || 0;
+  const remOk = remPct >= 18 && remPct <= 28;
+  const remIcon = remOk ? '&#10003;' : '&#9888;';
+  const remColor = remOk ? 'var(--success)' : 'var(--warning)';
+  const remDesc = remOk ? '做梦时间正常，记忆和情绪调节良好' : (remPct < 18 ? '偏少，可能与饮酒或压力有关' : '偏多，可能身体在补偿之前的不足');
+
+  grid.innerHTML = `
+    <div class="metric-big">
+      <div class="mb-icon">&#128164;</div>
+      <div class="mb-title">睡了多久</div>
+      <div class="mb-value">${hrs}<span style="font-size:1.2rem;font-weight:400;color:var(--text-muted)">小时</span>${mins}<span style="font-size:1.2rem;font-weight:400;color:var(--text-muted)">分钟</span></div>
+      <div class="mb-desc">${tstDesc}</div>
+      <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">建议 6-8 小时</div>
+      <div class="mb-status" style="color:${tstColor}">${tstIcon}</div>
+    </div>
+    <div class="metric-big">
+      <div class="mb-icon">&#127775;</div>
+      <div class="mb-title">睡眠质量</div>
+      <div class="mb-value"><span class="star-rating">${starStr}</span></div>
+      <div class="mb-desc">${seDesc}</div>
+      <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">效率 ${se.toFixed(0)}% · 建议 >85%</div>
+      <div class="mb-status" style="color:var(--text-muted)"></div>
+    </div>
+    <div class="metric-big">
+      <div class="mb-icon">&#9200;</div>
+      <div class="mb-title">多久入睡</div>
+      <div class="mb-value">${lat.toFixed(0)}<span style="font-size:1.2rem;font-weight:400;color:var(--text-muted)">分钟</span></div>
+      <div class="mb-desc">${latDesc}</div>
+      <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">建议 <20 分钟</div>
+      <div class="mb-status" style="color:${latColor}">${latIcon}</div>
+    </div>
+    <div class="metric-big">
+      <div class="mb-icon">&#128170;</div>
+      <div class="mb-title">深度睡眠</div>
+      <div class="mb-value">${nremPct.toFixed(0)}<span style="font-size:1.2rem;font-weight:400;color:var(--text-muted)">%</span></div>
+      <div class="pbar-track"><div class="pbar-fill nrem" style="width:${Math.min(nremPct,100)}%"></div></div>
+      <div class="mb-desc">${nremDesc}</div>
+      <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">正常范围 70-85%</div>
+      <div class="mb-status" style="color:${nremColor}">${nremIcon}</div>
+    </div>
+    <div class="metric-big">
+      <div class="mb-icon">&#127752;</div>
+      <div class="mb-title">做梦时间</div>
+      <div class="mb-value">${remPct.toFixed(0)}<span style="font-size:1.2rem;font-weight:400;color:var(--text-muted)">%</span></div>
+      <div class="pbar-track"><div class="pbar-fill rem" style="width:${Math.min(remPct,100)}%"></div></div>
+      <div class="mb-desc">${remDesc}</div>
+      <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">正常范围 20-25%</div>
+      <div class="mb-status" style="color:${remColor}">${remIcon}</div>
+    </div>
+  `;
 }
 
 function renderRecommendations(recs) {
   if (!recs || recs.length === 0) {
-    document.getElementById('recommendationsList').innerHTML = '<p style="color:var(--text-muted);">暂无建议</p>';
+    document.getElementById('recommendationsList').innerHTML =
+      '<div class="rec-card info" style="text-align:center;"><div class="rec-body-wrap"><div class="rec-icon">&#127881;</div><div class="rec-content"><div class="rec-title">睡眠表现不错！</div><div class="rec-text">各项指标都在正常范围内，继续保持良好的作息习惯。</div></div></div></div>';
     return;
   }
-  const sevLabels = { critical: '重点关注', warning: '建议改善', info: '温馨提示' };
-  document.getElementById('recommendationsList').innerHTML = recs.map(r => `
-    <div class="rec-card ${r.severity}">
-      <div class="rec-header">
-        <span class="rec-severity ${r.severity}">${sevLabels[r.severity] || r.severity}</span>
-        <span class="rec-issue">${r.issue}</span>
+  const iconMap = {
+    efficiency: '&#128164;',
+    fragmentation: '&#128564;',
+    latency: '&#9200;',
+    rem: '&#127752;',
+    general: '&#128161;',
+  };
+  // Conversational rewrite of advice (more detailed)
+  const conversational = {
+    efficiency: se => `你的睡眠效率是 ${se}%，意味着躺在床上的时间有 ${100 - se}% 没有真正睡着。这可能是因为入睡困难、中途醒来，或者太早上床。建议：① 只在真正困的时候才上床；② 如果躺了 20 分钟还睡不着，起来做点安静的事（比如看纸质书），等困了再回床上；③ 每天固定时间起床，包括周末，帮助身体建立规律的生物钟。`,
+    fragmentation: waso => `你昨晚中途醒了 ${waso} 分钟，睡眠被打断了。这会让你第二天感觉疲惫，即使总睡眠时间够长。常见原因：① 睡前喝了太多水或酒；② 卧室太亮、太吵或太热；③ 压力大、焦虑。试试：睡前 2 小时少喝水，保持卧室安静黑暗（可以用耳塞和遮光窗帘），温度控制在 18-22°C。如果经常半夜醒，建议记录睡眠日记，看看有没有规律。`,
+    latency: lat => `你花了 ${lat} 分钟才入睡，比理想的 15-20 分钟慢了一些。这通常和睡前习惯有关。试试：① 睡前 1 小时放下手机，蓝光会抑制褪黑素分泌；② 做 10 分钟深呼吸或渐进式肌肉放松（从脚趾开始，逐步绷紧再放松全身肌肉）；③ 下午 2 点后避免咖啡、茶、可乐；④ 睡前泡脚 10 分钟，帮助身体降温，促进困意。如果超过 30 分钟还睡不着，别焦虑，起来做点无聊的事。`,
+    rem: pct => `你的做梦期（REM 睡眠）只占 ${pct}%，比正常的 20-25% 偏低。REM 睡眠对记忆巩固、情绪调节和创造力很重要。REM 偏低常见原因：① 饮酒（即使一杯红酒也会明显抑制 REM）；② 某些药物（如抗抑郁药、安眠药）；③ 作息不规律或睡眠不足；④ 长期压力。建议：减少饮酒，保持固定的睡眠时间表，确保每晚睡够 7-8 小时。如果持续偏低且伴有情绪问题，建议咨询医生。`,
+  };
+
+  document.getElementById('recommendationsList').innerHTML = recs.map(r => {
+    const cat = r.category || 'general';
+    const icon = iconMap[cat] || iconMap.general;
+    // Extract numbers for conversational rewrite
+    let text = r.advice;
+    if (cat === 'efficiency' && conversational.efficiency) {
+      const seMatch = r.issue.match(/(\d+)%/);
+      if (seMatch) text = conversational.efficiency(seMatch[1]);
+    } else if (cat === 'fragmentation' && conversational.fragmentation) {
+      const wasoMatch = r.issue.match(/(\d+)\s*分钟/);
+      if (wasoMatch) text = conversational.fragmentation(wasoMatch[1]);
+    } else if (cat === 'latency' && conversational.latency) {
+      const latMatch = r.issue.match(/(\d+)\s*分钟/);
+      if (latMatch) text = conversational.latency(latMatch[1]);
+    } else if (cat === 'rem' && conversational.rem) {
+      const remMatch = r.issue.match(/(\d+)%/);
+      if (remMatch) text = conversational.rem(remMatch[1]);
+    }
+    return `<div class="rec-card ${r.severity}">
+      <div class="rec-body-wrap">
+        <div class="rec-icon">${icon}</div>
+        <div class="rec-content">
+          <div class="rec-title">${r.issue}</div>
+          <div class="rec-text">${text}</div>
+        </div>
       </div>
-      <div class="rec-advice">${r.advice}</div>
-      <div class="rec-ref">参考: ${r.reference || ''}</div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
+
+// ── Resize handler for hypnogram ──
+window.addEventListener('resize', () => {
+  if (App.currentData && App.currentData.epochs) {
+    renderHypnogram(App.currentData.epochs);
+  }
+});
 
 // ── Report Downloads ──
 document.getElementById('btnHtmlReport').addEventListener('click', async () => {

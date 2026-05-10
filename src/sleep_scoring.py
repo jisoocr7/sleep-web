@@ -468,39 +468,46 @@ def generate_reference_comparison(metrics: dict) -> dict:
 
 
 def generate_summary_text(score_data: dict, recommendations: list) -> str:
-    """Generate a plain-language, warm summary of the sleep analysis.
-
-    Written at ~6th grade reading level, avoiding clinical jargon.
-    """
+    """Generate a plain-language, warm summary of the sleep analysis."""
     total = score_data.get("total_score", 0)
     grade = score_data.get("grade", "?")
     grade_label = score_data.get("grade_label", "未知")
     flag = score_data.get("flag")
 
-    summaries = {
-        (True, True): "您的睡眠质量整体不错！各项指标基本在健康范围内，请继续保持良好的睡眠习惯。",
-        (True, False): "您的睡眠质量处于中等水平，有一些方面可以改善。认真看看下方的建议，做出小改变就能带来大不同。",
-        (False, True): "您的睡眠质量不太理想，关键指标需要重点关注。别担心，下方提供了具体的改善建议，一步一步来就好。",
-        (False, False): "您的睡眠质量需要引起重视，多项指标偏离了健康范围。建议认真阅读下方的个性化方案，并考虑咨询睡眠专科医生。",
+    # Score card summary (at top, "下面" = recommendations below)
+    top_summaries = {
+        (True, True): "各项指标基本在健康范围内，请继续保持良好的睡眠习惯。",
+        (True, False): "有一些方面可以改善，看看下面的建议，做出小改变就能带来大不同。",
+        (False, True): "关键指标需要重点关注，别担心，下面有具体的改善建议，一步一步来就好。",
+        (False, False): "多项指标偏离了健康范围，建议认真看看下面的建议，必要时咨询睡眠专科医生。",
+    }
+    # Bottom summary (at end, say something different)
+    bottom_summaries = {
+        (True, True): "你的睡眠整体不错，继续保持就好。偶尔一两天睡不好很正常，不用太在意。",
+        (True, False): "睡眠质量还有提升空间，试着从一两个小习惯开始改变，坚持一两周看看效果。",
+        (False, True): "改善睡眠是个过程，不用急于求成。按照建议一步步来，身体会慢慢给出反馈。",
+        (False, False): "如果尝试了建议但睡眠仍然很差，不妨记录一周的睡眠日记，去看医生时会很有帮助。",
     }
 
-    good = total >= 70
-    has_flag = flag is not None and len([r for r in recommendations if r["severity"] == "critical"]) == 0
-
     if total >= 85:
-        template = summaries[(True, True)]
+        top = top_summaries[(True, True)]
+        bottom = bottom_summaries[(True, True)]
     elif total >= 70:
-        template = summaries[(True, False)]
+        top = top_summaries[(True, False)]
+        bottom = bottom_summaries[(True, False)]
     elif total >= 50:
-        template = summaries[(False, True)]
+        top = top_summaries[(False, True)]
+        bottom = bottom_summaries[(False, True)]
     else:
-        template = summaries[(False, False)]
+        top = top_summaries[(False, False)]
+        bottom = bottom_summaries[(False, False)]
 
     if flag:
-        template += f" 最值得关注的是：{flag}。"
+        top += f" 最值得关注的是：{flag}。"
 
     return {
-        "score_summary": f"您的睡眠得分是 {total} 分（{grade}），属于「{grade_label}」水平。",
-        "plain_summary": template,
+        "score_summary": f"睡眠得分 {total} 分（{grade}），属于「{grade_label}」水平。",
+        "plain_summary": top,
+        "bottom_summary": bottom,
         "headline": f"睡眠得分 {total} 分 · {grade_label}",
     }
