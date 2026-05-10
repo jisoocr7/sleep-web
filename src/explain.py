@@ -18,62 +18,48 @@ except ImportError:
     def load_schema():
         return None
 
-# --- Chinese font setup for cross-platform support ---
-import platform
-_system = platform.system()
+# --- Chinese font setup ---
+import os as _os
+import platform as _platform
 
-# Priority list based on OS
-if _system == 'Windows':
-    # Windows: prefer built-in fonts
-    _cjk_font_candidates = [
-        'Microsoft YaHei',  # Best quality on Windows
-        'SimHei',
-        'Microsoft JhengHei',
-    ]
-else:
-    # Linux (PythonAnywhere): use open-source fonts
-    _cjk_font_candidates = [
-        'WenQuanYi Micro Hei',  # Common on Ubuntu/Debian
-        'WenQuanYi Zen Hei',
-        'Droid Sans Fallback',
-        'Noto Sans CJK SC',
-        'SimHei',
-    ]
+_cjk_font_path = None
 
-_font_set = False
-for _font_name in _cjk_font_candidates:
+# 1) Try well-known paths first
+_well_known = [
+    "C:/Windows/Fonts/simhei.ttf",
+    "C:/Windows/Fonts/msyh.ttc",
+    "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
+    "/usr/share/fonts/truetype/arphic/uming.ttc",
+    "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+]
+for _p in _well_known:
+    if _os.path.isfile(_p):
+        _cjk_font_path = _p
+        break
+
+# 2) Fallback: scan with matplotlib
+if _cjk_font_path is None:
     try:
-        # Try to create FontProperties with this font name
-        fp = fm.FontProperties(family=_font_name)
-        # Test if matplotlib can actually use it by checking if it resolves
-        test_family = fp.get_family()
-        if test_family and test_family != ['sans-serif']:
-            plt.rcParams["font.family"] = _font_name
-            plt.rcParams["font.sans-serif"] = [_font_name]
-            _font_set = True
-            break
-    except Exception:
-        continue
-
-if not _font_set:
-    # Last resort: scan all system fonts for CJK support
-    for _f in fm.findSystemFonts():
-        try:
-            _fp = fm.FontProperties(fname=_f)
-            _name = _fp.get_name()
-            if any(_k in _name.lower() for _k in ['wqy', 'wenquan', 'noto', 'droid', 'hei', 'yahei', 'ming', 'song']):
-                fm.fontManager.addfont(_f)
-                plt.rcParams["font.family"] = _name
-                plt.rcParams["font.sans-serif"] = [_name]
-                _font_set = True
+        for _f in fm.findSystemFonts():
+            _fl = _f.lower()
+            if any(_k in _fl for _k in ["simhei", "msyh", "yahei", "wqy", "wenquan",
+                                          "noto sans cjk", "notosanscjk", "uming", "gkai"]):
+                _cjk_font_path = _f
                 break
-        except Exception:
-            continue
+    except Exception:
+        pass
 
-if not _font_set:
-    # Ultimate fallback - use DejaVu Sans which has basic Unicode support
-    plt.rcParams["font.family"] = "DejaVu Sans"
-    plt.rcParams["font.sans-serif"] = ["DejaVu Sans"]
+if _cjk_font_path is not None:
+    try:
+        fm.fontManager.addfont(_cjk_font_path)
+        _n = fm.FontProperties(fname=_cjk_font_path).get_name()
+        plt.rcParams["font.family"] = "sans-serif"
+        plt.rcParams["font.sans-serif"] = [_n] + [
+            f for f in plt.rcParams.get("font.sans-serif", []) if f != _n
+        ]
+    except Exception:
+        pass
 
 plt.rcParams["axes.unicode_minus"] = False
 

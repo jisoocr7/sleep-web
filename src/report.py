@@ -12,142 +12,110 @@ import matplotlib.font_manager as fm
 import pandas as pd
 import numpy as np
 
-# --- Chinese font setup for cross-platform support ---
-import platform
-_system = platform.system()
+# --- Chinese font setup ---
+import platform as _platform
 
-_font_set = False
-_cjk_font_prop = None  # 全局中文字体属性对象
+_cjk_font_path = None
 
-if _system == 'Windows':
-    # Windows: prefer built-in fonts
-    _cjk_font_candidates = [
-        'Microsoft YaHei',  # Best quality on Windows
-        'SimHei',
-        'Microsoft JhengHei',
-    ]
-    for _font_name in _cjk_font_candidates:
-        try:
-            fp = fm.FontProperties(family=_font_name)
-            test_family = fp.get_family()
-            if test_family and test_family != ['sans-serif']:
-                plt.rcParams["font.family"] = _font_name
-                plt.rcParams["font.sans-serif"] = [_font_name]
-                _cjk_font_prop = fp
-                _font_set = True
-                break
-        except Exception:
-            continue
-else:
-    # Linux (PythonAnywhere): use AR PL fonts directly by path
-    # These are pre-installed on PythonAnywhere
-    _linux_cjk_font_paths = [
-        '/usr/share/fonts/truetype/arphic/uming.ttc',  # AR PL UMing CN (宋体)
-        '/usr/share/fonts/truetype/arphic-gkai00mp/gkai00mp.ttf',  # AR PL KaitiM GB
-        '/usr/share/fonts/truetype/arphic-bsmi00lp/bsmi00lp.ttf',  # AR PL Mingti2L Big5
-        '/usr/share/fonts/truetype/arphic/gbsn00lp.ttf',  # AR PL SungtiL GB
-    ]
-    
-    # 清除matplotlib字体缓存并重建
+# 1) Try well-known paths first (works even if matplotlib cache is stale)
+_well_known = [
+    "C:/Windows/Fonts/simhei.ttf",
+    "C:/Windows/Fonts/msyh.ttc",
+    "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
+    "/usr/share/fonts/truetype/arphic/uming.ttc",
+    "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+    "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+]
+for _p in _well_known:
+    if os.path.isfile(_p):
+        _cjk_font_path = _p
+        break
+
+# 2) Fallback: scan with matplotlib
+if _cjk_font_path is None:
     try:
-        fm.fontManager = fm.FontManager()
-    except:
-        pass
-    
-    for _font_path in _linux_cjk_font_paths:
-        try:
-            if os.path.exists(_font_path):
-                fm.fontManager.addfont(_font_path)
-                _fp = fm.FontProperties(fname=_font_path)
-                _font_name = _fp.get_name()
-                plt.rcParams["font.family"] = _font_name
-                plt.rcParams["font.sans-serif"] = [_font_name]
-                _cjk_font_prop = _fp
-                _font_set = True
-                print(f"[report.py Font] ✓ Using CJK font: {_font_name} from {_font_path}")
-                break
-        except Exception as e:
-            print(f"[report.py Font] ✗ Failed to load {_font_path}: {e}")
-            continue
-    
-    # Fallback: scan all system fonts for CJK support
-    if not _font_set:
         for _f in fm.findSystemFonts():
-            try:
-                _fp = fm.FontProperties(fname=_f)
-                _name = _fp.get_name()
-                if any(_k in _name.lower() for _k in ['wqy', 'wenquan', 'noto', 'droid', 'hei', 'yahei', 'ming', 'song', 'arphic', 'kai', 'gbsn']):
-                    fm.fontManager.addfont(_f)
-                    plt.rcParams["font.family"] = _name
-                    plt.rcParams["font.sans-serif"] = [_name]
-                    _cjk_font_prop = _fp
-                    _font_set = True
-                    print(f"[report.py Font] ✓ Using CJK font (fallback): {_name} from {_f}")
-                    break
-            except Exception:
-                continue
+            _fl = _f.lower()
+            if any(_k in _fl for _k in ["simhei", "msyh", "yahei", "wqy", "wenquan",
+                                          "noto sans cjk", "notosanscjk", "uming", "gkai"]):
+                _cjk_font_path = _f
+                break
+    except Exception:
+        pass
 
-if not _font_set:
-    # Ultimate fallback - use DejaVu Sans which has basic Unicode support
-    plt.rcParams["font.family"] = "DejaVu Sans"
-    plt.rcParams["font.sans-serif"] = ["DejaVu Sans"]
-    _cjk_font_prop = fm.FontProperties(family="DejaVu Sans")
-    print("[Font] Warning: No CJK font found, using DejaVu Sans as fallback")
+if _cjk_font_path is not None:
+    try:
+        fm.fontManager.addfont(_cjk_font_path)
+        _n = fm.FontProperties(fname=_cjk_font_path).get_name()
+        plt.rcParams["font.family"] = "sans-serif"
+        plt.rcParams["font.sans-serif"] = [_n] + [
+            f for f in plt.rcParams.get("font.sans-serif", []) if f != _n
+        ]
+    except Exception:
+        pass
 
 plt.rcParams["axes.unicode_minus"] = False
-
-# 如果没有找到合适的字体，创建一个默认的FontProperties
-if _cjk_font_prop is None:
-    _cjk_font_prop = fm.FontProperties(family=plt.rcParams["font.family"])
 
 # Warm palette for sleep stages
 STAGE_COLORS = {0: "#E8904C", 1: "#5DAF8B", 2: "#8B7EC8"}  # Wake=warm amber, NREM=sage, REM=soft purple
 STAGE_NAMES = {0: "清醒", 1: "深睡眠", 2: "做梦期"}
 
 
-def plot_hypnogram(predictions: pd.DataFrame, figsize=(12, 4)) -> plt.Figure:
-    """Plot sleep stage hypnogram from predictions."""
+def plot_hypnogram(predictions: pd.DataFrame, figsize=(12, 1.8)) -> plt.Figure:
+    """Plot sleep stage hypnogram — clean horizontal bar matching SPA canvas style."""
     labels = predictions["predicted_label"].values
     n_epochs = len(labels)
+    total_hours = n_epochs * 30 / 3600
+    total_minutes = int(total_hours * 60)
 
     fig, ax = plt.subplots(figsize=figsize, facecolor="#FEFAF5")
     ax.set_facecolor("#FEFAF5")
 
-    time_hours = np.arange(n_epochs) * 30 / 3600
+    # Draw each 30 s epoch as a thin colored vertical span
+    for i in range(n_epochs):
+        ax.axvspan(i, i + 1, facecolor=STAGE_COLORS.get(labels[i], "#999999"),
+                   alpha=0.88, linewidth=0)
 
-    for i in range(n_epochs - 1):
-        ax.fill_between(
-            [time_hours[i], time_hours[i + 1]],
-            0, 1,
-            color=STAGE_COLORS.get(labels[i], "#999999"),
-            alpha=0.78,
-            step="post",
-        )
+    ax.set_xlim(0, n_epochs)
+    ax.set_ylim(0, 1)
+    ax.set_yticks([])
 
-    y_display = {0: 2, 1: 1, 2: 0}
-    y_vals = np.array([y_display[l] for l in labels])
-    ax.step(time_hours, y_vals, where="post", color="#5D4037", linewidth=0.5, alpha=0.4)
+    # X-axis: time labels (relative hours like the SPA canvas fallback)
+    if total_hours >= 2:
+        hour_ticks = list(range(0, int(total_hours) + 1))
+        tick_positions = [h * 3600 / 30 for h in hour_ticks]
+        tick_labels = [f"{h}h" for h in hour_ticks]
+    else:
+        tick_positions = [0, n_epochs]
+        tick_labels = ["0", f"{total_minutes}m"]
 
-    ax.set_ylim(-0.5, 2.5)
-    ax.set_yticks([0, 1, 2])
-    ax.set_yticklabels(["做梦期", "深睡眠", "清醒"], fontsize=13)
-    ax.set_xlabel("时间 (小时)", color="#6D5C4F", fontsize=13)
-    ax.set_ylabel("睡眠阶段", color="#6D5C4F", fontsize=13)
-    ax.set_title("整晚睡眠一览", color="#3E2E22", fontweight="bold", fontsize=18)
-    ax.tick_params(colors="#6D5C4F", labelsize=11)
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(tick_labels, fontsize=12, color="#6D5C4F")
+    ax.tick_params(bottom=True, left=False, colors="#6D5C4F", labelsize=11)
 
+    ax.set_title("整晚睡眠一览", color="#3E2E22", fontweight="bold", fontsize=18, pad=10)
+
+    # Clean frame — only a subtle bottom line
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    ax.spines["bottom"].set_visible(True)
+    ax.spines["bottom"].set_color("#D7C4B0")
+
+    # Legend below the bar (matching SPA canvas position)
     legend_patches = [
         mpatches.Patch(color=STAGE_COLORS[0], label="清醒"),
         mpatches.Patch(color=STAGE_COLORS[1], label="深睡眠"),
         mpatches.Patch(color=STAGE_COLORS[2], label="做梦期"),
     ]
-    ax.legend(handles=legend_patches, loc="upper right", fontsize=12)
+    ax.legend(handles=legend_patches, loc="lower left", fontsize=11,
+              ncol=3, frameon=False, bbox_to_anchor=(0, -0.28))
 
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.spines["left"].set_color("#D7C4B0")
-    ax.spines["bottom"].set_color("#D7C4B0")
-    ax.grid(axis="y", color="#EDE0D4", linewidth=0.5)
+    # Add duration label on the right
+    hrs = int(total_hours)
+    mins = total_minutes % 60
+    dur_text = f"{hrs}h{mins}m" if mins > 0 else f"{hrs}h"
+    ax.text(1.005, 0.5, f"共 {dur_text}", transform=ax.transAxes,
+            fontsize=10, color="#A38B78", va="center")
 
     plt.tight_layout()
     return fig
