@@ -274,7 +274,13 @@ def generate_html_report(
         </tr>"""
 
     # Recommendations section — conversational tone
-    icon_map = {"efficiency": "&#128164;", "fragmentation": "&#128564;", "latency": "&#9200;", "rem": "&#127752;", "general": "&#128161;"}
+    icon_map = {
+        "efficiency": "&#128164;", "fragmentation": "&#128564;", "latency": "&#9200;",
+        "rem": "&#127752;", "general": "&#128161;", "duration": "&#9200;",
+        "insomnia_pattern": "&#128564;", "fragmentation_combo": "&#128564;",
+        "sleep_restriction": "&#9200;", "long_bed": "&#128164;",
+        "recovery_sleep": "&#127752;", "alcohol_effect": "&#127863;",
+    }
     recs_html = ""
     for i, rec in enumerate(recommendations):
         sev_colors = {"critical": "#D35D47", "warning": "#E8904C", "info": "#5DAF8B"}

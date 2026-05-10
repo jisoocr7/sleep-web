@@ -166,6 +166,11 @@ def compute_sleep_score(metrics: dict) -> dict:
 def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
     """Generate personalized sleep recommendations based on metrics.
 
+    Rule engine with:
+    - Refined single-metric boundaries (mild / moderate / severe)
+    - Combination rules (multi-metric patterns)
+    - Max 4 recommendations to avoid information overload
+
     Returns:
         list of recommendation dicts with keys:
         priority, category, issue, advice, severity, reference
@@ -174,8 +179,7 @@ def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
         score_data = compute_sleep_score(metrics)
         subscores = score_data.get("subscores", {})
 
-    recommendations = []
-
+    # --- Parse metrics ---
     se = metrics.get("睡眠效率 SE (%)", 85)
     if isinstance(se, str):
         se = 0
@@ -206,14 +210,143 @@ def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
         transitions = 30
     transitions = int(transitions)
 
-    # Rule 1: Low sleep efficiency
-    if se < 85:
-        severity = "critical" if se < 70 else "warning"
-        priority = 1 if se < 75 else 2
+    recommendations = []
+    # Track which single-metric categories are covered by combo rules
+    covered_categories = set()
+
+    # =============================================================
+    # Phase 1: Combination rules (higher priority, more specific)
+    # =============================================================
+
+    # Combo 1: Insomnia pattern — low efficiency + long latency
+    if se < 80 and latency > 30:
+        covered_categories.update(["efficiency", "latency"])
+        recommendations.append({
+            "priority": 1,
+            "category": "insomnia_pattern",
+            "issue": f"入睡困难（{latency:.0f} 分钟）且睡眠效率低（{se:.0f}%），符合失眠特征",
+            "advice": (
+                "入睡慢加上床上清醒时间多，是典型的失眠表现。"
+                "医学上推荐「CBT-I」（认知行为疗法）作为一线干预，核心方法："
+                "① 固定时间起床（包括周末），不补觉；"
+                "② 只在困了才上床，躺 20 分钟睡不着就起来；"
+                "③ 减少卧床时间，让睡眠更集中；"
+                "④ 睡前 1 小时停止看屏幕。"
+                "如果持续 2 周以上，建议咨询睡眠专科医生。"
+            ),
+            "severity": "critical",
+            "reference": "AASM CBT-I 临床指南",
+        })
+
+    # Combo 2: Fragmented sleep — high WASO + frequent transitions
+    if waso > 60 and transitions > 60:
+        covered_categories.update(["fragmentation"])
+        severity_frag = "critical" if waso > 90 else "warning"
+        recommendations.append({
+            "priority": 1,
+            "category": "fragmentation_combo",
+            "issue": f"中途清醒 {waso:.0f} 分钟且阶段转换 {transitions} 次，睡眠严重碎片化",
+            "advice": (
+                "频繁醒来加上大量阶段转换，说明整晚睡眠不断被打断。"
+                "常见原因：① 睡眠呼吸暂停（打鼾、憋气）；"
+                "② 不宁腿综合征（腿部不适、想动）；"
+                "③ 环境干扰（噪音、光线、温度）；"
+                "④ 夜间频繁起夜。"
+                "建议先排查环境因素，如果打鼾或有憋醒现象，建议做睡眠监测排除呼吸暂停。"
+            ),
+            "severity": severity_frag,
+            "reference": "AASM",
+        })
+
+    # Combo 3: Sleep restriction — short sleep but high efficiency
+    if tst < 360 and se >= 85:
+        covered_categories.update(["duration"])
+        recommendations.append({
+            "priority": 2,
+            "category": "sleep_restriction",
+            "issue": f"总睡眠仅 {tst/60:.1f} 小时，但睡眠效率 {se:.0f}%，说明睡得少但睡得好",
+            "advice": (
+                "你的睡眠效率很高，说明身体具备良好的睡眠能力，只是卧床时间不够。"
+                "可能是主动减少了睡眠（加班、熬夜），也可能是上床太晚。"
+                "建议：① 每周提前 15 分钟上床，逐步延长到 7-8 小时；"
+                "② 睡眠效率高是好事，保持这个质量，把时间加上去就完美了。"
+            ),
+            "severity": "info",
+            "reference": "AASM / CDC",
+        })
+
+    # Combo 4: Long time in bed but poor efficiency
+    if se < 80 and tst > 480:
+        covered_categories.update(["efficiency", "duration"])
+        recommendations.append({
+            "priority": 2,
+            "category": "long_bed",
+            "issue": f"卧床时间较长但睡眠效率仅 {se:.0f}%，清醒时间占比高",
+            "advice": (
+                "你躺在床上的时间很长，但实际睡眠占比不高。"
+                "这在医学上叫「卧床时间过长」，会让大脑把床和清醒联系起来，反而更难入睡。"
+                "建议尝试「睡眠限制疗法」：先把卧床时间缩短到实际睡眠时间，"
+                "等效率提升后再逐步延长。比如实际睡了 6 小时，就只在床上待 6.5 小时。"
+            ),
+            "severity": "warning",
+            "reference": "AASM CBT-I 临床指南",
+        })
+
+    # Combo 5: Recovery sleep — short sleep + high REM
+    if tst < 360 and rem_pct > 28:
+        covered_categories.update(["duration", "rem"])
+        recommendations.append({
+            "priority": 2,
+            "category": "recovery_sleep",
+            "issue": f"总睡眠仅 {tst/60:.1f} 小时但做梦期占比 {rem_pct:.0f}%，身体在优先补回 REM",
+            "advice": (
+                "睡眠不足时，身体会在补觉阶段优先补回做梦期（REM），"
+                "这叫「REM 反弹」，是正常的自我修复机制。"
+                "说明你之前可能欠了觉或 REM 被压制（如饮酒后）。"
+                "短期出现属于正常，但要避免反复欠觉——长期睡眠不足会增加心血管疾病和认知下降风险。"
+                "建议：逐步把睡眠时间延长到 7 小时以上。"
+            ),
+            "severity": "warning",
+            "reference": "Sleep Foundation / NIH",
+        })
+
+    # Combo 6: Alcohol effect — low REM + high WASO
+    if rem_pct < 15 and waso > 60:
+        covered_categories.update(["rem", "fragmentation"])
+        recommendations.append({
+            "priority": 2,
+            "category": "alcohol_effect",
+            "issue": f"做梦期仅 {rem_pct:.0f}% 且中途清醒 {waso:.0f} 分钟，可能与饮酒有关",
+            "advice": (
+                "做梦期被压制加上频繁醒来，是饮酒后常见的睡眠模式。"
+                "酒精会抑制 REM 睡眠并导致后半夜觉醒增多。"
+                "即使少量饮酒（一两杯红酒）也会明显影响睡眠结构。"
+                "建议：① 睡前 3-4 小时避免饮酒；"
+                "② 观察不饮酒的夜晚睡眠是否改善；"
+                "③ 如果不饮酒时仍持续如此，建议咨询医生排查其他原因。"
+            ),
+            "severity": "warning",
+            "reference": "Sleep Foundation / AASM",
+        })
+
+    # =============================================================
+    # Phase 2: Single-metric rules (only if not covered by combos)
+    # =============================================================
+
+    # Sleep efficiency
+    if se < 85 and "efficiency" not in covered_categories:
+        if se < 70:
+            severity, priority = "critical", 1
+        elif se < 75:
+            severity, priority = "warning", 1
+        elif se < 80:
+            severity, priority = "warning", 2
+        else:
+            severity, priority = "info", 3
         recommendations.append({
             "priority": priority,
             "category": "efficiency",
-            "issue": f"睡眠效率为 {se:.0f}%，低于健康标准 85%",
+            "issue": f"睡眠效率为 {se:.0f}%，{'明显' if se < 75 else '略'}低于健康标准 85%",
             "advice": (
                 "您的睡眠效率偏低，意味着在床上清醒的时间较多。建议："
                 "① 只在感到困倦时上床；"
@@ -225,12 +358,18 @@ def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
             "reference": "AASM 临床实践指南",
         })
 
-    # Rule 2: High WASO
-    if waso > 60:
+    # WASO
+    if waso > 30 and "fragmentation" not in covered_categories:
+        if waso > 90:
+            severity, priority = "critical", 1
+        elif waso > 60:
+            severity, priority = "warning", 1
+        else:
+            severity, priority = "info", 3
         recommendations.append({
-            "priority": 1,
+            "priority": priority,
             "category": "fragmentation",
-            "issue": f"入睡后清醒时间达 {waso:.0f} 分钟，睡眠碎片化明显",
+            "issue": f"入睡后清醒时间达 {waso:.0f} 分钟，{'明显' if waso > 60 else '略微'}偏高",
             "advice": (
                 "您在入睡后仍会长时间清醒，这可能与以下因素有关："
                 "① 环境干扰（噪音、温度、光线）；"
@@ -239,16 +378,22 @@ def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
                 "建议睡前进行 10 分钟渐进式肌肉放松练习，"
                 "并保持睡眠日记以识别规律。若持续存在，建议咨询睡眠专科医生。"
             ),
-            "severity": "warning",
+            "severity": severity,
             "reference": "Sleep Foundation",
         })
 
-    # Rule 3: Long sleep latency
-    if latency > 30:
+    # Sleep latency
+    if latency > 20 and "latency" not in covered_categories:
+        if latency > 45:
+            severity, priority = "critical", 1
+        elif latency > 30:
+            severity, priority = "warning", 1
+        else:
+            severity, priority = "info", 3
         recommendations.append({
-            "priority": 1,
+            "priority": priority,
             "category": "latency",
-            "issue": f"入睡耗时 {latency:.0f} 分钟，超过 30 分钟正常上限",
+            "issue": f"入睡耗时 {latency:.0f} 分钟，{'超过' if latency > 30 else '接近'}30 分钟正常上限",
             "advice": (
                 "入睡困难可能由多种因素导致。建议："
                 "① 建立固定的睡前习惯（阅读、冥想、温水澡）；"
@@ -257,12 +402,12 @@ def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
                 "④ 保持卧室凉爽（18°C 左右）；"
                 "⑤ 白天进行适量运动，但睡前 3 小时避免剧烈运动。"
             ),
-            "severity": "warning",
+            "severity": severity,
             "reference": "Sleep Foundation",
         })
 
-    # Rule 4: Low REM
-    if rem_pct < 15:
+    # Low REM
+    if rem_pct < 15 and "rem" not in covered_categories:
         recommendations.append({
             "priority": 2,
             "category": "rem",
@@ -279,8 +424,8 @@ def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
             "reference": "NIH / NINDS",
         })
 
-    # Rule 5: High REM (possible REM rebound)
-    if rem_pct > 28:
+    # High REM
+    if rem_pct > 28 and "rem" not in covered_categories:
         recommendations.append({
             "priority": 3,
             "category": "rem",
@@ -297,8 +442,8 @@ def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
             "reference": "NIH / NINDS",
         })
 
-    # Rule 6: Short sleep
-    if tst < 360:
+    # Short sleep
+    if tst < 360 and "duration" not in covered_categories:
         recommendations.append({
             "priority": 2,
             "category": "duration",
@@ -313,7 +458,7 @@ def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
             "reference": "AASM / CDC",
         })
 
-    # Rule 7: Long sleep
+    # Long sleep
     if tst > 540:
         recommendations.append({
             "priority": 3,
@@ -327,10 +472,14 @@ def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
             "reference": "Sleep Foundation",
         })
 
-    # Rule 8: High transitions
-    if transitions > 60:
+    # High transitions (only if not already covered by fragmentation_combo)
+    if transitions > 50 and "fragmentation" not in covered_categories:
+        if transitions > 60:
+            severity, priority = "info", 3
+        else:
+            severity, priority = "info", 3
         recommendations.append({
-            "priority": 3,
+            "priority": priority,
             "category": "fragmentation",
             "issue": f"夜间阶段转换 {transitions} 次，睡眠不够稳定",
             "advice": (
@@ -338,11 +487,13 @@ def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
                 "建议减少咖啡因摄入、优化卧室环境（遮光、隔音），"
                 "以及评估是否存在睡眠呼吸暂停等睡眠障碍。"
             ),
-            "severity": "info",
+            "severity": severity,
             "reference": "AASM",
         })
 
-    # Rule 9: All good
+    # =============================================================
+    # Phase 3: All good
+    # =============================================================
     if not recommendations:
         recommendations.append({
             "priority": 3,
@@ -359,8 +510,9 @@ def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
             "reference": "AASM / CDC",
         })
 
+    # Sort by priority and cap at 4
     recommendations.sort(key=lambda r: r["priority"])
-    return recommendations
+    return recommendations[:4]
 
 
 def generate_reference_comparison(metrics: dict) -> dict:
