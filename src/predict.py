@@ -10,16 +10,15 @@ MODEL_DIR = Path(__file__).resolve().parents[1] / "models"
 
 def load_model():
     """Load trained HGB model with numpy version compatibility."""
-    import io
+    class _DummyRandomState:
+        """Dummy to replace incompatible numpy random state during unpickling."""
+        def __init__(self, *args, **kwargs):
+            pass
 
     class SafeUnpickler(pickle.Unpickler):
         def find_class(self, module, name):
-            # Handle numpy Generator/BitGenerator incompatibility
-            if 'numpy.random._generator' in module:
-                # Return a dummy that won't be used for prediction
-                return type(None)
-            if 'numpy.random._mt19937' in module or 'numpy.random.bit_generator' in module:
-                return type(None)
+            if 'numpy.random' in module:
+                return _DummyRandomState
             return super().find_class(module, name)
 
     with open(MODEL_DIR / "hgb_context_model.pkl", "rb") as f:
