@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>睡眠分期分析 — 了解你的睡眠</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ── Design System: Premium Warm ── */
+:root {
+  --bg-cream: oklch(0.97 0.012 85);
+  --bg-surface: oklch(0.99 0.005 85);
+  --bg-card: oklch(0.995 0.003 85);
+  --text-primary: oklch(0.18 0.02 75);
+  --text-secondary: oklch(0.38 0.03 70);
+  --text-muted: oklch(0.50 0.02 75);
+  --accent: oklch(0.58 0.17 35);
+  --accent-hover: oklch(0.52 0.15 35);
+  --accent-light: oklch(0.72 0.10 45);
+  --border: oklch(0.86 0.02 85);
+  --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.05);
+  --shadow: 0 2px 12px oklch(0 0 0 / 0.06);
+  --shadow-lg: 0 8px 28px oklch(0 0 0 / 0.09);
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --font-heading: 'Sora', -apple-system, sans-serif;
+  --font-body: 'Outfit', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --wake: #E8904C;
+  --nrem: #5DAF8B;
+  --rem: #8B7EC8;
+  --success: #5DAF8B;
+  --warning: #E8904C;
+  --danger: #D35D47;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-cream);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-shell { max-width: 1480px; margin: 0 auto; padding: 12px 28px 32px; }
+
+/* ── Typography ── */
+h1, h2, h3, h4 { font-family: var(--font-heading); }
+h1 { font-size: 4.5rem; font-weight: 700; letter-spacing: -0.025em; line-height: 1.05; }
+h2 { font-size: 2.8rem; font-weight: 600; letter-spacing: -0.015em; }
+h3 { font-size: 1.6rem; font-weight: 600; letter-spacing: -0.01em; }
+h4 { font-size: 1.4rem; font-weight: 600; }
+
+/* ── Hero ── */
+.hero {
+  text-align: center;
+  padding: 28px 24px 20px;
+  position: relative;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, oklch(0.72 0.08 45 / 0.12), transparent 70%);
+  pointer-events: none;
+}
+.hero h1 { margin-bottom: 8px; position: relative; }
+.hero .subtitle {
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  max-width: 800px;
+  margin: 0 auto 16px;
+  position: relative;
+}
+.hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; }
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 42px;
+  border-radius: 100px;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.25s var(--ease);
+  text-decoration: none;
+  letter-spacing: -0.01em;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-hover); box-shadow: 0 6px 24px oklch(0.58 0.17 35 / 0.35); }
+.btn-outline {
+  background: transparent;
+  color: var(--text-primary);
+  border: 2px solid var(--border);
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+.btn-sm { padding: 14px 28px; font-size: 1.1rem; }
+.btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ── Sections ── */
+.section { margin-bottom: 24px; }
+.section-header { text-align: center; margin-bottom: 18px; }
+.section-header h2 { margin-bottom: 6px; }
+.section-header p { color: var(--text-secondary); max-width: 800px; margin: 0 auto; font-size: 1.3rem; }
+
+/* ── How It Works ── */
+.steps-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.step-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 20px;
+  text-align: center;
+  transition: all 0.3s var(--ease);
+  position: relative;
+}
+.step-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.step-num {
+  width: 56px; height: 56px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  background: oklch(0.72 0.08 45 / 0.18);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+.step-card h4 { margin-bottom: 6px; font-size: 1.3rem; }
+.step-card p { font-size: 1.1rem; color: var(--text-secondary); line-height: 1.6; }
+
+/* ── Format Grid ── */
+.format-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+.format-chip {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 14px;
+  text-align: center;
+  transition: all 0.2s var(--ease);
+  cursor: default;
+}
+.format-chip:hover { border-color: var(--accent); background: oklch(0.72 0.08 45 / 0.06); transform: translateY(-2px); }
+.format-icon { font-size: 2.6rem; margin-bottom: 6px; }
+.format-chip .format-name { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
+.format-chip .format-source { font-size: 0.95rem; color: var(--text-muted); margin-top: 3px; }
+
+/* ── Upload Zone ── */
+.upload-zone {
+  border: 2.5px dashed var(--border);
+  border-radius: var(--radius-xl);
+  padding: 48px 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+  background: var(--bg-card);
+  position: relative;
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: oklch(0.72 0.08 45 / 0.06); box-shadow: var(--shadow-lg); }
+.upload-zone.dragover { transform: scale(1.02); }
+.upload-icon {
+  width: 72px; height: 72px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: oklch(0.72 0.08 45 / 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+}
+.upload-zone h3 { font-size: 1.5rem; margin-bottom: 6px; }
+.upload-zone p { font-size: 1.15rem; color: var(--text-secondary); }
+.upload-zone .format-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  justify-content: center;
+  margin-top: 16px;
+}
+.upload-zone .format-badge {
+  font-size: 1rem;
+  color: var(--text-muted);
+  background: var(--bg-cream);
+  padding: 6px 18px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+}
+.file-input { display: none; }
+
+/* ── Format Detection Result ── */
+.detect-badge {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  background: oklch(0.65 0.12 160 / 0.12);
+  color: oklch(0.45 0.08 160);
+  padding: 12px 24px;
+  border-radius: 100px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-top: 12px;
+  text-align: center;
+  justify-content: center;
+}
+
+/* ── Results Dashboard ── */
+.results-container { display: none; animation: fadeUp 0.5s var(--ease); }
+.results-container.visible { display: block; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.25s var(--ease);
+}
+.card:hover { box-shadow: var(--shadow); }
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.card-header h3 { font-size: 1.4rem; }
+
+.results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.results-grid .full-width { grid-column: 1 / -1; }
+
+/* ── Score Card ── */
+.score-display { text-align: center; padding: 12px 0 0; }
+.score-gauge { display: flex; justify-content: center; margin-bottom: 10px; }
+.grade-badge {
+  display: inline-block;
+  padding: 12px 32px;
+  border-radius: 100px;
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 10px 0;
+}
+.score-summary { color: var(--text-secondary); font-size: 1.25rem; max-width: 900px; margin: 0 auto; }
+.subscore-bars { max-width: 700px; margin: 14px auto 0; }
+.subscore-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+  font-size: 1.05rem;
+}
+.subscore-label { width: 140px; text-align: right; color: var(--text-secondary); flex-shrink: 0; }
+.subscore-track { flex: 1; height: 10px; background: var(--bg-cream); border-radius: 5px; overflow: hidden; }
+.subscore-fill { height: 100%; border-radius: 5px; background: var(--accent); transition: width 0.8s var(--ease-spring); }
+.subscore-val { width: 64px; font-weight: 600; color: var(--text-muted); flex-shrink: 0; }
+
+/* ── Stage Summary ── */
+.stage-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.stage-chip {
+  text-align: center;
+  padding: 18px 10px;
+  border-radius: var(--radius);
+  background: var(--bg-cream);
+  border: 1px solid var(--border);
+  transition: all 0.2s var(--ease);
+}
+.stage-chip:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.stage-chip .chip-dot { display:inline-block; width:12px; height:12px; border-radius:50%; margin-bottom:8px; }
+.stage-chip .chip-label { font-size: 1.1rem; font-weight: 600; }
+.stage-chip .chip-count { font-size: 2rem; font-weight: 700; margin: 6px 0; }
+.stage-chip .chip-pct { font-size: 1rem; color: var(--text-muted); }
+
+/* ── Hypnogram ── */
+.hypno-container { position: relative; height: 320px; }
+.hypno-container canvas { width: 100% !important; height: 100% !important; }
+
+/* ── Metrics Grid ── */
+.metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+.metric-card {
+  background: var(--bg-cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  transition: all 0.2s var(--ease);
+}
+.metric-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
+.metric-label { font-size: 1rem; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.02em; }
+.metric-value { font-family: var(--font-heading); font-size: 1.9rem; font-weight: 700; }
+.metric-unit { font-size: 0.95rem; color: var(--text-muted); font-weight: 400; margin-left: 3px; }
+.metric-ref { font-size: 0.9rem; color: var(--text-muted); margin-top: 6px; }
+.metric-status { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+.metric-status.normal { background: var(--success); }
+.metric-status.borderline { background: var(--warning); }
+.metric-status.concerning { background: var(--danger); }
+
+/* ── Recommendations ── */
+.rec-card {
+  background: var(--bg-cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 12px;
+  border-left: 5px solid transparent;
+  transition: all 0.2s var(--ease);
+}
+.rec-card:hover { box-shadow: var(--shadow); }
+.rec-card.critical { border-left-color: var(--danger); }
+.rec-card.warning { border-left-color: var(--warning); }
+.rec-card.info { border-left-color: var(--success); }
+.rec-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.rec-severity {
+  padding: 4px 14px;
+  border-radius: 100px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+}
+.rec-severity.critical { background: var(--danger); }
+.rec-severity.warning { background: var(--warning); }
+.rec-severity.info { background: var(--success); }
+.rec-issue { font-weight: 600; font-size: 1.25rem; }
+.rec-advice { color: var(--text-secondary); font-size: 1.15rem; line-height: 1.7; }
+.rec-ref { font-size: 0.95rem; color: var(--text-muted); margin-top: 8px; }
+
+/* ── SHAP Bars ── */
+.shap-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s var(--ease);
+}
+.shap-bar:hover { background: var(--bg-cream); }
+.shap-bar .bar-label {
+  width: 200px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  text-align: right;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Consolas', 'JetBrains Mono', monospace;
+}
+.shap-bar .bar-track { flex: 1; height: 11px; background: var(--bg-cream); border-radius: 6px; overflow: hidden; }
+.shap-bar .bar-fill { height: 100%; border-radius: 6px; transition: width 0.6s var(--ease-spring); }
+.shap-bar .bar-value { width: 72px; font-size: 0.95rem; color: var(--text-muted); flex-shrink: 0; font-family: 'Consolas', monospace; }
+
+/* ── Plain Summary ── */
+.plain-summary {
+  background: linear-gradient(135deg, #FFF8F0, var(--bg-card));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  font-size: 1.25rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+.plain-summary strong { color: var(--text-primary); }
+
+/* ── QR & API ── */
+.integration-grid { display: grid; grid-template-columns: auto 1fr; gap: 40px; align-items: center; }
+.qr-box {
+  text-align: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+}
+.qr-box img { border-radius: var(--radius); }
+.qr-box p { font-size: 1.05rem; color: var(--text-muted); margin-top: 10px; }
+
+.api-list { list-style: none; }
+.api-list li {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.api-method {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.api-method.get { background: oklch(0.65 0.12 160 / 0.15); color: oklch(0.45 0.08 160); }
+.api-method.post { background: oklch(0.58 0.17 35 / 0.15); color: oklch(0.48 0.14 35); }
+.api-path { font-family: 'Consolas', monospace; color: var(--text-primary); }
+
+/* ── Accordion ── */
+.accordion { margin-bottom: 8px; }
+.accordion-trigger {
+  width: 100%;
+  text-align: left;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.accordion-trigger:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+.accordion-trigger::after { content: '+'; font-size: 1.6rem; color: var(--text-muted); transition: transform 0.3s var(--ease); }
+.accordion-trigger.open::after { content: '−'; transform: rotate(180deg); }
+.accordion-content {
+  display: none;
+  padding: 16px 20px;
+  background: var(--bg-cream);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+.accordion-content.open { display: block; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  top: 28px;
+  right: 28px;
+  padding: 16px 28px;
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  font-size: 1.15rem;
+  font-weight: 500;
+  z-index: 2000;
+  transform: translateX(120%);
+  transition: transform 0.35s var(--ease-spring);
+  box-shadow: var(--shadow-lg);
+}
+.toast.show { transform: translateX(0); }
+.toast.error { border-color: var(--danger); color: var(--danger); }
+.toast.success { border-color: var(--success); color: var(--success); }
+
+/* ── Loading ── */
+.loading-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+.loading-overlay.active { display: flex; }
+.loading-spinner {
+  width: 52px; height: 52px;
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 1rem;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  margin-top: 24px;
+  line-height: 2;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1200px) {
+  .metrics-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 900px) {
+  .steps-row { grid-template-columns: 1fr; }
+  .format-grid { grid-template-columns: repeat(3, 1fr); }
+  .results-grid { grid-template-columns: 1fr; }
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .integration-grid { grid-template-columns: 1fr; }
+  h1 { font-size: 3.2rem; }
+  h2 { font-size: 2.2rem; }
+  .hero { padding: 24px 16px 18px; }
+  .hero .subtitle { font-size: 1.3rem; }
+}
+@media (max-width: 520px) {
+  .app-shell { padding: 12px 14px 28px; }
+  .format-grid { grid-template-columns: repeat(2, 1fr); }
+  .metrics-grid { grid-template-columns: 1fr; }
+  .stage-summary { grid-template-columns: repeat(3, 1fr); }
+  h1 { font-size: 2.6rem; }
+  h2 { font-size: 1.8rem; }
+  .hero { padding: 20px 10px 16px; }
+  .hero .subtitle { font-size: 1.15rem; }
+  .upload-zone { padding: 32px 18px; }
+  .btn { padding: 14px 32px; font-size: 1.1rem; }
+  .card { padding: 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- A. Hero -->
+  <section class="hero">
+    <h1>了解你的睡眠</h1>
+    <p class="subtitle">上传 Apple Watch 或其他可穿戴设备的睡眠数据，获得个性化的睡眠分析与改善建议。</p>
+    <div class="hero-actions">
+      <a href="#upload" class="btn btn-primary">开始分析</a>
+      <a href="#how" class="btn btn-outline">了解更多</a>
+    </div>
+  </section>
+
+  <!-- B. How It Works -->
+  <section class="section" id="how">
+    <div class="section-header">
+      <h2>三步了解你的睡眠</h2>
+      <p>简单三步，从数据到洞察</p>
+    </div>
+    <div class="steps-row">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h4>导出数据</h4>
+        <p>从 Apple Watch 或睡眠 App（AutoSleep、Sleep Cycle 等）导出你的睡眠数据文件。</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h4>上传文件</h4>
+        <p>拖拽或点击上传，系统会自动识别文件格式并转换为标准数据。</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h4>查看报告</h4>
+        <p>获得睡眠评分、详细指标、个性化建议和可下载的完整报告。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- C. Supported Formats -->
+  <section class="section">
+    <div class="section-header">
+      <h2>支持的数据格式</h2>
+      <p>我们自动识别常见的数据来源，无需手动选择格式</p>
+    </div>
+    <div class="format-grid">
+      <div class="format-chip">
+        <div class="format-icon">&#8962;</div>
+        <div class="format-name">Apple Health</div>
+        <div class="format-source">手表原生导出</div>
+      </div>
+      <div class="format-chip">
+        <div class="format-icon">&#9790;</div>
+        <div class="format-name">AutoSleep</div>
+        <div class="format-source">第三方 App</div>
+      </div>
+      <div class="format-chip">
+        <div class="format-icon">&#8635;</div>
+        <div class="format-name">Sleep Cycle</div>
+        <div class="format-source">第三方 App</div>
+      </div>
+      <div class="format-chip">
+        <div class="format-icon">&#8986;</div>
+        <div class="format-name">Health Export</div>
+        <div class="format-source">第三方 App</div>
+      </div>
+      <div class="format-chip">
+        <div class="format-icon">&#9776;</div>
+        <div class="format-name">原始 CSV</div>
+        <div class="format-source">特征数据</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- D. Upload -->
+  <section class="section" id="upload">
+    <div class="section-header">
+      <h2>上传你的数据</h2>
+      <p>支持 .csv 和 .xml 格式文件</p>
+    </div>
+    <div class="upload-zone" id="uploadZone">
+      <div class="upload-icon">&#10514;</div>
+      <h3>拖拽文件到这里，或点击选择</h3>
+      <p>支持 Apple Health XML、AutoSleep CSV、Sleep Cycle CSV、Health Auto Export CSV、原始 Epoch CSV</p>
+      <div class="format-badges">
+        <span class="format-badge">export.xml</span>
+        <span class="format-badge">autosleep.csv</span>
+        <span class="format-badge">sleepcycle.csv</span>
+        <span class="format-badge">healthexport.csv</span>
+        <span class="format-badge">epoch.csv</span>
+      </div>
+    </div>
+    <div class="detect-badge" id="detectBadge"></div>
+    <input type="file" id="fileInput" class="file-input" accept=".csv,.xml">
+  </section>
+
+  <!-- E. Results -->
+  <div class="results-container" id="resultsContainer">
+    <!-- Score Card -->
+    <div class="card full-width" style="margin-bottom:20px;">
+      <div class="score-display">
+        <div class="score-gauge" id="scoreGauge"></div>
+        <div class="grade-badge" id="gradeBadge"></div>
+        <div class="score-summary" id="scoreSummary"></div>
+        <div class="subscore-bars" id="subscoreBars"></div>
+      </div>
+    </div>
+
+    <!-- Stage Summary + Hypnogram -->
+    <div class="results-grid">
+      <div class="card">
+        <div class="card-header"><h3>预测睡眠分期</h3><span class="badge" id="epochCount" style="font-size:0.85rem;color:var(--text-muted);"></span></div>
+        <div class="stage-summary" id="stageSummary"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>睡眠分期图</h3></div>
+        <div class="hypno-container"><canvas id="hypnoChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="card full-width" style="margin-bottom:20px;">
+      <div class="card-header"><h3>睡眠指标</h3></div>
+      <div class="metrics-grid" id="metricsGrid"></div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="card full-width" style="margin-bottom:20px;">
+      <div class="card-header"><h3>个性化改善建议</h3></div>
+      <div id="recommendationsList"></div>
+    </div>
+
+    <!-- SHAP + Plain Summary -->
+    <div class="results-grid">
+      <div class="card">
+        <div class="card-header"><h3>特征归因分析</h3></div>
+        <div id="shapBars"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>通俗解读</h3></div>
+        <div class="plain-summary" id="plainSummary"></div>
+        <div style="margin-top:12px; font-size:0.9rem; color:var(--warning); line-height:1.7; padding:12px; background:oklch(0.75 0.12 80 / 0.1); border-radius:var(--radius-sm);">
+          本结果基于可穿戴设备信号算法估计，不等同于临床多导睡眠图（PSG）诊断。仅供健康管理参考，不构成医疗诊断。
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Download -->
+    <div class="card full-width" style="margin-top:20px;">
+      <div class="card-header"><h3>下载报告</h3></div>
+      <div class="btn-group">
+        <button class="btn btn-primary btn-sm" id="btnHtmlReport">下载 HTML 报告</button>
+        <button class="btn btn-outline btn-sm" id="btnDocxReport">下载 DOCX 报告</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- F. API & QR -->
+  <section class="section" id="integration" style="margin-top:56px;">
+    <div class="section-header">
+      <h2>扫码上传 & API</h2>
+      <p>用手机扫描二维码，直接从手表传输数据</p>
+    </div>
+    <div class="integration-grid">
+      <div class="qr-box">
+        <img id="qrImage" src="" alt="QR Code" width="160" height="160" style="background:var(--bg-cream);">
+        <p>扫描二维码在手机上打开</p>
+        <button class="btn btn-outline btn-sm" onclick="window.open('/mobile','_blank')">在手机上打开</button>
+      </div>
+      <div>
+        <h4 style="margin-bottom:12px;">API 接口</h4>
+        <ul class="api-list">
+          <li><span class="api-method post">POST</span><span class="api-path">/api/upload</span> 上传并分析</li>
+          <li><span class="api-method post">POST</span><span class="api-path">/api/detect-format</span> 检测格式</li>
+          <li><span class="api-method post">POST</span><span class="api-path">/api/convert</span> 格式转换预览</li>
+          <li><span class="api-method post">POST</span><span class="api-path">/api/score</span> 获取睡眠评分</li>
+          <li><span class="api-method post">POST</span><span class="api-path">/api/report/html</span> HTML 报告</li>
+          <li><span class="api-method post">POST</span><span class="api-path">/api/report/docx</span> DOCX 报告</li>
+          <li><span class="api-method get">GET</span><span class="api-path">/api/metrics-reference</span> 指标参考</li>
+          <li><span class="api-method get">GET</span><span class="api-path">/api/qr</span> QR 码</li>
+          <li><span class="api-method get">GET</span><span class="api-path">/api/docs</span> API 文档</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- G. Format Guide -->
+  <section class="section" id="guide">
+    <div class="section-header">
+      <h2>如何导出你的数据</h2>
+      <p>各应用的数据导出教程</p>
+    </div>
+
+    <div class="accordion">
+      <button class="accordion-trigger">Apple Watch — 导出健康数据</button>
+      <div class="accordion-content">
+        <strong>方法一（推荐）：使用 Health Auto Export App</strong><br>
+        1. 在 App Store 下载「Health Auto Export」<br>
+        2. 打开 App，选择要导出的数据类型（心率、睡眠）<br>
+        3. 点击 Export，选择 CSV 格式<br>
+        4. 将导出的文件上传到这里<br><br>
+        <strong>方法二：使用系统导出</strong><br>
+        1. 打开 iPhone「健康」App<br>
+        2. 点击右上角头像 →「导出所有健康数据」<br>
+        3. 等待导出完成，通过 AirDrop/邮件发送 ZIP 文件<br>
+        4. 解压后上传 export.xml 文件<br>
+        5. ⚠️ 注意：需要 Apple Watch 开启了「睡眠」追踪功能
+      </div>
+    </div>
+    <div class="accordion">
+      <button class="accordion-trigger">AutoSleep — 导出 CSV</button>
+      <div class="accordion-content">
+        1. 打开 AutoSleep App<br>
+        2. 点击底部「设置」(Settings)<br>
+        3. 选择「导出」(Export)<br>
+        4. 选择「导出 Advanced History」(Export Advanced History)<br>
+        5. 选择 CSV 格式，通过邮件或 AirDrop 发送到电脑<br>
+        6. 上传该 CSV 文件
+      </div>
+    </div>
+    <div class="accordion">
+      <button class="accordion-trigger">Sleep Cycle — 导出 CSV</button>
+      <div class="accordion-content">
+        1. 打开 Sleep Cycle App<br>
+        2. 进入「设置」(Settings)<br>
+        3. 选择「导出数据」(Export Data)<br>
+        4. 选择 CSV 格式<br>
+        5. 通过邮件发送到电脑后上传
+      </div>
+    </div>
+    <div class="accordion">
+      <button class="accordion-trigger">我没有这些 App，还能用吗？</button>
+      <div class="accordion-content">
+        可以！如果你有 Apple Watch，它默认就会记录睡眠数据。只需在 iPhone「健康」App 中导出即可（见第一个教程）。<br><br>
+        你也可以下载我们的<a href="/api/sample-data/epoch" style="color:var(--accent);">示例数据</a>来体验完整功能。<br><br>
+        如果你有其他可穿戴设备导出的 CSV 数据（包含心率、加速度、步数列），也可以尝试上传，系统会尽力识别。
+      </div>
+    </div>
+  </section>
+
+  <!-- H. FAQ -->
+  <section class="section" id="faq">
+    <div class="section-header">
+      <h2>常见问题</h2>
+    </div>
+    <div class="accordion">
+      <button class="accordion-trigger">这是医疗诊断工具吗？</button>
+      <div class="accordion-content">
+        不是。本工具仅基于可穿戴设备信号提供算法估算，用于健康管理参考。不等同于医院的多导睡眠图（PSG）诊断。如果你有持续的睡眠问题，请咨询睡眠专科医生。
+      </div>
+    </div>
+    <div class="accordion">
+      <button class="accordion-trigger">我的数据安全吗？</button>
+      <div class="accordion-content">
+        你的睡眠数据仅在服务器内存中临时处理，1 小时后自动删除。我们不会永久存储任何个人健康数据，也不会将数据用于任何其他用途。
+      </div>
+    </div>
+    <div class="accordion">
+      <button class="accordion-trigger">Apple Watch 需要什么设置？</button>
+      <div class="accordion-content">
+        至少需要开启「睡眠」追踪（watchOS 9+ 支持睡眠分期）和「心率」监测。建议在「设置 → 隐私 → 健康」中确认这些选项已开启。Apple Watch 会自动追踪，无需手动操作。
+      </div>
+    </div>
+    <div class="accordion">
+      <button class="accordion-trigger">为什么加速度数据是估算的？</button>
+      <div class="accordion-content">
+        Apple Health 导出不包含原始加速度计数据（这是 Apple 的隐私保护设计）。我们根据你的睡眠阶段标签，使用 Sleep-Accel 公开数据集的群体统计值来估算加速度特征。这对分析结果有一定影响，报告中会标注说明。
+      </div>
+    </div>
+    <div class="accordion">
+      <button class="accordion-trigger">睡眠评分的依据是什么？</button>
+      <div class="accordion-content">
+        睡眠评分（0-100）综合了五个维度：睡眠效率、总时长、夜间清醒时间、入睡速度和 REM 占比。评分标准和参考范围基于美国睡眠医学会（AASM）和美国国立卫生研究院（NIH）的指南。
+      </div>
+    </div>
+  </section>
+
+  <!-- I. Footer -->
+  <footer class="footer">
+    <strong>睡眠分期分析</strong> &nbsp;·&nbsp; 基于 Sleep-Accel 公开数据集训练<br>
+    模型: HGB + Context (±2) &nbsp;·&nbsp; SHAP 可解释性<br>
+    仅供健康管理参考，不构成医疗诊断
+  </footer>
+</div>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div></div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──
+const App = {
+  sessionId: null,
+  currentData: null,
+  hypnoChart: null,
+};
+
+// ── Upload ──
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+uploadZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+
+async function handleFile(file) {
+  showLoading(true);
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const resp = await fetch('/api/upload', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (!resp.ok) {
+      showToast(data.error || '上传失败', 'error');
+      document.getElementById('detectBadge').style.display = 'none';
+      showLoading(false);
+      return;
+    }
+    App.currentData = data;
+    App.sessionId = data.session_id;
+    renderResults(data);
+    showToast('分析完成！', 'success');
+    document.getElementById('detectBadge').style.display = 'flex';
+    document.getElementById('detectBadge').innerHTML = `&#10003; 检测到: ${data.format_label}`;
+    document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth' });
+  } catch (err) {
+    showToast('网络错误: ' + err.message, 'error');
+  }
+  showLoading(false);
+}
+
+// ── Render ──
+function renderResults(data) {
+  const container = document.getElementById('resultsContainer');
+  container.classList.add('visible');
+
+  // Epoch count
+  document.getElementById('epochCount').textContent = data.row_count_context + ' epochs';
+
+  // Sleep Score
+  renderScore(data.sleep_score);
+  document.getElementById('scoreSummary').textContent = data.summary?.plain_summary || '';
+
+  // Stage summary
+  const total = (data.label_counts.Wake || 0) + (data.label_counts.NREM || 0) + (data.label_counts.REM || 0);
+  const chips = { Wake: { color: 'var(--wake)', label: '清醒' }, NREM: { color: 'var(--nrem)', label: 'NREM' }, REM: { color: 'var(--rem)', label: 'REM' } };
+  document.getElementById('stageSummary').innerHTML = ['Wake','NREM','REM'].map(stage => {
+    const count = data.label_counts[stage] || 0;
+    const pct = total > 0 ? (count / total * 100).toFixed(1) : '0.0';
+    return `<div class="stage-chip">
+      <div class="chip-dot" style="background:${chips[stage].color}"></div>
+      <div class="chip-label">${chips[stage].label}</div>
+      <div class="chip-count">${count}</div>
+      <div class="chip-pct">${pct}%</div>
+    </div>`;
+  }).join('');
+
+  // Hypnogram
+  renderHypnogram(data.epochs);
+
+  // Metrics
+  renderMetrics(data.metrics, data.ref_comparison);
+
+  // Recommendations
+  renderRecommendations(data.recommendations);
+
+  // SHAP
+  renderSHAP(data.shap_top);
+  if (!data.shap_ready && data.session_id) {
+    pollSHAP(data.session_id);
+  }
+
+  // Plain summary
+  document.getElementById('plainSummary').innerHTML =
+    `<p><strong>${data.summary?.score_summary || ''}</strong></p><p>${data.summary?.plain_summary || ''}</p>`;
+}
+
+function pollSHAP(sessionId) {
+  // Show loading state
+  document.getElementById('shapBars').innerHTML =
+    '<p style="color:var(--text-muted);font-size:0.85rem;">特征归因分析计算中...</p>';
+
+  let attempts = 0;
+  const maxAttempts = 30;
+  const interval = 2000;
+
+  function check() {
+    if (attempts >= maxAttempts) return;
+    attempts++;
+    fetch('/api/shap-status/' + sessionId)
+      .then(r => r.json())
+      .then(d => {
+        if (d.shap_ready) {
+          renderSHAP(d.shap_top);
+          if (d.explanation_text) {
+            document.getElementById('plainSummary').innerHTML +=
+              '<p style="margin-top:12px;font-size:0.85rem;">' + d.explanation_text + '</p>';
+          }
+        } else {
+          setTimeout(check, interval);
+        }
+      })
+      .catch(() => setTimeout(check, interval));
+  }
+  setTimeout(check, interval);
+}
+
+function renderScore(scoreData) {
+  if (!scoreData) return;
+  const { total_score, grade, grade_label, subscores } = scoreData;
+
+  // Gauge SVG
+  const r = 58, circ = 2 * Math.PI * r, off = circ * (1 - total_score / 100);
+  const colors = { 'A+': '#2E7D32', 'A': '#388E3C', 'B+': '#558B2F', 'B': '#689F38',
+    'C+': '#F9A825', 'C': '#F57F17', 'D': '#E65100', 'F': '#BF360C' };
+  const badgeColor = colors[grade] || '#999';
+
+  document.getElementById('scoreGauge').innerHTML = `
+    <svg width="150" height="95" viewBox="0 0 160 100">
+      <defs>
+        <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#D35D47;stop-opacity:1" />
+          <stop offset="50%" style="stop-color:#E8904C;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#5DAF8B;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <circle cx="80" cy="80" r="${r}" fill="none" stroke="#EDE0D4" stroke-width="12"
+              stroke-dasharray="${circ}" stroke-dashoffset="0" transform="rotate(180 80 80)" />
+      <circle cx="80" cy="80" r="${r}" fill="none" stroke="url(#scoreGrad)" stroke-width="12"
+              stroke-dasharray="${circ}" stroke-dashoffset="${off}" stroke-linecap="round"
+              transform="rotate(180 80 80)" style="transition:stroke-dashoffset 1s var(--ease);" />
+      <text x="80" y="75" text-anchor="middle" font-family="Sora,sans-serif"
+            font-size="34" font-weight="700" fill="${badgeColor}">${total_score}</text>
+      <text x="80" y="90" text-anchor="middle" font-family="Outfit,sans-serif"
+            font-size="10" fill="#A38B78">/ 100</text>
+    </svg>`;
+  document.getElementById('gradeBadge').style.background = badgeColor;
+  document.getElementById('gradeBadge').textContent = `${grade} · ${grade_label}`;
+
+  // Subscore bars
+  const subLabels = { sleep_efficiency: '睡眠效率', total_sleep_time: '睡眠时长', waso: '夜间清醒', sleep_latency: '入睡速度', rem_proportion: 'REM 占比' };
+  document.getElementById('subscoreBars').innerHTML = Object.entries(subscores || {}).map(([k, v]) => {
+    const pct = v.max > 0 ? (v.score / v.max * 100) : 0;
+    return `<div class="subscore-row">
+      <span class="subscore-label">${subLabels[k] || k}</span>
+      <div class="subscore-track"><div class="subscore-fill" style="width:${pct}%"></div></div>
+      <span class="subscore-val">${v.score}/${v.max}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderHypnogram(epochs) {
+  const ctx = document.getElementById('hypnoChart').getContext('2d');
+  if (App.hypnoChart) App.hypnoChart.destroy();
+
+  const step = Math.max(1, Math.floor(epochs.length / 600));
+  const sampledLabels = [], sampledValues = [];
+  for (let i = 0; i < epochs.length; i += step) { sampledLabels.push(i); sampledValues.push(epochs[i].predicted_label); }
+
+  const textColor = 'rgba(100,80,60,0.5)';
+  const gridColor = 'rgba(0,0,0,0.04)';
+
+  App.hypnoChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: sampledLabels,
+      datasets: [{
+        data: sampledValues,
+        borderColor: 'transparent',
+        borderWidth: 0,
+        pointRadius: 0,
+        stepped: true,
+        tension: 0,
+        fill: true,
+        segment: {
+          borderColor: ctx => {
+            const v = ctx.p0.parsed.y;
+            if (v === 0) return 'rgba(232,144,76,0.85)';
+            if (v === 1) return 'rgba(93,175,139,0.85)';
+            return 'rgba(139,126,200,0.85)';
+          },
+          backgroundColor: ctx => {
+            const v = ctx.p0.parsed.y;
+            if (v === 0) return 'rgba(232,144,76,0.15)';
+            if (v === 1) return 'rgba(93,175,139,0.15)';
+            return 'rgba(139,126,200,0.15)';
+          },
+          borderWidth: 14,
+        },
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: { duration: 600 },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => { const n = ['清醒', 'NREM', 'REM']; return n[ctx.parsed.y] || ''; } } }
+      },
+      scales: {
+        x: { display: true, title: { text: 'Epoch 序号', display: true, color: textColor, font: { size: 10 } },
+             ticks: { color: textColor, font: { size: 9 }, maxTicksLimit: 10 }, grid: { color: gridColor } },
+        y: { min: -0.3, max: 2.3, title: { text: '睡眠阶段', display: true, color: textColor, font: { size: 10 } },
+             ticks: { color: textColor, font: { size: 9 }, stepSize: 1, callback: v => { if (v===0) return '清醒'; if (v===1) return 'NREM'; if (v===2) return 'REM'; return ''; } },
+             grid: { color: gridColor } }
+      }
+    }
+  });
+}
+
+function renderMetrics(metrics, refComp) {
+  const grid = document.getElementById('metricsGrid');
+  const orderedKeys = [
+    '总睡眠时长 TST (分钟)', '睡眠效率 SE (%)', '入睡后清醒 WASO (分钟)',
+    '入睡潜伏期 (分钟)', 'REM 潜伏期 (分钟)', 'NREM 占比 (%)', 'REM 占比 (%)',
+    '阶段转换次数', '睡眠周期数', '总记录时长 (分钟)',
+  ];
+
+  grid.innerHTML = orderedKeys.filter(k => metrics[k] !== undefined).map(k => {
+    const val = metrics[k];
+    const rc = refComp ? refComp[k] : null;
+    const status = rc ? rc.status : 'unknown';
+    const refText = rc ? rc.reference_range : '';
+    return `<div class="metric-card">
+      <div class="metric-label">${k} <span class="metric-status ${status}"></span></div>
+      <div class="metric-value">${val}<span class="metric-unit"></span></div>
+      ${refText ? `<div class="metric-ref">参考: ${refText}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderRecommendations(recs) {
+  if (!recs || recs.length === 0) {
+    document.getElementById('recommendationsList').innerHTML = '<p style="color:var(--text-muted);">暂无建议</p>';
+    return;
+  }
+  const sevLabels = { critical: '重点关注', warning: '建议改善', info: '温馨提示' };
+  document.getElementById('recommendationsList').innerHTML = recs.map(r => `
+    <div class="rec-card ${r.severity}">
+      <div class="rec-header">
+        <span class="rec-severity ${r.severity}">${sevLabels[r.severity] || r.severity}</span>
+        <span class="rec-issue">${r.issue}</span>
+      </div>
+      <div class="rec-advice">${r.advice}</div>
+      <div class="rec-ref">参考: ${r.reference || ''}</div>
+    </div>
+  `).join('');
+}
+
+function renderSHAP(shapTop) {
+  const container = document.getElementById('shapBars');
+  if (!shapTop || shapTop.length === 0) {
+    container.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">SHAP 不可用</p>';
+    return;
+  }
+  const maxImp = shapTop[0].importance;
+  container.innerHTML = shapTop.map(f => {
+    const w = maxImp > 0 ? (f.importance / maxImp * 100) : 0;
+    const hue = f.feature.includes('hr_') ? 0 : (f.feature.includes('acc_') ? 210 : 160);
+    const color = `oklch(0.65 0.18 ${hue})`;
+    return `<div class="shap-bar">
+      <span class="bar-label">${f.feature}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:${color}"></div></div>
+      <span class="bar-value">${f.importance.toFixed(4)}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── Report Downloads ──
+document.getElementById('btnHtmlReport').addEventListener('click', async () => {
+  if (!App.sessionId) return showToast('请先上传数据', 'error');
+  showLoading(true);
+  try {
+    const resp = await fetch('/api/report/html', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: App.sessionId }),
+    });
+    const data = await resp.json();
+    if (data.html) {
+      const blob = new Blob([data.html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'sleep_report.html'; a.click();
+      URL.revokeObjectURL(url);
+      showToast('报告已下载', 'success');
+    } else { showToast(data.error || '生成失败', 'error'); }
+  } catch (err) { showToast('错误: ' + err.message, 'error'); }
+  showLoading(false);
+});
+
+document.getElementById('btnDocxReport').addEventListener('click', async () => {
+  if (!App.sessionId) return showToast('请先上传数据', 'error');
+  showLoading(true);
+  try {
+    const resp = await fetch('/api/report/docx', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: App.sessionId }),
+    });
+    if (resp.ok) {
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'sleep_report.docx'; a.click();
+      URL.revokeObjectURL(url);
+      showToast('报告已下载', 'success');
+    } else {
+      const data = await resp.json();
+      showToast(data.error || '生成失败', 'error');
+    }
+  } catch (err) { showToast('错误: ' + err.message, 'error'); }
+  showLoading(false);
+});
+
+// ── Accordion ──
+document.querySelectorAll('.accordion-trigger').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const content = btn.nextElementSibling;
+    const isOpen = content.classList.contains('open');
+    document.querySelectorAll('.accordion-content.open').forEach(c => c.classList.remove('open'));
+    document.querySelectorAll('.accordion-trigger.open').forEach(b => b.classList.remove('open'));
+    if (!isOpen) { content.classList.add('open'); btn.classList.add('open'); }
+  });
+});
+
+// ── QR Code ──
+fetch('/api/qr').then(r => r.blob()).then(blob => {
+  document.getElementById('qrImage').src = URL.createObjectURL(blob);
+}).catch(() => {});
+
+// ── Utilities ──
+function showLoading(on) { document.getElementById('loadingOverlay').classList.toggle('active', on); }
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast ' + type + ' show';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// Keyboard shortcut: Escape closes accordions
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.accordion-content.open').forEach(c => c.classList.remove('open'));
+    document.querySelectorAll('.accordion-trigger.open').forEach(b => b.classList.remove('open'));
+  }
+});
+</script>
+</body>
+</html>

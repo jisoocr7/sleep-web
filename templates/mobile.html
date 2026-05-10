@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>睡眠分析 — 移动端</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Design System: Premium Warm (Mobile) ── */
+:root {
+  --bg-cream: oklch(0.97 0.012 85);
+  --bg-surface: oklch(0.99 0.005 85);
+  --bg-card: oklch(0.995 0.003 85);
+  --text-primary: oklch(0.22 0.02 75);
+  --text-secondary: oklch(0.42 0.03 70);
+  --text-muted: oklch(0.55 0.02 75);
+  --accent: oklch(0.58 0.17 35);
+  --accent-hover: oklch(0.52 0.15 35);
+  --border: oklch(0.88 0.02 85);
+  --shadow-sm: 0 1px 4px oklch(0 0 0 / 0.06);
+  --shadow: 0 2px 16px oklch(0 0 0 / 0.07);
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --font-heading: 'Sora', -apple-system, sans-serif;
+  --font-body: 'Outfit', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --wake: #E8904C;
+  --nrem: #5DAF8B;
+  --rem: #8B7EC8;
+  --success: #5DAF8B;
+  --warning: #E8904C;
+  --danger: #D35D47;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg-cream);
+  color: var(--text-primary);
+  min-height: 100dvh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-shell { max-width: 480px; margin: 0 auto; padding: 32px 16px 48px; }
+
+h1, h2, h3 { font-family: var(--font-heading); }
+h1 { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.02em; text-align: center; }
+h2 { font-size: 1.2rem; font-weight: 600; letter-spacing: -0.01em; }
+h3 { font-size: 1rem; font-weight: 600; }
+
+/* ── Hero ── */
+.hero { text-align: center; padding: 40px 8px 28px; }
+.hero h1 { margin-bottom: 8px; }
+.hero .subtitle { font-size: 0.9rem; color: var(--text-secondary); max-width: 320px; margin: 0 auto; }
+
+/* ── Upload ── */
+.upload-zone {
+  border: 2.5px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+  background: var(--bg-card);
+  margin: 24px 0 16px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.upload-zone:active { border-color: var(--accent); background: oklch(0.72 0.08 45 / 0.05); transform: scale(0.985); }
+.upload-icon {
+  width: 56px; height: 56px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: oklch(0.72 0.08 45 / 0.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem;
+}
+.upload-zone h3 { font-size: 1rem; margin-bottom: 4px; }
+.upload-zone p { font-size: 0.8rem; color: var(--text-secondary); }
+.file-input { display: none; }
+
+.format-badges {
+  display: flex; flex-wrap: wrap; gap: 4px 8px;
+  justify-content: center; margin-top: 12px;
+}
+.format-badge {
+  font-size: 0.68rem; color: var(--text-muted);
+  background: var(--bg-cream); padding: 3px 10px;
+  border-radius: 100px; border: 1px solid var(--border);
+}
+
+.detect-badge {
+  display: none;
+  text-align: center;
+  padding: 10px 16px;
+  border-radius: 100px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: oklch(0.45 0.08 160);
+  background: oklch(0.65 0.12 160 / 0.1);
+  margin-bottom: 16px;
+}
+
+/* ── Results ── */
+.results-container { display: none; animation: fadeUp 0.4s var(--ease); }
+.results-container.visible { display: block; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Score ── */
+.score-display { text-align: center; padding: 12px 0 4px; }
+.grade-badge {
+  display: inline-block;
+  padding: 5px 18px;
+  border-radius: 100px;
+  font-family: var(--font-heading);
+  font-size: 1.2rem; font-weight: 700;
+  color: #fff;
+  margin: 6px 0;
+}
+.score-description { font-size: 0.82rem; color: var(--text-secondary); margin: 8px 0 0; }
+
+/* ── Stage Chips ── */
+.stage-row { display: flex; gap: 10px; justify-content: center; }
+.stage-chip {
+  flex: 1; max-width: 100px;
+  text-align: center; padding: 14px 6px;
+  border-radius: var(--radius);
+  background: var(--bg-cream);
+  border: 1px solid var(--border);
+}
+.stage-chip .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-bottom:6px; }
+.stage-chip .label { font-size: 0.72rem; font-weight: 600; display: block; }
+.stage-chip .count { font-size: 1.2rem; font-weight: 700; margin: 2px 0; }
+.stage-chip .pct { font-size: 0.68rem; color: var(--text-muted); }
+
+/* ── Hypno Image ── */
+.hypno-img { width: 100%; border-radius: var(--radius-sm); }
+
+/* ── Mini Metrics ── */
+.metrics-list { list-style: none; }
+.metrics-list li {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.metrics-list li:last-child { border-bottom: none; }
+.metric-label { color: var(--text-secondary); }
+.metric-value { font-family: var(--font-heading); font-weight: 600; }
+.metric-ref { font-size: 0.65rem; color: var(--text-muted); }
+.metric-status { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; }
+.metric-status.normal { background: var(--success); }
+.metric-status.borderline { background: var(--warning); }
+.metric-status.concerning { background: var(--danger); }
+
+/* ── Top Recommendation ── */
+.rec-card {
+  background: var(--bg-cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  border-left: 4px solid transparent;
+}
+.rec-card.critical { border-left-color: var(--danger); }
+.rec-card.warning { border-left-color: var(--warning); }
+.rec-card.info { border-left-color: var(--success); }
+.rec-severity {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-size: 0.68rem; font-weight: 600;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.rec-severity.critical { background: var(--danger); }
+.rec-severity.warning { background: var(--warning); }
+.rec-severity.info { background: var(--success); }
+.rec-issue { font-weight: 600; font-size: 0.88rem; margin-bottom: 6px; }
+.rec-advice { color: var(--text-secondary); font-size: 0.82rem; line-height: 1.7; }
+
+/* ── Link to Full Report ── */
+.full-report-link {
+  display: block;
+  text-align: center;
+  padding: 14px;
+  margin-top: 12px;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s var(--ease);
+  letter-spacing: -0.01em;
+}
+.full-report-link:active { transform: scale(0.97); background: var(--accent-hover); }
+
+/* ── Loading ── */
+.loading-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.25);
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+  align-items: center; justify-content: center;
+}
+.loading-overlay.active { display: flex; }
+.loading-spinner {
+  width: 38px; height: 38px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── Toast ── */
+.toast {
+  position: fixed; top: 16px; right: 16px; left: 16px;
+  padding: 12px 18px;
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  font-size: 0.82rem; font-weight: 500;
+  z-index: 2000;
+  text-align: center;
+  transform: translateY(-120%);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: var(--shadow);
+}
+.toast.show { transform: translateY(0); }
+.toast.error { border-color: var(--danger); color: var(--danger); }
+.toast.success { border-color: var(--success); color: var(--success); }
+
+/* ── Footer ── */
+.footer {
+  text-align: center; color: var(--text-muted);
+  font-size: 0.7rem; padding-top: 24px; margin-top: 24px;
+  border-top: 1px solid var(--border); line-height: 2;
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- Hero -->
+  <header class="hero">
+    <h1>了解你的睡眠</h1>
+    <p class="subtitle">上传数据，获取睡眠分析</p>
+  </header>
+
+  <!-- Upload -->
+  <div class="upload-zone" id="uploadZone">
+    <div class="upload-icon">&#10514;</div>
+    <h3>选择或拍照上传文件</h3>
+    <p>支持 .csv 和 .xml 格式</p>
+    <div class="format-badges">
+      <span class="format-badge">export.xml</span>
+      <span class="format-badge">autosleep.csv</span>
+      <span class="format-badge">sleepcycle.csv</span>
+      <span class="format-badge">epoch.csv</span>
+    </div>
+  </div>
+  <div class="detect-badge" id="detectBadge"></div>
+  <input type="file" id="fileInput" class="file-input" accept=".csv,.xml" capture="environment">
+
+  <!-- Results -->
+  <div class="results-container" id="resultsContainer">
+
+    <!-- Score -->
+    <div class="card">
+      <div class="score-display">
+        <div id="scoreGauge" style="display:flex;justify-content:center;margin-bottom:6px;"></div>
+        <div class="grade-badge" id="gradeBadge"></div>
+        <p class="score-description" id="scoreSummary"></p>
+      </div>
+    </div>
+
+    <!-- Stage Summary -->
+    <div class="card">
+      <h3 style="margin-bottom:12px;text-align:center;">睡眠阶段</h3>
+      <div class="stage-row" id="stageSummary"></div>
+    </div>
+
+    <!-- Hypnogram Image -->
+    <div class="card" id="hypnoCard" style="display:none;">
+      <h3 style="margin-bottom:12px;">睡眠分期图</h3>
+      <img class="hypno-img" id="hypnoImage" alt="睡眠分期图">
+    </div>
+
+    <!-- Top Metrics -->
+    <div class="card">
+      <h3 style="margin-bottom:12px;">关键指标</h3>
+      <ul class="metrics-list" id="metricsList"></ul>
+    </div>
+
+    <!-- Top Recommendation -->
+    <div class="card">
+      <h3 style="margin-bottom:12px;">首要建议</h3>
+      <div id="topRecommendation"></div>
+    </div>
+
+    <!-- Full Report Link -->
+    <a class="full-report-link" href="/" target="_blank">在桌面端查看完整报告 →</a>
+
+    <!-- Disclaimer -->
+    <p style="text-align:center;font-size:0.72rem;color:var(--text-muted);margin-top:12px;line-height:1.6;">
+      基于可穿戴设备算法估算，不等同于临床多导睡眠图（PSG）诊断。仅供健康管理参考。
+    </p>
+
+  </div>
+
+  <footer class="footer">
+    <strong>睡眠分期分析</strong> &nbsp;·&nbsp; 模型: HGB + Context<br>
+    仅供健康管理参考，不构成医疗诊断
+  </footer>
+</div>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div></div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const App = { sessionId: null, currentData: null };
+
+// ── Upload ──
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+// Prevent double-tap zoom on upload zone
+uploadZone.addEventListener('touchstart', function(e) {
+  if (e.target === uploadZone || uploadZone.contains(e.target)) {
+    e.preventDefault();
+    this.click();
+  }
+});
+
+async function handleFile(file) {
+  showLoading(true);
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const resp = await fetch('/api/upload', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (!resp.ok) {
+      showToast(data.error || '上传失败', 'error');
+      document.getElementById('detectBadge').style.display = 'none';
+      showLoading(false);
+      return;
+    }
+    App.currentData = data;
+    App.sessionId = data.session_id;
+    renderResults(data);
+    showToast('分析完成', 'success');
+    document.getElementById('detectBadge').style.display = 'block';
+    document.getElementById('detectBadge').textContent = '✓ 检测到: ' + data.format_label;
+    document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth' });
+  } catch (err) {
+    showToast('网络错误: ' + err.message, 'error');
+  }
+  showLoading(false);
+}
+
+// ── Render ──
+function renderResults(data) {
+  const container = document.getElementById('resultsContainer');
+  container.classList.add('visible');
+
+  renderScore(data.sleep_score, data.summary);
+  renderStageSummary(data.label_counts);
+  renderHypnoImage(data.hypno_b64);
+  renderTopMetrics(data.metrics, data.ref_comparison);
+  renderTopRecommendation(data.recommendations);
+}
+
+function renderScore(scoreData, summary) {
+  if (!scoreData) return;
+  const { total_score, grade, grade_label } = scoreData;
+
+  const r = 50, circ = 2 * Math.PI * r, off = circ * (1 - total_score / 100);
+  const colors = { 'A+': '#2E7D32', 'A': '#388E3C', 'B+': '#558B2F', 'B': '#689F38',
+    'C+': '#F9A825', 'C': '#F57F17', 'D': '#E65100', 'F': '#BF360C' };
+  const badgeColor = colors[grade] || '#999';
+
+  document.getElementById('scoreGauge').innerHTML = `
+    <svg width="130" height="82" viewBox="0 0 140 88">
+      <defs>
+        <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#D35D47;stop-opacity:1" />
+          <stop offset="50%" style="stop-color:#E8904C;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#5DAF8B;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+      <circle cx="70" cy="70" r="${r}" fill="none" stroke="#EDE0D4" stroke-width="10"
+              stroke-dasharray="${circ}" stroke-dashoffset="0" transform="rotate(180 70 70)" />
+      <circle cx="70" cy="70" r="${r}" fill="none" stroke="url(#scoreGrad)" stroke-width="10"
+              stroke-dasharray="${circ}" stroke-dashoffset="${off}" stroke-linecap="round"
+              transform="rotate(180 70 70)" style="transition:stroke-dashoffset 0.8s cubic-bezier(0.34,1.56,0.64,1);" />
+      <text x="70" y="66" text-anchor="middle" font-family="Sora,sans-serif"
+            font-size="30" font-weight="700" fill="${badgeColor}">${total_score}</text>
+      <text x="70" y="80" text-anchor="middle" font-family="Outfit,sans-serif"
+            font-size="9" fill="#A38B78">/ 100</text>
+    </svg>`;
+  document.getElementById('gradeBadge').style.background = badgeColor;
+  document.getElementById('gradeBadge').textContent = grade + ' · ' + grade_label;
+  document.getElementById('scoreSummary').textContent = summary?.plain_summary || '';
+}
+
+function renderStageSummary(counts) {
+  const total = (counts.Wake || 0) + (counts.NREM || 0) + (counts.REM || 0);
+  const stages = [
+    { key: 'Wake', color: 'var(--wake)', label: '清醒' },
+    { key: 'NREM', color: 'var(--nrem)', label: 'NREM' },
+    { key: 'REM', color: 'var(--rem)', label: 'REM' },
+  ];
+  document.getElementById('stageSummary').innerHTML = stages.map(s => {
+    const count = counts[s.key] || 0;
+    const pct = total > 0 ? (count / total * 100).toFixed(1) : '0.0';
+    return `<div class="stage-chip">
+      <span class="dot" style="background:${s.color}"></span>
+      <span class="label">${s.label}</span>
+      <span class="count">${count}</span>
+      <span class="pct">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+function renderHypnoImage(hypnoB64) {
+  const card = document.getElementById('hypnoCard');
+  const img = document.getElementById('hypnoImage');
+  if (hypnoB64) {
+    img.src = 'data:image/png;base64,' + hypnoB64;
+    card.style.display = 'block';
+  } else {
+    card.style.display = 'none';
+  }
+}
+
+function renderTopMetrics(metrics, refComp) {
+  const topKeys = [
+    '总睡眠时长 TST (分钟)',
+    '睡眠效率 SE (%)',
+    '入睡后清醒 WASO (分钟)',
+  ];
+  const list = document.getElementById('metricsList');
+  list.innerHTML = topKeys.filter(k => metrics[k] !== undefined).map(k => {
+    const val = metrics[k];
+    const rc = refComp ? refComp[k] : null;
+    const status = rc ? rc.status : 'unknown';
+    const refText = rc ? rc.reference_range : '';
+    return `<li>
+      <span class="metric-label"><span class="metric-status ${status}"></span>${k}</span>
+      <span>
+        <span class="metric-value">${val}</span>
+        ${refText ? `<br><span class="metric-ref">参考: ${refText}</span>` : ''}
+      </span>
+    </li>`;
+  }).join('');
+}
+
+function renderTopRecommendation(recs) {
+  const container = document.getElementById('topRecommendation');
+  if (!recs || recs.length === 0) {
+    container.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">暂无建议</p>';
+    return;
+  }
+  const r = recs[0];
+  const sevLabels = { critical: '重点关注', warning: '建议改善', info: '温馨提示' };
+  container.innerHTML = `
+    <div class="rec-card ${r.severity}">
+      <span class="rec-severity ${r.severity}">${sevLabels[r.severity] || r.severity}</span>
+      <div class="rec-issue">${r.issue}</div>
+      <div class="rec-advice">${r.advice}</div>
+    </div>
+    ${recs.length > 1 ? '<p style="text-align:center;font-size:0.78rem;color:var(--text-muted);margin-top:8px;">还有 ' + (recs.length - 1) + ' 条建议，请查看完整报告</p>' : ''}
+  `;
+}
+
+// ── Utilities ──
+function showLoading(on) { document.getElementById('loadingOverlay').classList.toggle('active', on); }
+
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast ' + type + ' show';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.classList.remove('show'), 2800);
+}
+</script>
+</body>
+</html>

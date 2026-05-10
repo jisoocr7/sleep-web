@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HealthData [
+<!ELEMENT HealthData (Record*)>
+<!ELEMENT Record EMPTY>
+<!ATTLIST Record
+  type CDATA #REQUIRED
+  sourceName CDATA #IMPLIED
+  sourceVersion CDATA #IMPLIED
+  unit CDATA #IMPLIED
+  creationDate CDATA #IMPLIED
+  startDate CDATA #REQUIRED
+  endDate CDATA #REQUIRED
+  value CDATA #REQUIRED
+>
+]>
+<HealthData locale="zh_CN">
+  <!-- Sleep stage intervals for one night (~8 hours, 2024-03-15) -->
+  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Apple Watch" sourceVersion="10.3" creationDate="2024-03-15 22:05:00 +0000" startDate="2024-03-15 23:00:00 +0000" endDate="2024-03-16 07:00:00 +0000" value="HKCategoryValueSleepAnalysisInBed"/>
+  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Apple Watch" sourceVersion="10.3" creationDate="2024-03-15 22:05:00 +0000" startDate="2024-03-15 23:15:00 +0000" endDate="2024-03-16 06:45:00 +0000" value="HKCategoryValueSleepAnalysisAsleepUnspecified"/>
+  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Apple Watch" sourceVersion="10.3" creationDate="2024-03-15 22:05:00 +0000" startDate="2024-03-15 23:15:00 +0000" endDate="2024-03-16 00:00:00 +0000" value="HKCategoryValueSleepAnalysisAsleepCore"/>
+  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Apple Watch" sourceVersion="10.3" creationDate="2024-03-15 22:05:00 +0000" startDate="2024-03-16 00:00:00 +0000" endDate="2024-03-16 00:30:00 +0000" value="HKCategoryValueSleepAnalysisAsleepDeep"/>
+  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Apple Watch" sourceVersion="10.3" creationDate="2024-03-15 22:05:00 +0000" startDate="2024-03-16 00:30:00 +0000" endDate="2024-03-16 01:30:00 +0000" value="HKCategoryValueSleepAnalysisAsleepCore"/>
+  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Apple Watch" sourceVersion="10.3" creationDate="2024-03-15 22:05:00 +0000" startDate="2024-03-16 01:30:00 +0000" endDate="2024-03-16 01:50:00 +0000" value="HKCategoryValueSleepAnalysisAsleepREM"/>
+  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Apple Watch" sourceVersion="10.3" creationDate="2024-03-15 22:05:00 +0000" startDate="2024-03-16 01:50:00 +0000" endDate="2024-03-16 03:00:00 +0000" value="HKCategoryValueSleepAnalysisAsleepCore"/>
+  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Apple Watch" sourceVersion="10.3" creationDate="2024-03-15 22:05:00 +0000" startDate="2024-03-16 03:00:00 +0000" endDate="2024-03-16 03:30:00 +0000" value="HKCategoryValueSleepAnalysisAsleepDeep"/>
+  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Apple Watch" sourceVersion="10.3" creationDate="2024-03-15 22:05:00 +0000" startDate="2024-03-16 03:30:00 +0000" endDate="2024-03-16 04:15:00 +0000" value="HKCategoryValueSleepAnalysisAsleepREM"/>
+  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Apple Watch" sourceVersion="10.3" creationDate="2024-03-15 22:05:00 +0000" startDate="2024-03-16 04:15:00 +0000" endDate="2024-03-16 05:30:00 +0000" value="HKCategoryValueSleepAnalysisAsleepCore"/>
+  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Apple Watch" sourceVersion="10.3" creationDate="2024-03-15 22:05:00 +0000" startDate="2024-03-16 05:30:00 +0000" endDate="2024-03-16 05:50:00 +0000" value="HKCategoryValueSleepAnalysisAsleepREM"/>
+  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Apple Watch" sourceVersion="10.3" creationDate="2024-03-15 22:05:00 +0000" startDate="2024-03-16 05:50:00 +0000" endDate="2024-03-16 06:45:00 +0000" value="HKCategoryValueSleepAnalysisAsleepCore"/>
+  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Apple Watch" sourceVersion="10.3" creationDate="2024-03-15 22:05:00 +0000" startDate="2024-03-16 06:45:00 +0000" endDate="2024-03-16 07:00:00 +0000" value="HKCategoryValueSleepAnalysisAwake"/>
+
+  <!-- Heart rate readings every ~5 minutes throughout the night -->
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-15 23:05:00 +0000" startDate="2024-03-15 23:05:00 +0000" endDate="2024-03-15 23:05:00 +0000" value="72"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-15 23:10:00 +0000" startDate="2024-03-15 23:10:00 +0000" endDate="2024-03-15 23:10:00 +0000" value="68"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-15 23:20:00 +0000" startDate="2024-03-15 23:20:00 +0000" endDate="2024-03-15 23:20:00 +0000" value="62"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-15 23:30:00 +0000" startDate="2024-03-15 23:30:00 +0000" endDate="2024-03-15 23:30:00 +0000" value="58"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-15 23:45:00 +0000" startDate="2024-03-15 23:45:00 +0000" endDate="2024-03-15 23:45:00 +0000" value="56"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-16 00:15:00 +0000" startDate="2024-03-16 00:15:00 +0000" endDate="2024-03-16 00:15:00 +0000" value="54"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-16 00:45:00 +0000" startDate="2024-03-16 00:45:00 +0000" endDate="2024-03-16 00:45:00 +0000" value="56"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-16 01:15:00 +0000" startDate="2024-03-16 01:15:00 +0000" endDate="2024-03-16 01:15:00 +0000" value="58"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-16 01:45:00 +0000" startDate="2024-03-16 01:45:00 +0000" endDate="2024-03-16 01:45:00 +0000" value="60"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-16 02:15:00 +0000" startDate="2024-03-16 02:15:00 +0000" endDate="2024-03-16 02:15:00 +0000" value="57"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-16 02:45:00 +0000" startDate="2024-03-16 02:45:00 +0000" endDate="2024-03-16 02:45:00 +0000" value="55"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-16 03:15:00 +0000" startDate="2024-03-16 03:15:00 +0000" endDate="2024-03-16 03:15:00 +0000" value="54"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-16 03:45:00 +0000" startDate="2024-03-16 03:45:00 +0000" endDate="2024-03-16 03:45:00 +0000" value="58"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-16 04:15:00 +0000" startDate="2024-03-16 04:15:00 +0000" endDate="2024-03-16 04:15:00 +0000" value="60"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-16 04:45:00 +0000" startDate="2024-03-16 04:45:00 +0000" endDate="2024-03-16 04:45:00 +0000" value="57"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-16 05:15:00 +0000" startDate="2024-03-16 05:15:00 +0000" endDate="2024-03-16 05:15:00 +0000" value="58"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-16 05:45:00 +0000" startDate="2024-03-16 05:45:00 +0000" endDate="2024-03-16 05:45:00 +0000" value="62"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-16 06:15:00 +0000" startDate="2024-03-16 06:15:00 +0000" endDate="2024-03-16 06:15:00 +0000" value="64"/>
+  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Apple Watch" unit="count/min" creationDate="2024-03-16 06:45:00 +0000" startDate="2024-03-16 06:45:00 +0000" endDate="2024-03-16 06:45:00 +0000" value="68"/>
+</HealthData>
