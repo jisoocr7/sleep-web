@@ -102,9 +102,16 @@ def main():
     if isinstance(shap_values, list):
         shap_values = shap_values[1]  # class 1 for multi-class
 
+    # Handle different SHAP output shapes
+    if shap_values.ndim == 3:
+        # (samples, features, classes) → average over samples and classes
+        importance_arr = np.abs(shap_values).mean(axis=(0, 2))
+    else:
+        importance_arr = np.abs(shap_values).mean(axis=0)
+
     global_importance = pd.DataFrame({
         "feature": CONTEXT_FEATURES,
-        "importance": np.abs(shap_values).mean(axis=0),
+        "importance": importance_arr,
     }).sort_values("importance", ascending=False)
 
     importance_path = MODEL_DIR / "global_shap_importance.csv"
