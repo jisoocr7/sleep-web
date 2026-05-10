@@ -7,11 +7,26 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.font_manager as fm
 import pandas as pd
 import numpy as np
 
-plt.rcParams["font.family"] = "sans-serif"
-plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "DejaVu Sans"]
+# Find available Chinese fonts (works on both Windows and Linux)
+_chinese_fonts = []
+for f in fm.findSystemFonts():
+    try:
+        name = fm.FontProperties(fname=f).get_name()
+        if any(k in name.lower() for k in ['hei', 'song', 'kai', 'ming', 'noto sans cjk', 'wenquanyi', 'microsoft yahei', 'simhei', 'simsun']):
+            _chinese_fonts.append(name)
+    except:
+        pass
+
+if _chinese_fonts:
+    plt.rcParams["font.family"] = "sans-serif"
+    plt.rcParams["font.sans-serif"] = _chinese_fonts[:5] + ["DejaVu Sans"]
+else:
+    plt.rcParams["font.family"] = "sans-serif"
+    plt.rcParams["font.sans-serif"] = ["DejaVu Sans"]
 plt.rcParams["axes.unicode_minus"] = False
 
 # Warm palette for sleep stages
@@ -71,9 +86,10 @@ def plot_stage_distribution(predictions: pd.DataFrame, figsize=(5, 4)) -> plt.Fi
     """Plot sleep stage distribution as a donut chart."""
     labels = predictions["predicted_label"].values
     counts = pd.Series(labels).value_counts().sort_index()
+    total = len(labels)
 
     fig, ax = plt.subplots(figsize=figsize, facecolor="#FEFAF5")
-    stage_labels = [f"{STAGE_NAMES.get(i, '?')}\n({counts.get(i, 0)} epochs)" for i in [0, 1, 2]]
+    stage_labels = [f"{STAGE_NAMES.get(i, '?')}" for i in [0, 1, 2]]
     colors = [STAGE_COLORS[i] for i in [0, 1, 2]]
     sizes = [counts.get(i, 0) for i in [0, 1, 2]]
 
@@ -83,14 +99,14 @@ def plot_stage_distribution(predictions: pd.DataFrame, figsize=(5, 4)) -> plt.Fi
         wedgeprops=dict(width=0.4, edgecolor='white', linewidth=2),
     )
     for at in autotexts:
-        at.set_fontsize(9)
+        at.set_fontsize(10)
         at.set_fontweight("bold")
         at.set_color("#3E2E22")
     for t in texts:
-        t.set_fontsize(9)
+        t.set_fontsize(10)
         t.set_color("#6D5C4F")
 
-    ax.set_title("睡眠阶段分布", color="#3E2E22", fontweight="bold")
+    ax.set_title("睡眠阶段占比", color="#3E2E22", fontweight="bold", fontsize=13)
     plt.tight_layout()
     return fig
 
@@ -101,6 +117,13 @@ def plot_metric_summary(metrics: dict, ref_comparison: dict = None, figsize=(8, 
         from src.sleep_scoring import generate_reference_comparison
         ref_comparison = generate_reference_comparison(metrics)
 
+    friendly_keys = {
+        "睡眠效率 SE (%)": "睡眠质量",
+        "总睡眠时长 TST (分钟)": "睡眠时长",
+        "入睡后清醒 WASO (分钟)": "中途清醒",
+        "入睡潜伏期 (分钟)": "入睡速度",
+        "REM 占比 (%)": "做梦比例",
+    }
     plot_metrics = ["睡眠效率 SE (%)", "总睡眠时长 TST (分钟)", "入睡后清醒 WASO (分钟)",
                     "入睡潜伏期 (分钟)", "REM 占比 (%)"]
     available = [k for k in plot_metrics if k in ref_comparison]
@@ -119,22 +142,23 @@ def plot_metric_summary(metrics: dict, ref_comparison: dict = None, figsize=(8, 
 
         status_colors = {"normal": "#5DAF8B", "borderline": "#E8904C", "concerning": "#D35D47", "unknown": "#AAA"}
         color = status_colors.get(rc["status"], "#AAA")
-        status_labels = {"normal": "正常", "borderline": "临界", "concerning": "需关注", "unknown": "未知"}
+        status_labels = {"normal": "正常", "borderline": "偏高/偏低", "concerning": "需关注", "unknown": "未知"}
         label = status_labels.get(rc["status"], "")
+        friendly_name = friendly_keys.get(key, key)
 
         ax.barh(0, val, color=color, height=0.5, alpha=0.8)
         ax.set_xlim(0, val * 1.5 if val > 0 else 100)
         ax.set_yticks([])
-        ax.set_title(f"{key}: {val}  [{label}]", fontsize=9, color="#3E2E22", loc="left")
+        ax.set_title(f"{friendly_name}: {val}  [{label}]", fontsize=10, color="#3E2E22", loc="left")
         ax.axvline(x=float(val), color=color, linewidth=2)
 
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
         ax.spines["left"].set_visible(False)
         ax.spines["bottom"].set_color("#D7C4B0")
-        ax.tick_params(colors="#6D5C4F", labelsize=7)
+        ax.tick_params(colors="#6D5C4F", labelsize=8)
 
-    fig.suptitle("指标概览", fontsize=12, color="#3E2E22", fontweight="bold", y=1.02)
+    fig.suptitle("核心指标", fontsize=13, color="#3E2E22", fontweight="bold", y=1.02)
     plt.tight_layout()
     return fig
 
@@ -477,6 +501,7 @@ def generate_html_report(
     <div class="headline">{summary.get('headline', '')}</div>
     <div class="score-gauge">{gauge_svg}</div>
     <div class="grade-badge">{grade} · {grade_label}</div>
+    <p style="color:#A38B78;font-size:0.9rem;margin-top:4px;">分数越高，睡眠越好</p>
     <p style="color:#6D5C4F;margin-top:12px;max-width:500px;margin-left:auto;margin-right:auto;">{summary.get('plain_summary', '')}</p>
     <!-- Subscores -->
     <div style="margin-top:24px;max-width:420px;margin-left:auto;margin-right:auto;">
@@ -502,8 +527,8 @@ def generate_html_report(
     <table class="metrics-table">
       <thead><tr>
         <th>指标</th>
-        <th>您的数值</th>
-        <th>参考范围</th>
+        <th>你的数值</th>
+        <th>正常范围</th>
         <th>状态</th>
       </tr></thead>
       <tbody>{metrics_rows}</tbody>
