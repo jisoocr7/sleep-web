@@ -275,13 +275,17 @@ def generate_html_report(
 
     # Recommendations section — conversational tone
     icon_map = {"efficiency": "&#128164;", "fragmentation": "&#128564;", "latency": "&#9200;", "rem": "&#127752;", "general": "&#128161;"}
-    conversational = {
-        "efficiency": lambda se: f"你的睡眠效率是 {se}%，躺在床上的时间有 {100 - int(float(se))}% 没有真正睡着。建议只在困了才上床，醒了就起来，别在床上刷手机。",
-        "fragmentation": lambda waso: f"你昨晚中途醒了 {waso} 分钟，睡眠被打断了。睡前少喝水、保持房间安静黑暗，可能会有帮助。",
-        "latency": lambda lat: f"你花了 {lat} 分钟才入睡，有点慢。睡前一小时放下手机，试试深呼吸或泡个热水脚。",
-        "rem": lambda pct: f"你的做梦期（REM）只占 {pct}%，低于正常的 20-25%。REM 是大脑整理记忆和调节情绪的关键阶段——少了它，第二天容易健忘、情绪波动。常见原因：饮酒（哪怕一杯也会压制 REM）、压力大、作息不规律。试着睡前放松、减少饮酒，REM 会慢慢恢复。",
-    }
     import re
+    conversational = {
+        "efficiency": lambda se, issue: f"你的睡眠效率是 {se}%，躺在床上的时间有 {100 - int(float(se))}% 没有真正睡着。建议只在困了才上床，醒了就起来，别在床上刷手机。",
+        "fragmentation": lambda waso, issue: f"你昨晚中途醒了 {waso} 分钟，睡眠被打断了。睡前少喝水、保持房间安静黑暗，可能会有帮助。",
+        "latency": lambda lat, issue: f"你花了 {lat} 分钟才入睡，有点慢。睡前一小时放下手机，试试深呼吸或泡个热水脚。",
+        "rem": lambda pct, issue: (
+            f"你的做梦期占比 {pct}%，高于正常的 20-25%。这通常是好现象——说明身体在"补觉"，把之前欠下的做梦时间补回来，不用担心。"
+            if "偏高" in issue or "反弹" in issue or "补觉" in issue
+            else f"你的做梦期只占 {pct}%，低于正常的 20-25%。做梦期是大脑整理记忆和调节情绪的关键阶段——少了它，第二天容易健忘、情绪波动。常见原因：饮酒（哪怕一杯也会压制做梦）、压力大、作息不规律。试着睡前放松、减少饮酒，做梦时间会慢慢恢复。"
+        ),
+    }
     recs_html = ""
     for i, rec in enumerate(recommendations):
         sev_colors = {"critical": "#D35D47", "warning": "#E8904C", "info": "#5DAF8B"}
@@ -292,7 +296,7 @@ def generate_html_report(
         if cat in conversational:
             nums = re.findall(r'(\d+)', rec["issue"])
             if nums:
-                advice = conversational[cat](nums[0])
+                advice = conversational[cat](nums[0], rec["issue"])
         recs_html += f"""
         <div style="background:#FEFAF5;border:1px solid #EDE0D4;border-radius:12px;padding:16px;margin-bottom:12px;border-left:4px solid {sev_colors.get(rec['severity'], '#999')};">
             <div style="display:flex;align-items:flex-start;gap:12px;">

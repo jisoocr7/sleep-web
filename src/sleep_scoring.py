@@ -150,7 +150,7 @@ def compute_sleep_score(metrics: dict) -> dict:
             "total_sleep_time": "睡眠时长不足",
             "waso": "夜间清醒时间过长",
             "sleep_latency": "入睡困难",
-            "rem_proportion": "REM 比例异常",
+            "rem_proportion": "做梦比例异常",
         }
         flag = flag_names.get(lowest_key)
 
@@ -266,10 +266,10 @@ def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
         recommendations.append({
             "priority": 2,
             "category": "rem",
-            "issue": f"REM 占比仅 {rem_pct:.0f}%，低于正常 20-25% 范围",
+            "issue": f"做梦期占比仅 {rem_pct:.0f}%，低于正常 20-25% 范围",
             "advice": (
-                "REM（快速眼动）睡眠对情绪调节和记忆巩固至关重要。REM 偏低常见原因："
-                "① 饮酒（即使一杯也会抑制 REM）；"
+                "做梦期（REM 睡眠）对情绪调节和记忆巩固至关重要，就像大脑在夜间"整理文件"。偏少常见原因："
+                "① 饮酒（即使一杯也会抑制做梦）；"
                 "② 某些药物（如抗抑郁药）；"
                 "③ 作息不规律；"
                 "④ 高度压力。"
@@ -284,11 +284,11 @@ def generate_recommendations(metrics: dict, subscores: dict = None) -> list:
         recommendations.append({
             "priority": 3,
             "category": "rem",
-            "issue": f"REM 占比偏高 ({rem_pct:.0f}%)，可能提示 REM 反弹现象",
+            "issue": f"做梦期占比偏高 ({rem_pct:.0f}%)，可能是身体在"补觉"",
             "advice": (
-                "REM 反弹通常发生在睡眠不足或 REM 被抑制后的恢复期。"
-                "如果近期有补觉行为，这属于正常的生理调节。"
-                "如果长期偏高，建议关注是否存在潜在的睡眠呼吸问题。"
+                "做梦期偏高通常发生在之前睡眠不足或做梦被抑制（如饮酒）后的恢复期，"
+                "身体在自动补偿之前欠下的做梦时间，属于正常的生理调节，一般不用担心。"
+                "如果长期偏高且伴有白天嗜睡，建议关注是否存在潜在的睡眠问题。"
             ),
             "severity": "info",
             "reference": "NIH / NINDS",
@@ -413,9 +413,9 @@ def generate_reference_comparison(metrics: dict) -> dict:
             "normal_max": 85,
             "borderline_min": 60,
             "borderline_max": 90,
-            "interpretation_low": "NREM 占比偏低",
-            "interpretation_normal": "NREM 占比正常",
-            "interpretation_high": "NREM 占比偏高",
+            "interpretation_low": "深睡眠比例偏低",
+            "interpretation_normal": "深睡眠比例正常",
+            "interpretation_high": "深睡眠比例偏高",
         },
         "REM 占比 (%)": {
             "reference_range": "20-25% of TST",
@@ -423,9 +423,9 @@ def generate_reference_comparison(metrics: dict) -> dict:
             "normal_max": 28,
             "borderline_min": 15,
             "borderline_max": 30,
-            "interpretation_low": "REM 占比偏低，可能影响记忆和情绪调节",
-            "interpretation_normal": "REM 占比正常",
-            "interpretation_high": "REM 占比偏高，可能提示 REM 反弹",
+            "interpretation_low": "做梦比例偏低，可能影响记忆和情绪调节",
+            "interpretation_normal": "做梦比例正常",
+            "interpretation_high": "做梦比例偏高，可能是身体在补觉",
         },
         "阶段转换次数": {
             "reference_range": "20-40 次/晚",
