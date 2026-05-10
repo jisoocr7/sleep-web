@@ -59,18 +59,18 @@ def plot_hypnogram(predictions: pd.DataFrame, figsize=(12, 4)) -> plt.Figure:
 
     ax.set_ylim(-0.5, 2.5)
     ax.set_yticks([0, 1, 2])
-    ax.set_yticklabels(["做梦期", "深睡眠", "清醒"])
-    ax.set_xlabel("时间 (小时)", color="#6D5C4F")
-    ax.set_ylabel("睡眠阶段", color="#6D5C4F")
-    ax.set_title("整晚睡眠一览", color="#3E2E22", fontweight="bold")
-    ax.tick_params(colors="#6D5C4F")
+    ax.set_yticklabels(["做梦期", "深睡眠", "清醒"], fontsize=13)
+    ax.set_xlabel("时间 (小时)", color="#6D5C4F", fontsize=13)
+    ax.set_ylabel("睡眠阶段", color="#6D5C4F", fontsize=13)
+    ax.set_title("整晚睡眠一览", color="#3E2E22", fontweight="bold", fontsize=16)
+    ax.tick_params(colors="#6D5C4F", labelsize=11)
 
     legend_patches = [
         mpatches.Patch(color=STAGE_COLORS[0], label="清醒"),
         mpatches.Patch(color=STAGE_COLORS[1], label="深睡眠"),
         mpatches.Patch(color=STAGE_COLORS[2], label="做梦期"),
     ]
-    ax.legend(handles=legend_patches, loc="upper right", fontsize=8)
+    ax.legend(handles=legend_patches, loc="upper right", fontsize=12)
 
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
@@ -99,14 +99,14 @@ def plot_stage_distribution(predictions: pd.DataFrame, figsize=(5, 4)) -> plt.Fi
         wedgeprops=dict(width=0.4, edgecolor='white', linewidth=2),
     )
     for at in autotexts:
-        at.set_fontsize(10)
+        at.set_fontsize(14)
         at.set_fontweight("bold")
         at.set_color("#3E2E22")
     for t in texts:
-        t.set_fontsize(10)
+        t.set_fontsize(14)
         t.set_color("#6D5C4F")
 
-    ax.set_title("睡眠阶段占比", color="#3E2E22", fontweight="bold", fontsize=13)
+    ax.set_title("睡眠阶段占比", color="#3E2E22", fontweight="bold", fontsize=16)
     plt.tight_layout()
     return fig
 
@@ -149,16 +149,16 @@ def plot_metric_summary(metrics: dict, ref_comparison: dict = None, figsize=(8, 
         ax.barh(0, val, color=color, height=0.5, alpha=0.8)
         ax.set_xlim(0, val * 1.5 if val > 0 else 100)
         ax.set_yticks([])
-        ax.set_title(f"{friendly_name}: {val}  [{label}]", fontsize=10, color="#3E2E22", loc="left")
+        ax.set_title(f"{friendly_name}: {val}  [{label}]", fontsize=13, color="#3E2E22", loc="left")
         ax.axvline(x=float(val), color=color, linewidth=2)
 
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
         ax.spines["left"].set_visible(False)
         ax.spines["bottom"].set_color("#D7C4B0")
-        ax.tick_params(colors="#6D5C4F", labelsize=8)
+        ax.tick_params(colors="#6D5C4F", labelsize=11)
 
-    fig.suptitle("核心指标", fontsize=13, color="#3E2E22", fontweight="bold", y=1.02)
+    fig.suptitle("核心指标", fontsize=16, color="#3E2E22", fontweight="bold", y=1.02)
     plt.tight_layout()
     return fig
 
@@ -279,7 +279,7 @@ def generate_html_report(
         "efficiency": lambda se: f"你的睡眠效率是 {se}%，躺在床上的时间有 {100 - int(float(se))}% 没有真正睡着。建议只在困了才上床，醒了就起来，别在床上刷手机。",
         "fragmentation": lambda waso: f"你昨晚中途醒了 {waso} 分钟，睡眠被打断了。睡前少喝水、保持房间安静黑暗，可能会有帮助。",
         "latency": lambda lat: f"你花了 {lat} 分钟才入睡，有点慢。睡前一小时放下手机，试试深呼吸或泡个热水脚。",
-        "rem": lambda pct: f"你的做梦期只占 {pct}%，比正常偏低。减少饮酒、保持规律作息，做梦时间会慢慢恢复。",
+        "rem": lambda pct: f"你的做梦期（REM）只占 {pct}%，低于正常的 20-25%。REM 是大脑整理记忆和调节情绪的关键阶段——少了它，第二天容易健忘、情绪波动。常见原因：饮酒（哪怕一杯也会压制 REM）、压力大、作息不规律。试着睡前放松、减少饮酒，REM 会慢慢恢复。",
     }
     import re
     recs_html = ""
@@ -533,6 +533,13 @@ def generate_html_report(
       </tr></thead>
       <tbody>{metrics_rows}</tbody>
     </table>
+    <div style="background:#F5F0FF;border:1px solid #D4C8ED;border-radius:10px;padding:14px 18px;margin-top:14px;">
+      <div style="font-weight:600;color:#5B4A9E;margin-bottom:6px;">&#127752; 关于"做梦时间"（REM）</div>
+      <div style="color:#5D4037;font-size:0.92rem;line-height:1.8;">
+        做梦主要发生在 REM（快速眼动）睡眠阶段。REM 对<strong>记忆巩固</strong>和<strong>情绪调节</strong>非常重要——就像大脑在夜间"整理文件"和"清理情绪垃圾"。<br>
+        正常范围是占总睡眠的 <strong>20-25%</strong>。偏少（&lt;18%）常见于饮酒、压力大或作息紊乱；偏多（&gt;28%）可能是身体在"补觉"，即之前 REM 不足后的自然反弹，一般不用担心。
+      </div>
+    </div>
   </div>
 
   <!-- Recommendations -->

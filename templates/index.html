@@ -1078,7 +1078,7 @@ function renderMetrics(metrics, refComp) {
   const remOk = remPct >= 18 && remPct <= 28;
   const remIcon = remOk ? '&#10003;' : '&#9888;';
   const remColor = remOk ? 'var(--success)' : 'var(--warning)';
-  const remDesc = remOk ? '做梦时间正常，记忆和情绪调节良好' : (remPct < 18 ? '偏少，可能与饮酒或压力有关' : '偏多，可能身体在补偿之前的不足');
+  const remDesc = remOk ? '做梦时间正常，REM 帮助大脑巩固记忆、调节情绪，就像夜间"整理文件"' : (remPct < 18 ? '偏少——常见于饮酒、压力大或作息紊乱，REM 不足会影响记忆和情绪' : '偏多——可能是之前睡眠不足后的"补偿"，身体在补回欠下的 REM');
 
   grid.innerHTML = `
     <div class="metric-big">
@@ -1120,7 +1120,7 @@ function renderMetrics(metrics, refComp) {
       <div class="mb-value">${remPct.toFixed(0)}<span style="font-size:1.2rem;font-weight:400;color:var(--text-muted)">%</span></div>
       <div class="pbar-track"><div class="pbar-fill rem" style="width:${Math.min(remPct,100)}%"></div></div>
       <div class="mb-desc">${remDesc}</div>
-      <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">正常范围 20-25%</div>
+      <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">做梦期（REM）帮助记忆和情绪调节 · 正常 20-25%</div>
       <div class="mb-status" style="color:${remColor}">${remIcon}</div>
     </div>
   `;
