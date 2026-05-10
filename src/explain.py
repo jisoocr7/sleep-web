@@ -6,7 +6,16 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-from .predict import load_explainer, load_schema
+try:
+    import shap
+    from .predict import load_explainer, load_schema
+    SHAP_AVAILABLE = True
+except ImportError:
+    SHAP_AVAILABLE = False
+    def load_explainer():
+        return None
+    def load_schema():
+        return None
 
 # CJK-friendly font setup
 plt.rcParams["font.family"] = "sans-serif"
@@ -69,6 +78,8 @@ def compute_shap_for_upload(df_context: pd.DataFrame, max_samples: int = 500):
     Returns:
         fig: SHAP summary plot figure, or None if explainer not available
     """
+    if not SHAP_AVAILABLE:
+        return None, None
     explainer = load_explainer()
     schema = load_schema()
     if explainer is None:
