@@ -11,33 +11,34 @@ import matplotlib.font_manager as fm
 import pandas as pd
 import numpy as np
 
-# Find available Chinese fonts (works on both Windows and Linux)
-_chinese_fonts = []
-for f in fm.findSystemFonts():
-    try:
-        name = fm.FontProperties(fname=f).get_name()
-        if any(k in name.lower() for k in ['hei', 'song', 'kai', 'ming', 'noto sans cjk', 'wenquanyi', 'microsoft yahei', 'simhei', 'simsun']):
-            _chinese_fonts.append(name)
-    except:
-        pass
+# --- Chinese font setup ---
+# Find a CJK-capable font by scanning system font files, then register it
+# with matplotlib so rcParams can resolve it reliably.
+_cjk_font_path = None
+_cjk_font_name = None
+for _f in fm.findSystemFonts():
+    _f_lower = _f.lower()
+    if any(_k in _f_lower for _k in ['simhei', 'msyh', 'yahei', 'wqy', 'wenquan', 'noto']):
+        _cjk_font_path = _f
+        break
 
-# Set font configuration - use explicit font name
-if _chinese_fonts:
-    # Prefer SimHei or Microsoft YaHei for best CJK support
-    preferred_font = None
-    for pref in ['SimHei', 'Microsoft YaHei', 'Microsoft JhengHei']:
-        if pref in _chinese_fonts:
-            preferred_font = pref
-            break
-    if preferred_font is None:
-        preferred_font = _chinese_fonts[0]
-    
-    plt.rcParams["font.family"] = preferred_font
-    plt.rcParams["font.sans-serif"] = [preferred_font]
+if _cjk_font_path is None:
+    for _f in fm.findSystemFonts():
+        try:
+            _n = fm.FontProperties(fname=_f).get_name().lower()
+            if any(_k in _n for _k in ['hei', 'song', 'kai', 'ming']):
+                _cjk_font_path = _f
+                break
+        except RuntimeError:
+            pass
+
+if _cjk_font_path is not None:
+    fm.fontManager.addfont(_cjk_font_path)
+    _cjk_font_name = fm.FontProperties(fname=_cjk_font_path).get_name()
+    plt.rcParams["font.family"] = "sans-serif"
+    plt.rcParams["font.sans-serif"] = [_cjk_font_name] + plt.rcParams.get("font.sans-serif", [])
 else:
-    # Fallback: use DejaVu Sans which has good Unicode support
-    plt.rcParams["font.family"] = "DejaVu Sans"
-    plt.rcParams["font.sans-serif"] = ["DejaVu Sans"]
+    plt.rcParams["font.family"] = "sans-serif"
 plt.rcParams["axes.unicode_minus"] = False
 
 # Warm palette for sleep stages
@@ -73,7 +74,7 @@ def plot_hypnogram(predictions: pd.DataFrame, figsize=(12, 4)) -> plt.Figure:
     ax.set_yticklabels(["做梦期", "深睡眠", "清醒"], fontsize=13)
     ax.set_xlabel("时间 (小时)", color="#6D5C4F", fontsize=13)
     ax.set_ylabel("睡眠阶段", color="#6D5C4F", fontsize=13)
-    ax.set_title("整晚睡眠一览", color="#3E2E22", fontweight="bold", fontsize=16)
+    ax.set_title("整晚睡眠一览", color="#3E2E22", fontweight="bold", fontsize=18)
     ax.tick_params(colors="#6D5C4F", labelsize=11)
 
     legend_patches = [

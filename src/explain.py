@@ -18,31 +18,32 @@ except ImportError:
     def load_schema():
         return None
 
-# CJK-friendly font setup - dynamic detection
-_chinese_fonts = []
-for f in fm.findSystemFonts():
-    try:
-        name = fm.FontProperties(fname=f).get_name()
-        if any(k in name.lower() for k in ['hei', 'song', 'kai', 'ming', 'noto sans cjk', 'wenquanyi', 'microsoft yahei', 'simhei', 'simsun']):
-            _chinese_fonts.append(name)
-    except:
-        pass
+# --- Chinese font setup ---
+_cjk_font_path = None
+_cjk_font_name = None
+for _f in fm.findSystemFonts():
+    _f_lower = _f.lower()
+    if any(_k in _f_lower for _k in ['simhei', 'msyh', 'yahei', 'wqy', 'wenquan', 'noto']):
+        _cjk_font_path = _f
+        break
 
-if _chinese_fonts:
-    # Prefer SimHei or Microsoft YaHei for best CJK support
-    preferred_font = None
-    for pref in ['SimHei', 'Microsoft YaHei', 'Microsoft JhengHei']:
-        if pref in _chinese_fonts:
-            preferred_font = pref
-            break
-    if preferred_font is None:
-        preferred_font = _chinese_fonts[0]
-    
-    plt.rcParams["font.family"] = preferred_font
-    plt.rcParams["font.sans-serif"] = [preferred_font]
+if _cjk_font_path is None:
+    for _f in fm.findSystemFonts():
+        try:
+            _n = fm.FontProperties(fname=_f).get_name().lower()
+            if any(_k in _n for _k in ['hei', 'song', 'kai', 'ming']):
+                _cjk_font_path = _f
+                break
+        except RuntimeError:
+            pass
+
+if _cjk_font_path is not None:
+    fm.fontManager.addfont(_cjk_font_path)
+    _cjk_font_name = fm.FontProperties(fname=_cjk_font_path).get_name()
+    plt.rcParams["font.family"] = "sans-serif"
+    plt.rcParams["font.sans-serif"] = [_cjk_font_name] + plt.rcParams.get("font.sans-serif", [])
 else:
-    plt.rcParams["font.family"] = "DejaVu Sans"
-    plt.rcParams["font.sans-serif"] = ["DejaVu Sans"]
+    plt.rcParams["font.family"] = "sans-serif"
 plt.rcParams["axes.unicode_minus"] = False
 
 MODEL_DIR = Path(__file__).resolve().parents[1] / "models"
