@@ -510,8 +510,8 @@ def api_sample_data(fmt):
 
     file_map = {
         "epoch": "sample_epoch_features.csv",
-        "good-sleep": "sample_subject_5383425.csv",
-        "poor-sleep": "sample_subject_4314139.csv",
+        "good-sleep": "text-92.csv",
+        "poor-sleep": "sample_poor_sleep.csv",
         "apple-health": "sample_export.xml",
         "autosleep": "sample_autosleep.csv",
         "sleep-cycle": "sample_sleep_cycle.csv",

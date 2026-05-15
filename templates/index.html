@@ -6,1292 +6,1624 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>睡眠分期分析 — 了解你的睡眠</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
+<title>SleepInsight | 睡眠分期与质量评估平台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
-/* ── Design System: Premium Warm ── */
 :root {
-  --bg-cream: oklch(0.97 0.012 85);
-  --bg-surface: oklch(0.99 0.005 85);
-  --bg-card: oklch(0.995 0.003 85);
-  --text-primary: oklch(0.18 0.02 75);
-  --text-secondary: oklch(0.38 0.03 70);
-  --text-muted: oklch(0.50 0.02 75);
-  --accent: oklch(0.58 0.17 35);
-  --accent-hover: oklch(0.52 0.15 35);
-  --accent-light: oklch(0.72 0.10 45);
-  --border: oklch(0.86 0.02 85);
-  --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.05);
-  --shadow: 0 2px 12px oklch(0 0 0 / 0.06);
-  --shadow-lg: 0 8px 28px oklch(0 0 0 / 0.09);
-  --radius-sm: 10px;
-  --radius: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-  --font-heading: 'Sora', -apple-system, sans-serif;
-  --font-body: 'Outfit', 'Microsoft YaHei', 'PingFang SC', sans-serif;
-  --ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --wake: #E8904C;
-  --nrem: #5DAF8B;
-  --rem: #8B7EC8;
-  --success: #5DAF8B;
-  --warning: #E8904C;
-  --danger: #D35D47;
+  --ink: #f7f2e8;
+  --paper: #f2eadf;
+  --paper-2: #e7dccd;
+  --charcoal: #0d1517;
+  --charcoal-2: #121d20;
+  --charcoal-3: #1c2b2e;
+  --muted: #747b78;
+  --line: rgba(13, 21, 23, 0.12);
+  --line-dark: rgba(247, 242, 232, 0.13);
+  --gold: #c99c68;
+  --gold-2: #e6c58d;
+  --mint: #75d0bd;
+  --sage: #a7bda4;
+  --clay: #c9785f;
+  --blue: #78a7c8;
+  --rem: #8e83c7;
+  --wake: #d98564;
+  --nrem: #68c2a5;
+  --ok: #55b98c;
+  --warn: #da9b43;
+  --bad: #d66056;
+  --radius: 8px;
+  --shadow: 0 24px 70px rgba(17, 23, 22, 0.16);
+  --font: "Manrope", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
 
-* { margin:0; padding:0; box-sizing:border-box; }
+* { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+* {
+  min-width: 0;
+}
 
 body {
-  font-family: var(--font-body);
-  background: var(--bg-cream);
-  color: var(--text-primary);
+  margin: 0;
+  font-family: var(--font);
+  color: var(--charcoal);
+  background:
+    linear-gradient(180deg, rgba(244,239,229,0.96), rgba(235,226,212,0.96)),
+    repeating-linear-gradient(90deg, rgba(17,23,22,0.025) 0 1px, transparent 1px 80px);
   min-height: 100vh;
-  line-height: 1.6;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
 }
 
-.app-shell { max-width: 1480px; margin: 0 auto; padding: 12px 28px 32px; }
+a { color: inherit; text-decoration: none; }
+button, input { font: inherit; }
+img, canvas { max-width: 100%; display: block; }
 
-/* ── Typography ── */
-h1, h2, h3, h4 { font-family: var(--font-heading); }
-h1 { font-size: 4.5rem; font-weight: 700; letter-spacing: -0.025em; line-height: 1.05; }
-h2 { font-size: 2.8rem; font-weight: 600; letter-spacing: -0.015em; }
-h3 { font-size: 1.6rem; font-weight: 600; letter-spacing: -0.01em; }
-h4 { font-size: 1.4rem; font-weight: 600; }
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(17, 23, 22, 0.94);
+  color: var(--ink);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line-dark);
+}
 
-/* ── Hero ── */
+.nav-inner {
+  max-width: 1240px;
+  height: 76px;
+  margin: 0 auto;
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 26px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.brand-mark {
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(226,188,130,0.55);
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, rgba(201,155,100,0.3), rgba(143,212,187,0.06));
+  color: var(--gold-2);
+}
+
+.brand-mark svg { width: 22px; height: 22px; }
+.brand small { display: block; color: rgba(247,242,232,0.58); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-links a {
+  padding: 10px 15px;
+  border-radius: var(--radius);
+  color: rgba(247,242,232,0.78);
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.nav-links a:hover { color: var(--ink); background: rgba(247,242,232,0.08); }
+
+.nav-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border-radius: var(--radius);
+  background: var(--gold);
+  color: #17110a;
+  font-weight: 800;
+  border: 0;
+  cursor: pointer;
+}
+
+.lang-toggle {
+  min-height: 42px;
+  padding: 0 13px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(247,242,232,0.18);
+  color: var(--ink);
+  background: rgba(247,242,232,0.06);
+  cursor: pointer;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .hero {
-  text-align: center;
-  padding: 28px 24px 20px;
+  min-height: 660px;
+  color: var(--ink);
+  background:
+    linear-gradient(90deg, rgba(8,14,16,0.98) 0%, rgba(8,14,16,0.88) 48%, rgba(8,14,16,0.63) 100%),
+    radial-gradient(circle at 78% 34%, rgba(230,197,141,0.28) 0 7%, transparent 8%),
+    radial-gradient(circle at 74% 36%, rgba(230,197,141,0.1) 0 14%, transparent 15%),
+    linear-gradient(135deg, #081012 0%, #162427 52%, #10191b 100%);
   position: relative;
+  overflow: hidden;
 }
-.hero::before {
-  content: '';
-  position: absolute;
-  top: -40px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, oklch(0.72 0.08 45 / 0.12), transparent 70%);
-  pointer-events: none;
-}
-.hero h1 { margin-bottom: 8px; position: relative; }
-.hero .subtitle {
-  font-size: 1.5rem;
-  color: var(--text-secondary);
-  max-width: 800px;
-  margin: 0 auto 16px;
-  position: relative;
-}
-.hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; position: relative; }
 
-/* ── Buttons ── */
-.btn {
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(230,197,141,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(230,197,141,0.04) 1px, transparent 1px);
+  background-size: 84px 84px;
+  mask-image: linear-gradient(90deg, rgba(0,0,0,0.78), transparent 84%);
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 74px 0 0 42%;
+  background:
+    radial-gradient(ellipse at 72% 30%, rgba(247,242,232,0.78) 0 5.6%, rgba(247,242,232,0.08) 5.8% 11%, transparent 11.3%),
+    linear-gradient(158deg, transparent 0 40%, rgba(201,156,104,0.38) 40.2% 40.8%, transparent 41%),
+    linear-gradient(162deg, transparent 0 58%, rgba(117,208,189,0.18) 58.2% 58.8%, transparent 59%),
+    radial-gradient(ellipse at 58% 68%, rgba(117,208,189,0.22), transparent 38%),
+    radial-gradient(ellipse at 48% 82%, rgba(201,156,104,0.16), transparent 42%);
+  opacity: 0.86;
+  filter: blur(0.2px);
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1240px;
+  min-height: 660px;
+  margin: 0 auto;
+  padding: 92px 28px 78px;
+  display: grid;
+  align-items: center;
+}
+
+.eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 18px 42px;
-  border-radius: 100px;
-  font-family: var(--font-heading);
-  font-size: 1.25rem;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all 0.25s var(--ease);
-  text-decoration: none;
-  letter-spacing: -0.01em;
+  color: var(--gold-2);
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 22px;
 }
-.btn:active { transform: scale(0.97); }
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-hover); box-shadow: 0 6px 24px oklch(0.58 0.17 35 / 0.35); }
-.btn-outline {
-  background: transparent;
-  color: var(--text-primary);
-  border: 2px solid var(--border);
-}
-.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
-.btn-sm { padding: 14px 28px; font-size: 1.1rem; }
-.btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
 
-/* ── Sections ── */
-.section { margin-bottom: 24px; }
-.section-header { text-align: center; margin-bottom: 18px; }
-.section-header h2 { margin-bottom: 6px; }
-.section-header p { color: var(--text-secondary); max-width: 800px; margin: 0 auto; font-size: 1.3rem; }
+.eyebrow::before {
+  content: "";
+  width: 42px;
+  height: 1px;
+  background: var(--gold-2);
+}
 
-/* ── How It Works ── */
-.steps-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+.hero h1 {
+  margin: 0;
+  max-width: 1080px;
+  font-family: var(--font);
+  font-size: clamp(3.5rem, 5.6vw, 5.9rem);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  text-shadow: 0 16px 46px rgba(0,0,0,0.38);
 }
-.step-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 28px 20px;
-  text-align: center;
-  transition: all 0.3s var(--ease);
-  position: relative;
-}
-.step-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
-.step-num {
-  width: 56px; height: 56px;
-  margin: 0 auto 12px;
-  border-radius: 50%;
-  background: oklch(0.72 0.08 45 / 0.18);
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-heading);
-  font-size: 1.4rem;
-  font-weight: 700;
-}
-.step-card h4 { margin-bottom: 6px; font-size: 1.3rem; }
-.step-card p { font-size: 1.1rem; color: var(--text-secondary); line-height: 1.6; }
 
-/* ── Format Grid ── */
-.format-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
+.hero h1 span {
+  display: inline;
+  font-family: inherit;
+  letter-spacing: inherit;
+  color: inherit;
 }
-.format-chip {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 14px;
-  text-align: center;
-  transition: all 0.2s var(--ease);
-  cursor: default;
-}
-.format-chip:hover { border-color: var(--accent); background: oklch(0.72 0.08 45 / 0.06); transform: translateY(-2px); }
-.format-icon { font-size: 2.6rem; margin-bottom: 6px; }
-.format-chip .format-name { font-size: 1.1rem; font-weight: 600; color: var(--text-primary); }
-.format-chip .format-source { font-size: 0.95rem; color: var(--text-muted); margin-top: 3px; }
 
-/* ── Upload Zone ── */
-.upload-zone {
-  border: 2.5px dashed var(--border);
-  border-radius: var(--radius-xl);
-  padding: 48px 40px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s var(--ease);
-  background: var(--bg-card);
-  position: relative;
+.title-line + .title-line::before {
+  content: "";
 }
-.upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: oklch(0.72 0.08 45 / 0.06); box-shadow: var(--shadow-lg); }
-.upload-zone.dragover { transform: scale(1.02); }
-.upload-icon {
-  width: 72px; height: 72px;
-  margin: 0 auto 14px;
-  border-radius: 50%;
-  background: oklch(0.72 0.08 45 / 0.14);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
+
+.hero-copy {
+  max-width: 650px;
+  margin: 28px 0 0;
+  color: rgba(247,242,232,0.78);
+  font-size: 1.08rem;
+  overflow-wrap: anywhere;
 }
-.upload-zone h3 { font-size: 1.5rem; margin-bottom: 6px; }
-.upload-zone p { font-size: 1.15rem; color: var(--text-secondary); }
-.upload-zone .format-badges {
+
+.hero-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 12px;
+  align-items: center;
+  gap: 12px;
+  margin-top: 34px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
+  gap: 9px;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 800;
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+
+.btn:hover { transform: translateY(-1px); }
+.btn-primary { background: var(--gold); color: #17110a; }
+.btn-dark { background: var(--charcoal); color: var(--ink); }
+.btn-outline { border-color: rgba(247,242,232,0.22); color: var(--ink); background: rgba(247,242,232,0.06); }
+.btn-light { border-color: var(--line); color: var(--charcoal); background: #fffaf0; }
+
+.main {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 72px 28px 86px;
+}
+
+.section {
+  margin-bottom: 78px;
+}
+
+.section-head {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(280px, 0.46fr);
+  gap: 38px;
+  align-items: end;
+  margin-bottom: 28px;
+}
+
+.section-kicker {
+  color: var(--clay);
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.section h2 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 4.1rem);
+  line-height: 1;
+  letter-spacing: -0.055em;
+  overflow-wrap: anywhere;
+}
+
+.section-head p {
+  margin: 0;
+  color: #676d66;
+  font-size: 1rem;
+}
+
+.intro-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.82fr);
+  gap: 18px;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(255, 250, 240, 0.72);
+  box-shadow: 0 16px 50px rgba(17,23,22,0.07);
+}
+
+.intro-copy {
+  padding: 34px;
+  font-size: 1.05rem;
+  color: #4e554f;
+}
+
+.intro-copy b { color: var(--charcoal); }
+
+.feature-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.feature-item {
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid rgba(17,23,22,0.08);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.42);
+}
+
+.feature-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  background: var(--charcoal);
+  color: var(--gold-2);
+}
+
+.feature-item h3 { margin: 0 0 2px; font-size: 1rem; }
+.feature-item p { margin: 0; color: #67706a; font-size: 0.9rem; }
+
+.pipeline-card {
+  padding: 26px;
+  background: var(--charcoal);
+  color: var(--ink);
+}
+
+.pipeline-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: rgba(247,242,232,0.68);
+  font-weight: 700;
+  font-size: 0.84rem;
+  margin-bottom: 22px;
+}
+
+.pipeline-steps {
+  display: grid;
+  gap: 12px;
+}
+
+.pipe-step {
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 15px;
+  border: 1px solid var(--line-dark);
+  border-radius: var(--radius);
+  background: rgba(247,242,232,0.055);
+}
+
+.pipe-num {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  background: rgba(201,155,100,0.16);
+  color: var(--gold-2);
+  font-weight: 800;
+}
+
+.pipe-step b { display: block; }
+.pipe-step span { color: rgba(247,242,232,0.58); font-size: 0.86rem; }
+
+.model-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.model-card {
+  padding: 25px;
+  min-height: 210px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.model-card.dark {
+  background: var(--charcoal);
+  color: var(--ink);
+}
+
+.model-card h3 { margin: 0 0 12px; font-size: 1.35rem; letter-spacing: -0.03em; }
+.model-card p { margin: 0; color: #69706a; }
+.model-card.dark p { color: rgba(247,242,232,0.65); }
+.model-tag { width: fit-content; padding: 7px 10px; border-radius: var(--radius); border: 1px solid var(--line); color: #646961; font-size: 0.78rem; font-weight: 800; }
+.model-card.dark .model-tag { border-color: var(--line-dark); color: var(--gold-2); }
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 0.78fr) minmax(360px, 0.52fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.demo-card, .upload-card {
+  padding: 28px;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 18px 0 22px;
+}
+
+.tab-btn {
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: #fffaf0;
+  color: var(--charcoal);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tab-btn.active, .tab-btn:hover {
+  background: var(--charcoal);
+  color: var(--ink);
+}
+
+.demo-preview {
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  min-height: 280px;
+  background:
+    linear-gradient(180deg, rgba(17,23,22,0.02), rgba(17,23,22,0.06)),
+    #fffaf0;
+  padding: 18px;
+}
+
+.preview-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.preview-name { font-weight: 900; letter-spacing: -0.02em; }
+.preview-pill { padding: 6px 10px; border-radius: var(--radius); background: rgba(216,126,100,0.13); color: #9b442e; font-size: 0.78rem; font-weight: 900; }
+
+.preview-chart {
+  height: 120px;
+  display: grid;
+  grid-template-columns: repeat(28, minmax(4px, 1fr));
+  gap: 4px;
+  align-items: end;
+  padding: 12px;
+  border: 1px solid rgba(17,23,22,0.08);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.52);
+}
+
+.preview-chart i {
+  display: block;
+  min-height: 18px;
+  border-radius: 5px 5px 2px 2px;
+  background: var(--nrem);
+}
+
+.preview-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
   margin-top: 16px;
 }
-.upload-zone .format-badge {
-  font-size: 1rem;
-  color: var(--text-muted);
-  background: var(--bg-cream);
-  padding: 6px 18px;
-  border-radius: 100px;
-  border: 1px solid var(--border);
+
+.preview-meta div {
+  padding: 12px;
+  border-radius: var(--radius);
+  background: rgba(17,23,22,0.045);
 }
+
+.preview-meta b { display: block; font-size: 1.15rem; letter-spacing: -0.04em; }
+.preview-meta span { display: block; color: #73786f; font-size: 0.78rem; }
+
+.upload-zone {
+  border: 1px dashed rgba(17,23,22,0.32);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, rgba(201,155,100,0.11), rgba(143,212,187,0.08)),
+    #fffaf0;
+  min-height: 310px;
+  padding: 34px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.upload-zone:hover, .upload-zone.dragover {
+  transform: translateY(-2px);
+  border-color: var(--clay);
+  background: rgba(255,250,240,0.96);
+}
+
+.upload-icon {
+  width: 62px;
+  height: 62px;
+  margin: 0 auto 15px;
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  background: var(--charcoal);
+  color: var(--gold-2);
+}
+
+.upload-zone h3 { margin: 0 0 8px; font-size: 1.35rem; letter-spacing: -0.03em; }
+.upload-zone p { margin: 0 auto; max-width: 360px; color: #657069; }
 .file-input { display: none; }
 
-/* ── Format Detection Result ── */
+.format-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+.format-row span {
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(17,23,22,0.09);
+  color: #73786f;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
 .detect-badge {
   display: none;
-  align-items: center;
-  gap: 10px;
-  background: oklch(0.65 0.12 160 / 0.12);
-  color: oklch(0.45 0.08 160);
-  padding: 12px 24px;
-  border-radius: 100px;
-  font-size: 1.15rem;
-  font-weight: 600;
-  margin-top: 12px;
-  text-align: center;
-  justify-content: center;
-}
-
-/* ── Results Dashboard ── */
-.results-container { display: none; animation: fadeUp 0.5s var(--ease); }
-.results-container.visible { display: block; }
-@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-
-.card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  padding: 24px;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.25s var(--ease);
-}
-.card:hover { box-shadow: var(--shadow); }
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-.card-header h3 { font-size: 1.4rem; }
-
-/* ── Score Card ── */
-.score-display { text-align: center; padding: 12px 0 0; }
-.score-gauge { display: flex; justify-content: center; margin-bottom: 10px; }
-.grade-badge {
-  display: inline-block;
-  padding: 12px 32px;
-  border-radius: 100px;
-  font-family: var(--font-heading);
-  font-size: 2rem;
-  font-weight: 700;
-  color: #fff;
-  margin: 10px 0;
-}
-.score-summary { color: var(--text-secondary); font-size: 1.25rem; max-width: 900px; margin: 0 auto; }
-.subscore-bars { max-width: 700px; margin: 14px auto 0; }
-.subscore-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 6px;
-  font-size: 1.05rem;
-}
-.subscore-label { width: 140px; text-align: right; color: var(--text-secondary); flex-shrink: 0; }
-.subscore-track { flex: 1; height: 10px; background: var(--bg-cream); border-radius: 5px; overflow: hidden; }
-.subscore-fill { height: 100%; border-radius: 5px; background: var(--accent); transition: width 0.8s var(--ease-spring); }
-.subscore-val { width: 64px; font-weight: 600; color: var(--text-muted); flex-shrink: 0; }
-
-/* ── Hypno Timeline Bar ── */
-.hypno-bar-wrap { position: relative; padding-bottom: 4px; }
-.hypno-bar-canvas { width: 100%; height: 56px; border-radius: var(--radius); display: block; }
-.hypno-bar-labels {
-  position: relative;
-  font-size: 0.95rem;
-  color: var(--text-muted);
-  margin-top: 6px;
-  min-height: 24px;
-}
-.hypno-bar-legend {
-  display: flex;
-  gap: 18px;
-  justify-content: center;
-  margin-top: 10px;
-  font-size: 1rem;
-}
-.hypno-bar-legend span { display: flex; align-items: center; gap: 6px; }
-.hypno-bar-legend .legend-dot {
-  width: 12px; height: 12px; border-radius: 50%; display: inline-block;
-}
-
-/* ── Metrics Grid ── */
-.metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.metric-card {
-  background: var(--bg-cream);
-  border: 1px solid var(--border);
+  margin-top: 14px;
+  padding: 11px 13px;
   border-radius: var(--radius);
-  padding: 18px;
-  transition: all 0.2s var(--ease);
+  background: rgba(85,185,140,0.13);
+  color: #247554;
+  font-weight: 900;
+  font-size: 0.88rem;
 }
-.metric-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
-.metric-label { font-size: 1rem; color: var(--text-muted); margin-bottom: 8px; letter-spacing: 0.02em; }
-.metric-value { font-family: var(--font-heading); font-size: 1.9rem; font-weight: 700; }
-.metric-unit { font-size: 0.95rem; color: var(--text-muted); font-weight: 400; margin-left: 3px; }
-.metric-ref { font-size: 0.9rem; color: var(--text-muted); margin-top: 6px; }
-.metric-status { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
-.metric-status.normal { background: var(--success); }
-.metric-status.borderline { background: var(--warning); }
-.metric-status.concerning { background: var(--danger); }
 
-/* ── Big Metric Cards ── */
-.metric-big {
-  background: var(--bg-cream);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px 20px;
-  text-align: center;
-  transition: all 0.2s var(--ease);
-}
-.metric-big:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
-.metric-big .mb-icon { font-size: 2.2rem; margin-bottom: 6px; }
-.metric-big .mb-title { font-size: 1.05rem; color: var(--text-muted); margin-bottom: 4px; }
-.metric-big .mb-value { font-family: var(--font-heading); font-size: 2.4rem; font-weight: 700; }
-.metric-big .mb-desc { font-size: 0.92rem; color: var(--text-muted); margin-top: 6px; line-height: 1.5; }
-.metric-big .mb-status { font-size: 1.2rem; margin-top: 4px; }
-.star-rating { color: #F9A825; font-size: 1.5rem; letter-spacing: 2px; }
-.pbar-track { height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; margin-top: 8px; }
-.pbar-fill { height: 100%; border-radius: 5px; transition: width 0.8s var(--ease-spring); }
-.pbar-fill.nrem { background: var(--nrem); }
-.pbar-fill.rem { background: var(--rem); }
-
-/* ── Recommendations ── */
-.rec-card {
-  background: var(--bg-cream);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px;
-  margin-bottom: 12px;
-  border-left: 5px solid transparent;
-  transition: all 0.2s var(--ease);
-}
-.rec-card:hover { box-shadow: var(--shadow); }
-.rec-card.critical { border-left-color: var(--danger); }
-.rec-card.warning { border-left-color: var(--warning); }
-.rec-card.info { border-left-color: var(--success); }
-.rec-header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-.rec-severity {
-  padding: 4px 14px;
-  border-radius: 100px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #fff;
-}
-.rec-severity.critical { background: var(--danger); }
-.rec-severity.warning { background: var(--warning); }
-.rec-severity.info { background: var(--success); }
-.rec-issue { font-weight: 600; font-size: 1.25rem; }
-.rec-advice { color: var(--text-secondary); font-size: 1.15rem; line-height: 1.7; }
-.rec-ref { font-size: 0.95rem; color: var(--text-muted); margin-top: 8px; }
-.rec-card .rec-body-wrap { display: flex; align-items: flex-start; gap: 14px; }
-.rec-card .rec-icon { font-size: 2rem; flex-shrink: 0; line-height: 1; }
-.rec-card .rec-content { flex: 1; }
-.rec-card .rec-title { font-weight: 600; font-size: 1.2rem; margin-bottom: 4px; }
-.rec-card .rec-text { color: var(--text-secondary); font-size: 1.1rem; line-height: 1.7; }
-
-/* ── SHAP Bars ── */
-.shap-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 6px;
-  padding: 7px 8px;
-  border-radius: var(--radius-sm);
-  transition: all 0.15s var(--ease);
-}
-.shap-bar:hover { background: var(--bg-cream); }
-.shap-bar .bar-label {
-  width: 200px;
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  text-align: right;
-  flex-shrink: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-family: 'Consolas', 'JetBrains Mono', monospace;
-}
-.shap-bar .bar-track { flex: 1; height: 11px; background: var(--bg-cream); border-radius: 6px; overflow: hidden; }
-.shap-bar .bar-fill { height: 100%; border-radius: 6px; transition: width 0.6s var(--ease-spring); }
-.shap-bar .bar-value { width: 72px; font-size: 0.95rem; color: var(--text-muted); flex-shrink: 0; font-family: 'Consolas', monospace; }
-
-/* ── Plain Summary ── */
-.plain-summary {
-  background: linear-gradient(135deg, #FFF8F0, var(--bg-card));
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 24px;
-  font-size: 1.25rem;
-  line-height: 1.8;
-  color: var(--text-secondary);
-}
-.plain-summary strong { color: var(--text-primary); }
-
-/* ── QR & API ── */
-.integration-grid { display: grid; grid-template-columns: auto 1fr; gap: 40px; align-items: center; }
-.qr-box {
-  text-align: center;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  padding: 24px;
-}
-.qr-box img { border-radius: var(--radius); }
-.qr-box p { font-size: 1.05rem; color: var(--text-muted); margin-top: 10px; }
-
-.api-list { list-style: none; }
-.api-list li {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  font-size: 1.1rem;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.api-method {
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-.api-method.get { background: oklch(0.65 0.12 160 / 0.15); color: oklch(0.45 0.08 160); }
-.api-method.post { background: oklch(0.58 0.17 35 / 0.15); color: oklch(0.48 0.14 35); }
-.api-path { font-family: 'Consolas', monospace; color: var(--text-primary); }
-
-/* ── Accordion ── */
-.accordion { margin-bottom: 8px; }
-.accordion-trigger {
-  width: 100%;
-  text-align: left;
-  padding: 16px 20px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  font-family: var(--font-body);
-  font-size: 1.25rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all 0.2s var(--ease);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.accordion-trigger:hover { border-color: var(--accent); box-shadow: var(--shadow); }
-.accordion-trigger::after { content: '+'; font-size: 1.6rem; color: var(--text-muted); transition: transform 0.3s var(--ease); }
-.accordion-trigger.open::after { content: '−'; transform: rotate(180deg); }
-.accordion-content {
+.results {
   display: none;
-  padding: 16px 20px;
-  background: var(--bg-cream);
-  border: 1px solid var(--border);
-  border-top: none;
-  border-radius: 0 0 var(--radius) var(--radius);
-  font-size: 1.15rem;
-  color: var(--text-secondary);
-  line-height: 1.8;
+  margin-top: 22px;
 }
-.accordion-content.open { display: block; }
 
-/* ── Toast ── */
-.toast {
-  position: fixed;
-  top: 28px;
-  right: 28px;
-  padding: 16px 28px;
+.results.visible { display: block; }
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 18px;
+}
+
+.score-card, .metrics-card, .chart-card, .tips-card {
+  padding: 24px;
+}
+
+.score-ring {
+  min-height: 182px;
+  display: grid;
+  place-items: center;
+}
+
+.grade-badge {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
   border-radius: var(--radius);
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  font-size: 1.15rem;
-  font-weight: 500;
-  z-index: 2000;
-  transform: translateX(120%);
-  transition: transform 0.35s var(--ease-spring);
-  box-shadow: var(--shadow-lg);
+  color: #fff;
+  font-weight: 900;
+  margin: 0 auto 14px;
 }
-.toast.show { transform: translateX(0); }
-.toast.error { border-color: var(--danger); color: var(--danger); }
-.toast.success { border-color: var(--success); color: var(--success); }
 
-/* ── Loading ── */
+.score-summary {
+  color: #626b64;
+  text-align: center;
+  font-size: 0.94rem;
+}
+
+.subscore-bars { display: grid; gap: 11px; margin-top: 18px; }
+.subscore-row { display: grid; grid-template-columns: 74px 1fr 52px; gap: 9px; align-items: center; font-size: 0.82rem; }
+.subscore-track { height: 8px; border-radius: 99px; background: rgba(17,23,22,0.1); overflow: hidden; }
+.subscore-fill { height: 100%; border-radius: 99px; }
+.subscore-val { text-align: right; font-weight: 900; }
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metric {
+  border: 1px solid rgba(17,23,22,0.08);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.42);
+  padding: 15px;
+}
+
+.metric span { display: block; color: #747a72; font-size: 0.78rem; font-weight: 800; }
+.metric b { display: block; margin-top: 5px; font-size: 1.35rem; letter-spacing: -0.05em; }
+
+.timeline-canvas-wrap {
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius);
+  border: 1px solid rgba(17,23,22,0.08);
+}
+
+#hypnoBar { width: 100%; height: 56px; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 13px;
+  color: #646c66;
+  font-size: 0.86rem;
+}
+
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+
+.rec-list { display: grid; gap: 12px; }
+.rec-card {
+  padding: 15px;
+  border-radius: var(--radius);
+  border-left: 4px solid var(--ok);
+  background: rgba(255,255,255,0.5);
+}
+.rec-card.warning { border-left-color: var(--warn); }
+.rec-card.critical { border-left-color: var(--bad); }
+.rec-card h4 { margin: 0 0 5px; font-size: 0.98rem; }
+.rec-card p { margin: 0; color: #66706a; font-size: 0.9rem; }
+
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.phone-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.phone-copy {
+  padding: 34px;
+  background: var(--charcoal);
+  color: var(--ink);
+}
+
+.phone-copy p { color: rgba(247,242,232,0.66); margin: 12px 0 0; }
+
+.qr-card {
+  padding: 26px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.qr-frame {
+  width: 190px;
+  height: 190px;
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 12px;
+  border: 1px solid var(--line);
+}
+
+.qr-label { margin-top: 14px; color: #6a716b; font-size: 0.9rem; }
+
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.faq-item { padding: 23px; }
+.faq-item h3 { margin: 0 0 9px; font-size: 1.08rem; }
+.faq-item p { margin: 0; color: #646d67; font-size: 0.94rem; }
+
+.footer {
+  padding: 32px 28px;
+  background: var(--charcoal);
+  color: rgba(247,242,232,0.68);
+  text-align: center;
+  font-size: 0.88rem;
+}
+
 .loading-overlay {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.35);
-  backdrop-filter: blur(6px);
   z-index: 1000;
-  align-items: center;
-  justify-content: center;
+  place-items: center;
+  background: rgba(17,23,22,0.58);
+  backdrop-filter: blur(8px);
 }
-.loading-overlay.active { display: flex; }
-.loading-spinner {
-  width: 52px; height: 52px;
-  border: 4px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-@keyframes spin { to { transform:rotate(360deg); } }
 
-/* ── Footer ── */
-.footer {
+.loading-overlay.active { display: grid; }
+.loader-box {
+  width: min(320px, calc(100vw - 40px));
+  padding: 26px;
+  border-radius: var(--radius);
+  background: #fffaf0;
   text-align: center;
-  color: var(--text-muted);
-  font-size: 1rem;
-  padding-top: 24px;
-  border-top: 1px solid var(--border);
-  margin-top: 24px;
-  line-height: 2;
+  box-shadow: var(--shadow);
 }
 
-/* ── Responsive ── */
-@media (max-width: 1200px) {
-  .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+.spinner {
+  width: 38px;
+  height: 38px;
+  border: 3px solid rgba(17,23,22,0.12);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  margin: 0 auto 12px;
+  animation: spin 0.8s linear infinite;
 }
-@media (max-width: 900px) {
-  .steps-row { grid-template-columns: 1fr; }
-  .format-grid { grid-template-columns: repeat(3, 1fr); }
-  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
-  .integration-grid { grid-template-columns: 1fr; }
-  h1 { font-size: 3.2rem; }
-  h2 { font-size: 2.2rem; }
-  .hero { padding: 24px 16px 18px; }
-  .hero .subtitle { font-size: 1.3rem; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.toast {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 1200;
+  max-width: min(440px, calc(100vw - 44px));
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--charcoal);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  transform: translateY(16px);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.22s ease;
 }
-@media (max-width: 520px) {
-  .app-shell { padding: 12px 14px 28px; }
-  .format-grid { grid-template-columns: repeat(2, 1fr); }
-  .metrics-grid { grid-template-columns: 1fr; }
-  h1 { font-size: 2.6rem; }
-  h2 { font-size: 1.8rem; }
-  .hero { padding: 20px 10px 16px; }
-  .hero .subtitle { font-size: 1.15rem; }
-  .upload-zone { padding: 32px 18px; }
-  .btn { padding: 14px 32px; font-size: 1.1rem; }
-  .card { padding: 18px; }
+
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.error { background: #752b28; }
+.toast.success { background: #1f674c; }
+
+@media (max-width: 980px) {
+  .nav-links { display: none; }
+  .hero-inner, .intro-grid, .workspace, .phone-section, .section-head, .result-grid {
+    grid-template-columns: 1fr;
+  }
+  .hero-inner { min-height: auto; padding-top: 64px; }
+  .model-grid, .faq-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 620px) {
+  body {
+    width: 100vw;
+  }
+  .nav-inner { height: 66px; padding: 0 16px; }
+  .brand small, .nav-cta { display: none; }
+  .lang-toggle { min-height: 38px; padding: 0 10px; }
+  .hero { min-height: auto; }
+  .hero-inner { padding: 46px 16px 42px; gap: 30px; }
+  .hero-inner,
+  .main,
+  .footer {
+    width: 100vw;
+    max-width: 100vw;
+  }
+  .hero-inner > *,
+  .section,
+  .panel {
+    max-width: calc(100vw - 32px);
+  }
+  .hero h1 {
+    width: min(100%, 340px);
+    max-width: 340px;
+    font-size: 2.1rem;
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    line-break: anywhere;
+  }
+  .hero h1 .title-line {
+    display: block;
+  }
+  .hero-copy {
+    width: min(100%, 330px);
+    max-width: 330px;
+    font-size: 0.98rem;
+    word-break: break-all;
+  }
+  .hero-actions .btn { width: 100%; }
+  .main { padding: 48px 16px 60px; }
+  .section { margin-bottom: 56px; }
+  .section h2 {
+    width: min(100%, 340px);
+    max-width: 340px;
+    font-size: 1.95rem;
+    line-height: 1.12;
+    word-break: break-all;
+  }
+  .section-head p {
+    max-width: 100%;
+    word-break: break-all;
+  }
+  .intro-copy p,
+  .feature-item p,
+  .pipe-step span,
+  .model-card p,
+  .upload-zone p,
+  .phone-copy p,
+  .faq-item p {
+    overflow-wrap: anywhere;
+    word-break: break-all;
+  }
+  p {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-all;
+  }
+  .intro-copy, .pipeline-card, .demo-card, .upload-card, .phone-copy { padding: 22px; }
+  .preview-meta, .metrics-grid { grid-template-columns: 1fr; }
+  .upload-zone { min-height: 250px; padding: 26px 18px; }
+  .subscore-row { grid-template-columns: 70px 1fr 46px; }
+  .toast { left: 16px; right: 16px; max-width: none; }
 }
 </style>
 </head>
 <body>
+<nav class="site-nav">
+  <div class="nav-inner">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v18"/><path d="M5 12a7 7 0 0 1 7-7"/><path d="M19 12a7 7 0 0 0-7-7"/><path d="M5 12a7 7 0 0 0 7 7"/><path d="M19 12a7 7 0 0 1-7 7"/>
+        </svg>
+      </span>
+      <span>SleepInsight<small data-i18n="brand_sub">睡眠分期平台</small></span>
+    </a>
+    <div class="nav-links" aria-label="主导航">
+      <a href="#intro" data-i18n="nav_intro">平台介绍</a>
+      <a href="#model" data-i18n="nav_model">模型方法</a>
+      <a href="#demo" data-i18n="nav_demo">Demo展示</a>
+      <a href="#upload" data-i18n="nav_upload">上传数据</a>
+      <a href="#phone" data-i18n="nav_phone">手机扫码</a>
+      <a href="#faq" data-i18n="nav_faq">问题解答</a>
+    </div>
+    <div class="nav-actions">
+      <button class="lang-toggle" id="langToggle" type="button">EN</button>
+      <a class="nav-cta" href="#upload" data-i18n="nav_start">开始分析</a>
+    </div>
+  </div>
+</nav>
 
-<div class="app-shell">
+<header class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow" data-i18n="hero_eyebrow">Wearable Sleep Intelligence</div>
+      <h1 data-i18n-html="hero_title"><span class="title-line">睡眠分期</span><span class="title-line">质量评估平台</span></h1>
+      <p class="hero-copy" data-i18n="hero_copy">
+        上传手表或睡眠 App 数据，自动完成分期预测、质量评分、解释分析和报告生成。
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#demo" data-i18n="hero_demo">查看 Demo</a>
+        <a class="btn btn-outline" href="#upload" data-i18n="hero_upload">上传自己的数据</a>
+      </div>
+    </div>
+  </div>
+</header>
 
-  <!-- A. Hero -->
-  <section class="hero">
-    <h1>了解你的睡眠</h1>
-    <p class="subtitle">上传 Apple Watch 或其他可穿戴设备的睡眠数据，获得个性化的睡眠分析与改善建议。</p>
-    <div class="hero-actions">
-      <a href="#upload" class="btn btn-primary">开始分析</a>
-      <a href="#how" class="btn btn-outline">了解更多</a>
+<main class="main">
+  <section class="section" id="intro">
+    <div class="section-head">
+      <div>
+        <div class="section-kicker">Introduction</div>
+        <h2 data-i18n="intro_title">从数据到报告</h2>
+      </div>
+      <p data-i18n="intro_sub">先展示产品气质，再展示流程，最后进入 Demo。</p>
     </div>
-  </section>
-
-  <!-- B. How It Works -->
-  <section class="section" id="how">
-    <div class="section-header">
-      <h2>三步了解你的睡眠</h2>
-      <p>简单三步，从数据到洞察</p>
-    </div>
-    <div class="steps-row">
-      <div class="step-card">
-        <div class="step-num">1</div>
-        <h4>导出数据</h4>
-        <p>从 Apple Watch 或睡眠 App（AutoSleep、Sleep Cycle 等）导出你的睡眠数据文件。</p>
+    <div class="intro-grid">
+      <div class="panel intro-copy">
+        <p data-i18n-html="intro_copy">
+          <b>SleepInsight</b> 面向课程展示和个人健康管理场景。用户不需要理解模型细节，只要上传睡眠相关数据，就能得到整晚睡眠阶段、核心指标、睡眠评分和建议。
+        </p>
+        <div class="feature-list">
+          <div class="feature-item">
+            <div class="feature-icon">01</div>
+            <div><h3 data-i18n="feature1_title">格式自动识别</h3><p data-i18n="feature1_desc">支持 Apple Health XML、AutoSleep CSV、Sleep Cycle CSV 和原始特征 CSV。</p></div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">02</div>
+            <div><h3 data-i18n="feature2_title">睡眠质量评分</h3><p data-i18n="feature2_desc">综合睡眠效率、总时长、入睡潜伏期、WASO、REM 比例等指标。</p></div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">03</div>
+            <div><h3 data-i18n="feature3_title">报告与移动端</h3><p data-i18n="feature3_desc">可下载 HTML/DOCX 报告，也可以扫码在手机端打开上传入口。</p></div>
+          </div>
+        </div>
       </div>
-      <div class="step-card">
-        <div class="step-num">2</div>
-        <h4>上传文件</h4>
-        <p>拖拽或点击上传，系统会自动识别文件格式并转换为标准数据。</p>
-      </div>
-      <div class="step-card">
-        <div class="step-num">3</div>
-        <h4>查看报告</h4>
-        <p>获得睡眠评分、详细指标、个性化建议和可下载的完整报告。</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- C. Supported Formats -->
-  <section class="section">
-    <div class="section-header">
-      <h2>支持的数据格式</h2>
-      <p>我们自动识别常见的数据来源，无需手动选择格式</p>
-    </div>
-    <div class="format-grid">
-      <div class="format-chip">
-        <div class="format-icon">&#8962;</div>
-        <div class="format-name">Apple Health</div>
-        <div class="format-source">手表原生导出</div>
-      </div>
-      <div class="format-chip">
-        <div class="format-icon">&#9790;</div>
-        <div class="format-name">AutoSleep</div>
-        <div class="format-source">第三方 App</div>
-      </div>
-      <div class="format-chip">
-        <div class="format-icon">&#8635;</div>
-        <div class="format-name">Sleep Cycle</div>
-        <div class="format-source">第三方 App</div>
-      </div>
-      <div class="format-chip">
-        <div class="format-icon">&#8986;</div>
-        <div class="format-name">Health Export</div>
-        <div class="format-source">第三方 App</div>
-      </div>
-      <div class="format-chip">
-        <div class="format-icon">&#9776;</div>
-        <div class="format-name">原始 CSV</div>
-        <div class="format-source">特征数据</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- D. Upload -->
-  <section class="section" id="upload">
-    <div class="section-header">
-      <h2>上传你的数据</h2>
-      <p>支持 .csv 和 .xml 格式文件</p>
-    </div>
-    <div class="upload-zone" id="uploadZone">
-      <div class="upload-icon">&#10514;</div>
-      <h3>拖拽文件到这里，或点击选择</h3>
-      <p>支持 Apple Health XML、AutoSleep CSV、Sleep Cycle CSV、Health Auto Export CSV、原始 Epoch CSV</p>
-      <div class="format-badges">
-        <span class="format-badge">export.xml</span>
-        <span class="format-badge">autosleep.csv</span>
-        <span class="format-badge">sleepcycle.csv</span>
-        <span class="format-badge">healthexport.csv</span>
-        <span class="format-badge">epoch.csv</span>
-      </div>
-    </div>
-    <div class="detect-badge" id="detectBadge"></div>
-    <input type="file" id="fileInput" class="file-input" accept=".csv,.xml">
-  </section>
-
-  <!-- E. Results -->
-  <div class="results-container" id="resultsContainer">
-    <!-- Score Card -->
-    <div class="card full-width" style="margin-bottom:20px;">
-      <div class="score-display">
-        <div class="score-gauge" id="scoreGauge"></div>
-        <div class="grade-badge" id="gradeBadge"></div>
-        <div style="font-size:1rem;color:var(--text-muted);margin-bottom:10px;">分数越高，睡眠越好</div>
-        <div class="score-summary" id="scoreSummary"></div>
-        <div class="subscore-bars" id="subscoreBars"></div>
-      </div>
-    </div>
-
-    <!-- Sleep Timeline -->
-    <div class="card full-width" style="margin-bottom:20px;">
-      <div class="card-header"><h3>整晚睡眠一览</h3><span class="badge" id="epochCount" style="font-size:0.85rem;color:var(--text-muted);"></span></div>
-      <div class="hypno-bar-wrap">
-        <canvas id="hypnoBar" class="hypno-bar-canvas"></canvas>
-        <div class="hypno-bar-labels" id="hypnoLabels"></div>
-        <div class="hypno-bar-legend">
-          <span><span class="legend-dot" style="background:var(--wake)"></span>清醒</span>
-          <span><span class="legend-dot" style="background:var(--nrem)"></span>深睡眠</span>
-          <span><span class="legend-dot" style="background:var(--rem)"></span>做梦期</span>
+      <div class="panel pipeline-card">
+        <div class="pipeline-title"><span>Pipeline</span><span>End-to-end</span></div>
+        <div class="pipeline-steps">
+          <div class="pipe-step"><div class="pipe-num">1</div><div><b data-i18n="pipe1_title">数据导入</b><span data-i18n="pipe1_desc">CSV/XML 读取、字段检查、格式转换</span></div></div>
+          <div class="pipe-step"><div class="pipe-num">2</div><div><b data-i18n="pipe2_title">特征构建</b><span data-i18n="pipe2_desc">为每个 epoch 加入前后文窗口</span></div></div>
+          <div class="pipe-step"><div class="pipe-num">3</div><div><b data-i18n="pipe3_title">模型预测</b><span data-i18n="pipe3_desc">输出 Wake、NREM、REM 阶段概率</span></div></div>
+          <div class="pipe-step"><div class="pipe-num">4</div><div><b data-i18n="pipe4_title">解释与报告</b><span data-i18n="pipe4_desc">计算指标、生成建议、导出报告</span></div></div>
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- Key Metrics -->
-    <div class="card full-width" style="margin-bottom:20px;">
-      <div class="card-header"><h3>核心指标</h3></div>
-      <div class="metrics-grid" id="metricsGrid"></div>
-    </div>
-
-    <!-- Recommendations -->
-    <div class="card full-width" style="margin-bottom:20px;">
-      <div class="card-header"><h3>睡眠小贴士</h3></div>
-      <div id="recommendationsList"></div>
-    </div>
-
-    <!-- Summary -->
-    <div class="card full-width" style="margin-bottom:20px;">
-      <div class="card-header"><h3>总结</h3></div>
-      <div class="plain-summary" id="bottomSummary"></div>
-    </div>
-
-    <!-- Report Download -->
-    <div class="card full-width" style="margin-bottom:20px;">
-      <div class="card-header"><h3>下载报告</h3></div>
-      <div class="btn-group">
-        <button class="btn btn-primary btn-sm" id="btnHtmlReport">下载 HTML 报告</button>
-        <button class="btn btn-outline btn-sm" id="btnDocxReport">下载 DOCX 报告</button>
-      </div>
-    </div>
-
-    <!-- Disclaimer -->
-    <div style="font-size:0.9rem; color:var(--warning); line-height:1.7; padding:14px 18px; background:oklch(0.75 0.12 80 / 0.1); border-radius:var(--radius-sm);">
-      温馨提示：本结果基于可穿戴设备数据算法估算，仅供参考，不构成医疗诊断。如有长期睡眠问题，建议咨询医生。
-    </div>
-  </div>
-
-  <!-- F. API & QR -->
-  <section class="section" id="integration" style="margin-top:56px;">
-    <div class="section-header">
-      <h2>扫码上传 & API</h2>
-      <p>用手机扫描二维码，直接从手表传输数据</p>
-    </div>
-    <div class="integration-grid">
-      <div class="qr-box">
-        <img id="qrImage" src="" alt="QR Code" width="160" height="160" style="background:var(--bg-cream);">
-        <p>扫描二维码在手机上打开</p>
-        <button class="btn btn-outline btn-sm" onclick="window.open('/mobile','_blank')">在手机上打开</button>
-      </div>
+  <section class="section" id="model">
+    <div class="section-head">
       <div>
-        <h4 style="margin-bottom:12px;">API 接口</h4>
-        <ul class="api-list">
-          <li><span class="api-method post">POST</span><span class="api-path">/api/upload</span> 上传并分析</li>
-          <li><span class="api-method post">POST</span><span class="api-path">/api/detect-format</span> 检测格式</li>
-          <li><span class="api-method post">POST</span><span class="api-path">/api/convert</span> 格式转换预览</li>
-          <li><span class="api-method post">POST</span><span class="api-path">/api/score</span> 获取睡眠评分</li>
-          <li><span class="api-method post">POST</span><span class="api-path">/api/report/html</span> HTML 报告</li>
-          <li><span class="api-method post">POST</span><span class="api-path">/api/report/docx</span> DOCX 报告</li>
-          <li><span class="api-method get">GET</span><span class="api-path">/api/metrics-reference</span> 指标参考</li>
-          <li><span class="api-method get">GET</span><span class="api-path">/api/qr</span> QR 码</li>
-          <li><span class="api-method get">GET</span><span class="api-path">/api/docs</span> API 文档</li>
-        </ul>
+        <div class="section-kicker">Model</div>
+        <h2 data-i18n="model_title">模型不是黑盒展示</h2>
+      </div>
+      <p data-i18n="model_sub">睡眠小贴士由指标规则生成；分期模型使用 HGB + 上下文特征；解释部分用特征重要性辅助说明。</p>
+    </div>
+    <div class="model-grid">
+      <div class="panel model-card">
+        <div><div class="model-tag">Input</div><h3 data-i18n="model_input_title">Epoch 特征</h3><p data-i18n="model_input_desc">每 30 秒一行，包含运动、时间、可穿戴设备导出的睡眠相关字段。</p></div>
+      </div>
+      <div class="panel model-card dark">
+        <div><div class="model-tag">Classifier</div><h3>HistGradientBoosting</h3><p data-i18n="model_cls_desc">基于树模型完成三分类预测，并通过上下文窗口减少孤立跳变。</p></div>
+      </div>
+      <div class="panel model-card">
+        <div><div class="model-tag">Output</div><h3 data-i18n="model_out_title">评分与建议</h3><p data-i18n="model_out_desc">输出分期、睡眠效率、REM/NREM 占比、入睡潜伏期、WASO 和个性化建议。</p></div>
       </div>
     </div>
   </section>
 
-  <!-- G. Format Guide -->
-  <section class="section" id="guide">
-    <div class="section-header">
-      <h2>如何导出你的数据</h2>
-      <p>各应用的数据导出教程</p>
+  <section class="section" id="demo">
+    <div class="section-head">
+      <div>
+        <div class="section-kicker">Demo</div>
+        <h2 data-i18n="demo_title">先看示例，再上传自己的数据</h2>
+      </div>
+      <p data-i18n="demo_sub">示例按钮会调用后端样例文件并走同一条分析链路，不是静态假图。</p>
+    </div>
+    <div class="workspace">
+      <div class="panel demo-card">
+        <h3 data-i18n="demo_card_title">示例数据</h3>
+        <div class="tabs">
+          <button class="tab-btn active" type="button" data-demo="poor-sleep" data-i18n="tab_poor">睡眠较差样例</button>
+          <button class="tab-btn" type="button" data-demo="epoch" data-i18n="tab_epoch">原始特征样例</button>
+          <button class="tab-btn" type="button" data-demo="autosleep" data-i18n="tab_auto">AutoSleep 样例</button>
+        </div>
+        <div class="demo-preview">
+          <div class="preview-top">
+            <div class="preview-name" id="previewName">sample_poor_sleep.csv</div>
+            <div class="preview-pill" id="previewPill">Quality: Poor</div>
+          </div>
+          <div class="preview-chart" aria-hidden="true" id="previewChart"></div>
+          <div class="preview-meta">
+            <div><b id="previewScore">30</b><span data-i18n="preview_score">预期评分</span></div>
+            <div><b id="previewDuration">6.5h</b><span data-i18n="preview_duration">卧床窗口</span></div>
+            <div><b id="previewSignal">WASO high</b><span data-i18n="preview_signal">主要问题</span></div>
+          </div>
+        </div>
+        <div class="report-actions">
+          <button class="btn btn-dark" type="button" id="runDemoBtn" data-i18n="run_demo">运行当前 Demo</button>
+          <a class="btn btn-light" href="#upload" data-i18n="upload_own">上传自己的数据</a>
+        </div>
+      </div>
+
+      <div class="panel upload-card" id="upload">
+        <h3 data-i18n="upload_title">上传分析</h3>
+        <div class="upload-zone" id="uploadZone">
+          <div>
+            <div class="upload-icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <h3 data-i18n="upload_drop">拖拽文件到这里</h3>
+            <p data-i18n="upload_desc">或点击选择文件，系统会自动识别格式并生成睡眠分期报告。</p>
+            <div class="format-row"><span>.csv</span><span>.xml</span><span>Apple Health</span><span>AutoSleep</span><span>Sleep Cycle</span></div>
+          </div>
+          <input class="file-input" id="fileInput" type="file" accept=".csv,.xml">
+        </div>
+        <div class="detect-badge" id="detectBadge"></div>
+      </div>
     </div>
 
-    <div class="accordion">
-      <button class="accordion-trigger">Apple Watch — 导出健康数据</button>
-      <div class="accordion-content">
-        <strong>方法一（推荐）：使用 Health Auto Export App</strong><br>
-        1. 在 App Store 下载「Health Auto Export」<br>
-        2. 打开 App，选择要导出的数据类型（心率、睡眠）<br>
-        3. 点击 Export，选择 CSV 格式<br>
-        4. 将导出的文件上传到这里<br><br>
-        <strong>方法二：使用系统导出</strong><br>
-        1. 打开 iPhone「健康」App<br>
-        2. 点击右上角头像 →「导出所有健康数据」<br>
-        3. 等待导出完成，通过 AirDrop/邮件发送 ZIP 文件<br>
-        4. 解压后上传 export.xml 文件<br>
-        5. ⚠️ 注意：需要 Apple Watch 开启了「睡眠」追踪功能
-      </div>
-    </div>
-    <div class="accordion">
-      <button class="accordion-trigger">AutoSleep — 导出 CSV</button>
-      <div class="accordion-content">
-        1. 打开 AutoSleep App<br>
-        2. 点击底部「设置」(Settings)<br>
-        3. 选择「导出」(Export)<br>
-        4. 选择「导出 Advanced History」(Export Advanced History)<br>
-        5. 选择 CSV 格式，通过邮件或 AirDrop 发送到电脑<br>
-        6. 上传该 CSV 文件
-      </div>
-    </div>
-    <div class="accordion">
-      <button class="accordion-trigger">Sleep Cycle — 导出 CSV</button>
-      <div class="accordion-content">
-        1. 打开 Sleep Cycle App<br>
-        2. 进入「设置」(Settings)<br>
-        3. 选择「导出数据」(Export Data)<br>
-        4. 选择 CSV 格式<br>
-        5. 通过邮件发送到电脑后上传
-      </div>
-    </div>
-    <div class="accordion">
-      <button class="accordion-trigger">我没有这些 App，还能用吗？</button>
-      <div class="accordion-content">
-        可以！如果你有 Apple Watch，它默认就会记录睡眠数据。只需在 iPhone「健康」App 中导出即可（见第一个教程）。<br><br>
-        你也可以下载我们的<a href="/api/sample-data/epoch" style="color:var(--accent);">示例数据</a>来体验完整功能。<br><br>
-        如果你有其他可穿戴设备导出的 CSV 数据（包含心率、加速度、步数列），也可以尝试上传，系统会尽力识别。
+    <div class="results" id="resultsContainer">
+      <div class="result-grid">
+        <div class="panel score-card">
+          <div class="score-ring" id="scoreGauge"></div>
+          <div class="grade-badge" id="gradeBadge">--</div>
+          <div class="score-summary" id="scoreSummary"></div>
+          <div class="subscore-bars" id="subscoreBars"></div>
+        </div>
+        <div>
+          <div class="panel chart-card">
+          <h3 data-i18n="result_timeline">整晚睡眠分期</h3>
+            <div class="timeline-canvas-wrap"><canvas id="hypnoBar"></canvas></div>
+            <div class="legend" id="hypnoLabels"></div>
+          </div>
+          <div class="panel metrics-card">
+            <h3 data-i18n="result_metrics">关键指标</h3>
+            <div class="metrics-grid" id="metricsGrid"></div>
+          </div>
+          <div class="panel tips-card">
+            <h3 data-i18n="result_tips">睡眠小贴士</h3>
+            <div class="rec-list" id="recommendationsList"></div>
+            <div class="report-actions">
+              <button class="btn btn-dark" id="btnHtmlReport" type="button" data-i18n="download_html">下载 HTML 报告</button>
+              <button class="btn btn-light" id="btnDocxReport" type="button" data-i18n="download_docx">下载 DOCX 报告</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- H. FAQ -->
+  <section class="section" id="phone">
+    <div class="phone-section">
+      <div class="panel phone-copy">
+        <div class="section-kicker">Mobile Upload</div>
+        <h2 data-i18n="phone_title">手机扫码上传</h2>
+        <p data-i18n="phone_desc">手机扫描后进入移动端页面，可以上传手表或健康 App 导出的数据。</p>
+      </div>
+      <div class="panel qr-card">
+        <div class="qr-frame"><img id="qrImage" alt="手机端上传二维码"></div>
+        <div class="qr-label" data-i18n="qr_label">扫描二维码在手机上打开上传入口</div>
+      </div>
+    </div>
+  </section>
+
   <section class="section" id="faq">
-    <div class="section-header">
-      <h2>常见问题</h2>
-    </div>
-    <div class="accordion">
-      <button class="accordion-trigger">这是医疗诊断工具吗？</button>
-      <div class="accordion-content">
-        不是。本工具仅基于可穿戴设备信号提供算法估算，用于健康管理参考。不等同于医院的多导睡眠图（PSG）诊断。如果你有持续的睡眠问题，请咨询睡眠专科医生。
+    <div class="section-head">
+      <div>
+        <div class="section-kicker">FAQ</div>
+        <h2 data-i18n="faq_title">常见问题</h2>
       </div>
+      <p data-i18n="faq_sub">答辩时常见问题集中放在这里，首页不再堆太多小字。</p>
     </div>
-    <div class="accordion">
-      <button class="accordion-trigger">我的数据安全吗？</button>
-      <div class="accordion-content">
-        你的睡眠数据仅在服务器内存中临时处理，1 小时后自动删除。我们不会永久存储任何个人健康数据，也不会将数据用于任何其他用途。
-      </div>
-    </div>
-    <div class="accordion">
-      <button class="accordion-trigger">Apple Watch 需要什么设置？</button>
-      <div class="accordion-content">
-        至少需要开启「睡眠」追踪（watchOS 9+ 支持睡眠分期）和「心率」监测。建议在「设置 → 隐私 → 健康」中确认这些选项已开启。Apple Watch 会自动追踪，无需手动操作。
-      </div>
-    </div>
-    <div class="accordion">
-      <button class="accordion-trigger">为什么加速度数据是估算的？</button>
-      <div class="accordion-content">
-        Apple Health 导出不包含原始加速度计数据（这是 Apple 的隐私保护设计）。我们根据你的睡眠阶段标签，使用 Sleep-Accel 公开数据集的群体统计值来估算加速度特征。这对分析结果有一定影响，报告中会标注说明。
-      </div>
-    </div>
-    <div class="accordion">
-      <button class="accordion-trigger">睡眠评分的依据是什么？</button>
-      <div class="accordion-content">
-        睡眠评分（0-100）综合了五个维度：睡眠效率、总时长、夜间清醒时间、入睡速度和 REM 占比。评分标准和参考范围基于美国睡眠医学会（AASM）和美国国立卫生研究院（NIH）的指南。
-      </div>
+    <div class="faq-grid">
+      <div class="panel faq-item"><h3 data-i18n="faq1_q">睡眠建议是大模型生成的吗？</h3><p data-i18n="faq1_a">当前不是实时大模型生成，而是根据睡眠效率、入睡潜伏期、WASO、REM 比例等指标触发规则模板，更可控。</p></div>
+      <div class="panel faq-item"><h3 data-i18n="faq2_q">模型怎么验证？</h3><p data-i18n="faq2_a">需要带金标准标签的数据才能严格计算 accuracy、precision、recall、F1 和混淆矩阵；无标签样例只能做功能演示。</p></div>
+      <div class="panel faq-item"><h3 data-i18n="faq3_q">结果能当诊断吗？</h3><p data-i18n="faq3_a">不能。可穿戴数据和模型输出只适合健康管理参考，持续失眠或异常应咨询医生。</p></div>
     </div>
   </section>
+</main>
 
-  <!-- I. Footer -->
-  <footer class="footer">
-    <strong>睡眠分期分析</strong> &nbsp;·&nbsp; 基于 Sleep-Accel 公开数据集训练<br>
-    模型: HGB + Context (±2)<br>
-    仅供健康管理参考，不构成医疗诊断
-  </footer>
+<footer class="footer">
+  <span data-i18n="footer_text">SleepInsight MVP · HGB + Context Features · 仅供健康管理和课程展示参考，不构成医疗诊断</span>
+</footer>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loader-box">
+    <div class="spinner"></div>
+    <div data-i18n="analyzing">正在分析睡眠数据...</div>
+  </div>
 </div>
-
-<!-- Loading -->
-<div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div></div>
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ── State ──
+const I18N = {
+  zh: {
+    page_title: 'SleepInsight | 睡眠分期与质量评估平台',
+    brand_sub: '睡眠分期平台',
+    nav_intro: '平台介绍',
+    nav_model: '模型方法',
+    nav_demo: 'Demo展示',
+    nav_upload: '上传数据',
+    nav_phone: '手机扫码',
+    nav_faq: '问题解答',
+    nav_start: '开始分析',
+    hero_eyebrow: 'Wearable Sleep Intelligence',
+    hero_title: '<span class="title-line">睡眠分期</span><span class="title-line">质量评估平台</span>',
+    hero_copy: '上传手表或睡眠 App 数据，自动完成分期预测、质量评分、解释分析和报告生成。',
+    hero_demo: '查看 Demo',
+    hero_upload: '上传自己的数据',
+    intro_title: '从数据到报告',
+    intro_sub: '先展示产品气质，再展示流程，最后进入 Demo。',
+    intro_copy: '<b>SleepInsight</b> 面向课程展示和个人健康管理场景。用户不需要理解模型细节，只要上传睡眠相关数据，就能得到整晚睡眠阶段、核心指标、睡眠评分和建议。',
+    feature1_title: '格式自动识别',
+    feature1_desc: '支持 Apple Health XML、AutoSleep CSV、Sleep Cycle CSV 和原始特征 CSV。',
+    feature2_title: '睡眠质量评分',
+    feature2_desc: '综合睡眠效率、总时长、入睡潜伏期、WASO、REM 比例等指标。',
+    feature3_title: '报告与移动端',
+    feature3_desc: '可下载 HTML/DOCX 报告，也可以扫码在手机端打开上传入口。',
+    pipe1_title: '数据导入',
+    pipe1_desc: 'CSV/XML 读取、字段检查、格式转换',
+    pipe2_title: '特征构建',
+    pipe2_desc: '为每个 epoch 加入前后文窗口',
+    pipe3_title: '模型预测',
+    pipe3_desc: '输出 Wake、NREM、REM 阶段概率',
+    pipe4_title: '解释与报告',
+    pipe4_desc: '计算指标、生成建议、导出报告',
+    model_title: '模型不是黑盒展示',
+    model_sub: '睡眠小贴士由指标规则生成；分期模型使用 HGB + 上下文特征；解释部分用特征重要性辅助说明。',
+    model_input_title: 'Epoch 特征',
+    model_input_desc: '每 30 秒一行，包含运动、时间、可穿戴设备导出的睡眠相关字段。',
+    model_cls_desc: '基于树模型完成三分类预测，并通过上下文窗口减少孤立跳变。',
+    model_out_title: '评分与建议',
+    model_out_desc: '输出分期、睡眠效率、REM/NREM 占比、入睡潜伏期、WASO 和个性化建议。',
+    demo_title: '先看示例，再上传自己的数据',
+    demo_sub: '示例按钮会调用后端样例文件并走同一条分析链路，不是静态假图。',
+    demo_card_title: '示例数据',
+    tab_poor: '睡眠较差样例',
+    tab_epoch: '原始特征样例',
+    tab_auto: 'AutoSleep 样例',
+    preview_score: '预期评分',
+    preview_duration: '卧床窗口',
+    preview_signal: '主要问题',
+    run_demo: '运行当前 Demo',
+    upload_own: '上传自己的数据',
+    upload_title: '上传分析',
+    upload_drop: '拖拽文件到这里',
+    upload_desc: '或点击选择文件，系统会自动识别格式并生成睡眠分期报告。',
+    result_timeline: '整晚睡眠分期',
+    result_metrics: '关键指标',
+    result_tips: '睡眠小贴士',
+    download_html: '下载 HTML 报告',
+    download_docx: '下载 DOCX 报告',
+    phone_title: '手机扫码上传',
+    phone_desc: '手机扫描后进入移动端页面，可以上传手表或健康 App 导出的数据。',
+    qr_label: '扫描二维码在手机上打开上传入口',
+    faq_title: '常见问题',
+    faq_sub: '答辩时常见问题集中放在这里，首页不再堆太多小字。',
+    faq1_q: '睡眠建议是大模型生成的吗？',
+    faq1_a: '当前不是实时大模型生成，而是根据睡眠效率、入睡潜伏期、WASO、REM 比例等指标触发规则模板，更可控。',
+    faq2_q: '模型怎么验证？',
+    faq2_a: '需要带金标准标签的数据才能严格计算 accuracy、precision、recall、F1 和混淆矩阵；无标签样例只能做功能演示。',
+    faq3_q: '结果能当诊断吗？',
+    faq3_a: '不能。可穿戴数据和模型输出只适合健康管理参考，持续失眠或异常应咨询医生。',
+    footer_text: 'SleepInsight MVP · HGB + Context Features · 仅供健康管理和课程展示参考，不构成医疗诊断',
+    analyzing: '正在分析睡眠数据...',
+    analysis_done: '分析完成',
+    demo_failed: 'Demo 运行失败: ',
+    upload_failed: '上传失败',
+    detected: '已识别: ',
+    epochs: ' epochs',
+    need_upload: '请先上传数据',
+    html_ready: 'HTML 报告已生成',
+    docx_ready: 'DOCX 报告已生成',
+    report_failed: '报告生成失败',
+    keep_title: '保持当前节律',
+    keep_desc: '本次睡眠指标整体稳定，建议继续保持固定作息和睡前放松习惯。',
+    metric_tst: '总睡眠时长',
+    metric_se: '睡眠效率',
+    metric_latency: '入睡潜伏期',
+    metric_waso: 'WASO',
+    metric_nrem: 'NREM 占比',
+    metric_rem: 'REM 占比',
+    unit_min: '分钟',
+    advice: '建议'
+  },
+  en: {
+    page_title: 'SleepInsight | Sleep Staging and Quality Assessment',
+    brand_sub: 'Sleep staging platform',
+    nav_intro: 'Introduction',
+    nav_model: 'Model',
+    nav_demo: 'Demo',
+    nav_upload: 'Upload',
+    nav_phone: 'Mobile',
+    nav_faq: 'FAQ',
+    nav_start: 'Analyze',
+    hero_eyebrow: 'Wearable Sleep Intelligence',
+    hero_title: '<span class="title-line">Sleep Staging</span><span class="title-line">Quality Assessment</span>',
+    hero_copy: 'Upload wearable or sleep-app data to generate staging predictions, quality scores, explanations, and reports.',
+    hero_demo: 'View Demo',
+    hero_upload: 'Upload Your Data',
+    intro_title: 'From Data to Report',
+    intro_sub: 'A focused product story, a clear pipeline, then the live demo.',
+    intro_copy: '<b>SleepInsight</b> is designed for course demos and personal health tracking. Users can upload sleep data and receive sleep stages, key metrics, a score, and actionable suggestions.',
+    feature1_title: 'Format Detection',
+    feature1_desc: 'Supports Apple Health XML, AutoSleep CSV, Sleep Cycle CSV, and raw feature CSV.',
+    feature2_title: 'Sleep Quality Score',
+    feature2_desc: 'Combines sleep efficiency, duration, latency, WASO, and REM proportion.',
+    feature3_title: 'Reports and Mobile',
+    feature3_desc: 'Download HTML/DOCX reports or scan the QR code to upload from a phone.',
+    pipe1_title: 'Import',
+    pipe1_desc: 'Read CSV/XML, validate fields, and convert formats',
+    pipe2_title: 'Features',
+    pipe2_desc: 'Build contextual windows around each epoch',
+    pipe3_title: 'Prediction',
+    pipe3_desc: 'Predict Wake, NREM, and REM probabilities',
+    pipe4_title: 'Report',
+    pipe4_desc: 'Compute metrics, generate advice, export reports',
+    model_title: 'A Model You Can Explain',
+    model_sub: 'Tips are rule-based from metrics; staging uses HGB with contextual features; importance scores support explanation.',
+    model_input_title: 'Epoch Features',
+    model_input_desc: 'One row per 30 seconds with movement, timing, and wearable-derived sleep fields.',
+    model_cls_desc: 'A tree-based classifier predicts three stages, while contextual windows reduce isolated jumps.',
+    model_out_title: 'Scores and Advice',
+    model_out_desc: 'Outputs stages, efficiency, REM/NREM ratio, latency, WASO, and personalized guidance.',
+    demo_title: 'Try a Demo, Then Upload Yours',
+    demo_sub: 'Demo files call the same backend analysis pipeline as real uploads.',
+    demo_card_title: 'Sample Data',
+    tab_poor: 'Poor Sleep',
+    tab_epoch: 'Raw Features',
+    tab_auto: 'AutoSleep',
+    preview_score: 'Expected score',
+    preview_duration: 'Sleep window',
+    preview_signal: 'Main issue',
+    run_demo: 'Run Demo',
+    upload_own: 'Upload Your Data',
+    upload_title: 'Upload',
+    upload_drop: 'Drop file here',
+    upload_desc: 'Click or drag a file. The system detects the format and creates a staging report.',
+    result_timeline: 'Sleep Timeline',
+    result_metrics: 'Key Metrics',
+    result_tips: 'Sleep Tips',
+    download_html: 'Download HTML',
+    download_docx: 'Download DOCX',
+    phone_title: 'Scan to Upload',
+    phone_desc: 'Scan the QR code to open the mobile upload page for watch or health-app exports.',
+    qr_label: 'Scan QR code to open the mobile upload page',
+    faq_title: 'FAQ',
+    faq_sub: 'Common defense questions are placed here instead of crowding the hero.',
+    faq1_q: 'Are the tips generated by an LLM?',
+    faq1_a: 'No. Current tips are controlled rule templates triggered by metrics such as efficiency, latency, WASO, and REM ratio.',
+    faq2_q: 'How do you validate the model?',
+    faq2_a: 'Strict accuracy, precision, recall, F1, and confusion matrices require gold-standard labels. Unlabeled samples are only demos.',
+    faq3_q: 'Is this a diagnosis?',
+    faq3_a: 'No. Wearable data and model outputs are for health reference only. Persistent sleep problems should be discussed with a clinician.',
+    footer_text: 'SleepInsight MVP · HGB + Context Features · For education and health reference only, not medical diagnosis',
+    analyzing: 'Analyzing sleep data...',
+    analysis_done: 'Analysis complete',
+    demo_failed: 'Demo failed: ',
+    upload_failed: 'Upload failed',
+    detected: 'Detected: ',
+    epochs: ' epochs',
+    need_upload: 'Please upload data first',
+    html_ready: 'HTML report generated',
+    docx_ready: 'DOCX report generated',
+    report_failed: 'Report generation failed',
+    keep_title: 'Keep the Current Rhythm',
+    keep_desc: 'This sleep session looks stable overall. Keep a regular schedule and a calm bedtime routine.',
+    metric_tst: 'Total sleep time',
+    metric_se: 'Sleep efficiency',
+    metric_latency: 'Sleep latency',
+    metric_waso: 'WASO',
+    metric_nrem: 'NREM ratio',
+    metric_rem: 'REM ratio',
+    unit_min: 'min',
+    advice: 'Advice'
+  }
+};
+
+let currentLang = 'zh';
+
+function tr(key) {
+  return (I18N[currentLang] && I18N[currentLang][key]) || I18N.zh[key] || key;
+}
+
+function applyLanguage() {
+  document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
+  document.title = tr('page_title');
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = tr(el.dataset.i18n);
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    el.innerHTML = tr(el.dataset.i18nHtml);
+  });
+  document.getElementById('langToggle').textContent = currentLang === 'zh' ? 'EN' : '中';
+  if (App.currentData) renderResults(App.currentData);
+}
+
 const App = {
   sessionId: null,
   currentData: null,
+  selectedDemo: 'poor-sleep'
 };
 
-// ── Upload ──
+const demoMeta = {
+  'poor-sleep': {
+    name: 'sample_poor_sleep.csv',
+    pill: 'Quality: Poor',
+    score: '30',
+    duration: '6.5h',
+    signal: 'WASO high',
+    bars: [42, 24, 26, 68, 74, 33, 29, 80, 52, 47, 73, 71, 38, 35, 77, 85, 42, 27, 23, 70, 64, 38, 78, 45, 34, 83, 76, 30]
+  },
+  epoch: {
+    name: 'sample_epoch_features.csv',
+    pill: 'Raw epoch',
+    score: '--',
+    duration: 'Feature',
+    signal: 'Model ready',
+    bars: [18, 32, 54, 72, 69, 44, 30, 21, 48, 75, 82, 60, 38, 28, 52, 74, 78, 42, 24, 31, 58, 80, 66, 39, 26, 45, 73, 62]
+  },
+  autosleep: {
+    name: 'sample_autosleep.csv',
+    pill: 'AutoSleep',
+    score: '--',
+    duration: 'CSV',
+    signal: 'Auto convert',
+    bars: [26, 38, 62, 79, 73, 61, 35, 24, 18, 52, 70, 83, 76, 50, 31, 20, 44, 68, 82, 72, 55, 33, 25, 57, 78, 68, 41, 30]
+  }
+};
+
+function setupPreview() {
+  const data = demoMeta[App.selectedDemo];
+  document.getElementById('previewName').textContent = data.name;
+  document.getElementById('previewPill').textContent = data.pill;
+  document.getElementById('previewScore').textContent = data.score;
+  document.getElementById('previewDuration').textContent = data.duration;
+  document.getElementById('previewSignal').textContent = data.signal;
+  document.getElementById('previewChart').innerHTML = data.bars.map((h, i) => {
+    const color = i % 7 === 0 ? 'var(--wake)' : (i % 5 === 0 ? 'var(--rem)' : 'var(--nrem)');
+    return '<i style="height:' + h + '%;background:' + color + '"></i>';
+  }).join('');
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    App.selectedDemo = btn.dataset.demo;
+    setupPreview();
+  });
+});
+
+document.getElementById('langToggle').addEventListener('click', () => {
+  currentLang = currentLang === 'zh' ? 'en' : 'zh';
+  applyLanguage();
+});
+
 const uploadZone = document.getElementById('uploadZone');
 const fileInput = document.getElementById('fileInput');
+
 uploadZone.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
-uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+uploadZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  uploadZone.classList.add('dragover');
+});
 uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
 uploadZone.addEventListener('drop', e => {
-  e.preventDefault(); uploadZone.classList.remove('dragover');
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
   if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
 });
 
-async function handleFile(file) {
+document.getElementById('runDemoBtn').addEventListener('click', async () => {
   showLoading(true);
+  try {
+    const resp = await fetch('/api/sample-data/' + App.selectedDemo);
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error || '示例文件不存在');
+    }
+    const blob = await resp.blob();
+    const file = new File([blob], demoMeta[App.selectedDemo].name, { type: blob.type || 'text/csv' });
+    await handleFile(file, false);
+  } catch (err) {
+    showToast(tr('demo_failed') + err.message, 'error');
+    showLoading(false);
+  }
+});
+
+async function handleFile(file, manageLoading = true) {
+  if (manageLoading) showLoading(true);
   const formData = new FormData();
   formData.append('file', file);
-
   try {
     const resp = await fetch('/api/upload', { method: 'POST', body: formData });
     const data = await resp.json();
-    if (!resp.ok) {
-      showToast(data.error || '上传失败', 'error');
-      document.getElementById('detectBadge').style.display = 'none';
-      showLoading(false);
-      return;
-    }
+    if (!resp.ok) throw new Error(data.error || tr('upload_failed'));
     App.currentData = data;
     App.sessionId = data.session_id;
     renderResults(data);
-    showToast('分析完成！', 'success');
-    document.getElementById('detectBadge').style.display = 'flex';
-    document.getElementById('detectBadge').innerHTML = `&#10003; 检测到: ${data.format_label}`;
-    document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth' });
+    const badge = document.getElementById('detectBadge');
+    badge.style.display = 'block';
+    badge.textContent = tr('detected') + data.format_label + ' · ' + data.row_count_context + tr('epochs');
+    showToast(tr('analysis_done'), 'success');
+    document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (err) {
-    showToast('网络错误: ' + err.message, 'error');
+    showToast(err.message, 'error');
   }
   showLoading(false);
 }
 
-// ── Render ──
 function renderResults(data) {
-  const container = document.getElementById('resultsContainer');
-  container.classList.add('visible');
-
-  // Sleep Score
+  document.getElementById('resultsContainer').classList.add('visible');
   renderScore(data.sleep_score);
-  document.getElementById('scoreSummary').textContent = data.summary?.plain_summary || '';
-
-  // Hypnogram (horizontal timeline bar)
-  renderHypnogram(data.epochs, data.epochs_total || data.row_count_context, data.sleep_start_time);
-
-  // Metrics
-  renderMetrics(data.metrics, data.ref_comparison);
-
-  // Recommendations
-  renderRecommendations(data.recommendations);
-
-  // Bottom summary
-  document.getElementById('bottomSummary').innerHTML =
-    `<p>${data.summary?.bottom_summary || ''}</p>`;
+  document.getElementById('scoreSummary').textContent = (data.summary && data.summary.plain_summary) || '';
+  renderTimeline(data.epochs || []);
+  renderMetrics(data.metrics || {});
+  renderRecommendations(data.recommendations || []);
 }
 
 function renderScore(scoreData) {
   if (!scoreData) return;
-  const { total_score, grade, grade_label, subscores } = scoreData;
+  const score = Number(scoreData.total_score || 0);
+  const grade = scoreData.grade || '--';
+  const gradeLabel = scoreData.grade_label || '';
+  const color = score >= 80 ? 'var(--ok)' : (score >= 60 ? 'var(--warn)' : 'var(--bad)');
+  const r = 58;
+  const circ = 2 * Math.PI * r;
+  const off = circ * (1 - score / 100);
+  document.getElementById('scoreGauge').innerHTML =
+    '<svg width="178" height="178" viewBox="0 0 178 178" aria-label="睡眠评分">' +
+      '<circle cx="89" cy="89" r="' + r + '" fill="none" stroke="rgba(17,23,22,0.09)" stroke-width="15"/>' +
+      '<circle cx="89" cy="89" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="15" stroke-linecap="round" stroke-dasharray="' + circ + '" stroke-dashoffset="' + off + '" transform="rotate(-90 89 89)"/>' +
+      '<text x="89" y="83" text-anchor="middle" font-size="42" font-weight="800" fill="#111716">' + score + '</text>' +
+      '<text x="89" y="108" text-anchor="middle" font-size="13" font-weight="800" fill="#7e817a">/ 100</text>' +
+    '</svg>';
+  const badge = document.getElementById('gradeBadge');
+  badge.style.background = color;
+  badge.textContent = grade + (gradeLabel ? ' · ' + gradeLabel : '');
+  renderSubscores(scoreData.subscores || {});
+}
 
-  // Gauge SVG
-  const r = 58, circ = 2 * Math.PI * r, off = circ * (1 - total_score / 100);
-  const colors = { 'A+': '#2E7D32', 'A': '#388E3C', 'B+': '#558B2F', 'B': '#689F38',
-    'C+': '#F9A825', 'C': '#F57F17', 'D': '#E65100', 'F': '#BF360C' };
-  const badgeColor = colors[grade] || '#999';
-
-  document.getElementById('scoreGauge').innerHTML = `
-    <svg width="150" height="95" viewBox="0 0 160 100">
-      <defs>
-        <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style="stop-color:#D35D47;stop-opacity:1" />
-          <stop offset="50%" style="stop-color:#E8904C;stop-opacity:1" />
-          <stop offset="100%" style="stop-color:#5DAF8B;stop-opacity:1" />
-        </linearGradient>
-      </defs>
-      <circle cx="80" cy="80" r="${r}" fill="none" stroke="#EDE0D4" stroke-width="12"
-              stroke-dasharray="${circ}" stroke-dashoffset="0" transform="rotate(180 80 80)" />
-      <circle cx="80" cy="80" r="${r}" fill="none" stroke="url(#scoreGrad)" stroke-width="12"
-              stroke-dasharray="${circ}" stroke-dashoffset="${off}" stroke-linecap="round"
-              transform="rotate(180 80 80)" style="transition:stroke-dashoffset 1s var(--ease);" />
-      <text x="80" y="75" text-anchor="middle" font-family="Sora,sans-serif"
-            font-size="34" font-weight="700" fill="${badgeColor}">${total_score}</text>
-      <text x="80" y="90" text-anchor="middle" font-family="Outfit,sans-serif"
-            font-size="10" fill="#A38B78">/ 100 分</text>
-    </svg>`;
-  document.getElementById('gradeBadge').style.background = badgeColor;
-  document.getElementById('gradeBadge').textContent = `${grade} · ${grade_label}`;
-
-  // Subscore bars — color-coded with emoji status
-  const subLabels = { sleep_efficiency: '睡眠质量', total_sleep_time: '睡眠时长', waso: '中途清醒', sleep_latency: '入睡速度', rem_proportion: '做梦比例' };
-  const subIcons = { sleep_efficiency: '&#127775;', total_sleep_time: '&#128164;', waso: '&#128564;', sleep_latency: '&#9200;', rem_proportion: '&#127752;' };
-  document.getElementById('subscoreBars').innerHTML = Object.entries(subscores || {}).map(([k, v]) => {
-    const pct = v.max > 0 ? (v.score / v.max * 100) : 0;
-    const icon = subIcons[k] || '&#9679;';
-    let statusText, statusColor, barColor;
-    if (pct >= 80) { statusText = '优秀'; statusColor = 'var(--success)'; barColor = 'var(--success)'; }
-    else if (pct >= 60) { statusText = '良好'; statusColor = 'var(--success)'; barColor = 'var(--success)'; }
-    else if (pct >= 40) { statusText = '一般'; statusColor = 'var(--warning)'; barColor = 'var(--warning)'; }
-    else { statusText = '待改善'; statusColor = 'var(--danger)'; barColor = 'var(--danger)'; }
-    return `<div class="subscore-row" style="margin-bottom:8px;">
-      <span style="font-size:1.1rem;">${icon}</span>
-      <span class="subscore-label">${subLabels[k] || k}</span>
-      <div class="subscore-track"><div class="subscore-fill" style="width:${pct}%;background:${barColor}"></div></div>
-      <span class="subscore-val" style="color:${statusColor};font-weight:600;font-size:0.95rem;">${statusText}</span>
-    </div>`;
+function renderSubscores(subscores) {
+  const names = {
+    sleep_efficiency: '效率',
+    total_sleep_time: '时长',
+    waso: '清醒',
+    sleep_latency: '入睡',
+    rem_proportion: 'REM'
+  };
+  document.getElementById('subscoreBars').innerHTML = Object.entries(subscores).map(([key, item]) => {
+    const pct = item.max ? Math.round(item.score / item.max * 100) : 0;
+    const color = pct >= 75 ? 'var(--ok)' : (pct >= 45 ? 'var(--warn)' : 'var(--bad)');
+    return '<div class="subscore-row"><span>' + (names[key] || key) + '</span><div class="subscore-track"><div class="subscore-fill" style="width:' + pct + '%;background:' + color + '"></div></div><span class="subscore-val" style="color:' + color + '">' + pct + '%</span></div>';
   }).join('');
 }
 
-function renderHypnogram(epochs, totalEpochs, startTime) {
+function renderTimeline(epochs) {
   const canvas = document.getElementById('hypnoBar');
   const ctx = canvas.getContext('2d');
+  const width = canvas.parentElement.clientWidth;
+  const height = 56;
   const dpr = window.devicePixelRatio || 1;
-  const rect = canvas.parentElement.getBoundingClientRect();
-  const w = rect.width;
-  const h = 56;
-  canvas.width = w * dpr;
-  canvas.height = h * dpr;
-  canvas.style.width = w + 'px';
-  canvas.style.height = h + 'px';
-  ctx.scale(dpr, dpr);
-
-  const colors = ['rgba(232,144,76,0.85)', 'rgba(93,175,139,0.85)', 'rgba(139,126,200,0.85)'];
-  const n = epochs.length;
-  const segW = w / n;
-  for (let i = 0; i < n; i++) {
-    ctx.fillStyle = colors[epochs[i].predicted_label] || colors[0];
-    ctx.fillRect(i * segW, 0, Math.ceil(segW), h);
-  }
-
-  // Use totalEpochs for accurate duration (epochs may be sampled to 200)
-  const totalMin = Math.round((totalEpochs || n) * 30 / 60);
-  const hrs = Math.floor(totalMin / 60);
-  const mins = totalMin % 60;
-
-  // Also count stage proportions from sampled epochs
-  let wakeN = 0, nremN = 0, remN = 0;
-  for (const e of epochs) {
-    if (e.predicted_label === 0) wakeN++;
-    else if (e.predicted_label === 1) nremN++;
-    else remN++;
-  }
-  const wakePct = (wakeN / n * 100).toFixed(0);
-  const nremPct = (nremN / n * 100).toFixed(0);
-  const remPct = (remN / n * 100).toFixed(0);
-
-  const labelsDiv = document.getElementById('hypnoLabels');
-
-  // Time ruler with clock times if startTime is available
-  const hasClock = !!startTime;
-  const baseTime = hasClock ? new Date(startTime) : null;
-  const fmt = (minsFromStart) => {
-    if (!hasClock) return null;
-    const t = new Date(baseTime.getTime() + minsFromStart * 60000);
-    const hh = String(t.getHours()).padStart(2, '0');
-    const mm = String(t.getMinutes()).padStart(2, '0');
-    return `${hh}:${mm}`;
-  };
-
-  let rulerMarks = '';
-  if (hasClock) {
-    // Start mark
-    rulerMarks = `<span style="position:absolute;left:0;transform:translateX(-50%);font-size:0.85rem;color:var(--text-muted);">${fmt(0)}</span>`;
-    // Hourly marks
-    if (totalMin >= 120) {
-      for (let m = 60; m < totalMin; m += 60) {
-        const pct = (m / totalMin * 100).toFixed(1);
-        rulerMarks += `<span style="position:absolute;left:${pct}%;transform:translateX(-50%);font-size:0.85rem;color:var(--text-muted);">${fmt(m)}</span>`;
-      }
-    }
-    // End mark
-    rulerMarks += `<span style="position:absolute;right:0;transform:translateX(50%);font-size:0.85rem;color:var(--text-muted);">${fmt(totalMin)}</span>`;
-  } else {
-    rulerMarks = '<span style="position:absolute;left:0;transform:translateX(-50%);font-size:0.85rem;color:var(--text-muted);">0</span>';
-    if (hrs >= 2) {
-      for (let i = 1; i < hrs; i++) {
-        const pct = (i * 60 / totalMin * 100).toFixed(1);
-        rulerMarks += `<span style="position:absolute;left:${pct}%;transform:translateX(-50%);font-size:0.85rem;color:var(--text-muted);">${i}h</span>`;
-      }
-    }
-    rulerMarks += `<span style="position:absolute;right:0;transform:translateX(50%);font-size:0.85rem;color:var(--text-muted);">${hrs}h${mins > 0 ? mins + 'm' : ''}</span>`;
-  }
-
-  // Remove epochCount badge (we show duration here)
-  document.getElementById('epochCount').textContent = '';
-
-  labelsDiv.innerHTML = `
-    <div style="text-align:center;font-size:1.5rem;font-weight:700;color:var(--text-primary);margin-bottom:6px;">
-      ${hrs} 小时 ${mins} 分钟
-    </div>
-    <div style="position:relative;width:100%;height:20px;margin-bottom:6px;">
-      ${rulerMarks}
-    </div>
-    <div style="display:flex;justify-content:center;gap:24px;font-size:0.95rem;color:var(--text-secondary);">
-      <span>清醒 ${wakePct}%</span>
-      <span>深睡眠 ${nremPct}%</span>
-      <span>做梦 ${remPct}%</span>
-    </div>
-  `;
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  canvas.style.width = width + 'px';
+  canvas.style.height = height + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, width, height);
+  if (!epochs.length) return;
+  const colors = ['#e48b65', '#77c9a6', '#9b8cd7'];
+  const seg = width / epochs.length;
+  const counts = { Wake: 0, NREM: 0, REM: 0 };
+  epochs.forEach((e, i) => {
+    const label = Number(e.predicted_label || 0);
+    ctx.fillStyle = colors[label] || colors[0];
+    ctx.fillRect(i * seg, 0, Math.ceil(seg), height);
+    const stage = e.predicted_stage || (label === 1 ? 'NREM' : label === 2 ? 'REM' : 'Wake');
+    if (counts[stage] !== undefined) counts[stage] += 1;
+  });
+  const total = epochs.length || 1;
+  document.getElementById('hypnoLabels').innerHTML =
+    '<span><i style="background:var(--wake)"></i>Wake ' + Math.round(counts.Wake / total * 100) + '%</span>' +
+    '<span><i style="background:var(--nrem)"></i>NREM ' + Math.round(counts.NREM / total * 100) + '%</span>' +
+    '<span><i style="background:var(--rem)"></i>REM ' + Math.round(counts.REM / total * 100) + '%</span>';
 }
 
-function renderMetrics(metrics, refComp) {
-  const grid = document.getElementById('metricsGrid');
+function metricValue(metrics, key) {
+  return metrics[key] === undefined || metrics[key] === null ? '--' : metrics[key];
+}
 
-  // 1. 睡了多久
-  const tst = parseFloat(metrics['总睡眠时长 TST (分钟)']) || 0;
-  const hrs = Math.floor(tst / 60);
-  const mins = Math.round(tst % 60);
-  const tstOk = tst >= 360 && tst <= 480;
-  const tstWarn = tst >= 300 && tst <= 540;
-  const tstIcon = tstOk ? '&#10003;' : (tstWarn ? '&#9888;' : '&#10007;');
-  const tstColor = tstOk ? 'var(--success)' : (tstWarn ? 'var(--warning)' : 'var(--danger)');
-  const tstDesc = tstOk ? '时长充足，身体有足够时间修复' : (tst < 360 ? '偏短，建议争取更多睡眠' : '偏长，注意是否白天嗜睡');
-
-  // 2. 睡眠质量 (efficiency as stars)
-  const se = parseFloat(metrics['睡眠效率 SE (%)']) || 0;
-  const stars = se >= 95 ? 5 : se >= 85 ? 4 : se >= 75 ? 3 : se >= 60 ? 2 : 1;
-  const starStr = '&#9733;'.repeat(stars) + '&#9734;'.repeat(5 - stars);
-  const seDesc = se >= 85 ? '入睡快、中途清醒少，质量不错' : '床上清醒时间偏多，睡眠效率待提升';
-
-  // 3. 多久入睡
-  const lat = parseFloat(metrics['入睡潜伏期 (分钟)']) || 0;
-  const latOk = lat <= 20;
-  const latWarn = lat <= 30;
-  const latIcon = latOk ? '&#10003;' : (latWarn ? '&#9888;' : '&#10007;');
-  const latColor = latOk ? 'var(--success)' : (latWarn ? 'var(--warning)' : 'var(--danger)');
-  const latDesc = latOk ? '入睡很快，说明身体放松' : '入睡偏慢，试试睡前少看手机';
-
-  // 4. 深度睡眠
-  const nremPct = parseFloat(metrics['NREM 占比 (%)']) || 0;
-  const nremOk = nremPct >= 70 && nremPct <= 85;
-  const nremIcon = nremOk ? '&#10003;' : '&#9888;';
-  const nremColor = nremOk ? 'var(--success)' : 'var(--warning)';
-  const nremDesc = nremOk ? '深睡眠充足，身体修复得很好' : '深睡眠比例偏低，注意作息规律';
-
-  // 5. 做梦时间
-  const remPct = parseFloat(metrics['REM 占比 (%)']) || 0;
-  const remOk = remPct >= 18 && remPct <= 28;
-  const remIcon = remOk ? '&#10003;' : '&#9888;';
-  const remColor = remOk ? 'var(--success)' : 'var(--warning)';
-  const remDesc = remOk ? '做梦时间正常，REM 帮助大脑巩固记忆、调节情绪，就像夜间"整理文件"' : (remPct < 18 ? '偏少——常见于饮酒、压力大或作息紊乱，REM 不足会影响记忆和情绪' : '偏多——可能是之前睡眠不足后的"补偿"，身体在补回欠下的 REM');
-
-  grid.innerHTML = `
-    <div class="metric-big">
-      <div class="mb-icon">&#128164;</div>
-      <div class="mb-title">睡了多久</div>
-      <div class="mb-value">${hrs}<span style="font-size:1.2rem;font-weight:400;color:var(--text-muted)">小时</span>${mins}<span style="font-size:1.2rem;font-weight:400;color:var(--text-muted)">分钟</span></div>
-      <div class="mb-desc">${tstDesc}</div>
-      <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">建议 6-8 小时</div>
-      <div class="mb-status" style="color:${tstColor}">${tstIcon}</div>
-    </div>
-    <div class="metric-big">
-      <div class="mb-icon">&#127775;</div>
-      <div class="mb-title">睡眠质量</div>
-      <div class="mb-value"><span class="star-rating">${starStr}</span></div>
-      <div class="mb-desc">${seDesc}</div>
-      <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">效率 ${se.toFixed(0)}% · 建议 >85%</div>
-      <div class="mb-status" style="color:var(--text-muted)"></div>
-    </div>
-    <div class="metric-big">
-      <div class="mb-icon">&#9200;</div>
-      <div class="mb-title">多久入睡</div>
-      <div class="mb-value">${lat.toFixed(0)}<span style="font-size:1.2rem;font-weight:400;color:var(--text-muted)">分钟</span></div>
-      <div class="mb-desc">${latDesc}</div>
-      <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">建议 <20 分钟</div>
-      <div class="mb-status" style="color:${latColor}">${latIcon}</div>
-    </div>
-    <div class="metric-big">
-      <div class="mb-icon">&#128170;</div>
-      <div class="mb-title">深度睡眠</div>
-      <div class="mb-value">${nremPct.toFixed(0)}<span style="font-size:1.2rem;font-weight:400;color:var(--text-muted)">%</span></div>
-      <div class="pbar-track"><div class="pbar-fill nrem" style="width:${Math.min(nremPct,100)}%"></div></div>
-      <div class="mb-desc">${nremDesc}</div>
-      <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">正常范围 70-85%</div>
-      <div class="mb-status" style="color:${nremColor}">${nremIcon}</div>
-    </div>
-    <div class="metric-big">
-      <div class="mb-icon">&#127752;</div>
-      <div class="mb-title">做梦时间</div>
-      <div class="mb-value">${remPct.toFixed(0)}<span style="font-size:1.2rem;font-weight:400;color:var(--text-muted)">%</span></div>
-      <div class="pbar-track"><div class="pbar-fill rem" style="width:${Math.min(remPct,100)}%"></div></div>
-      <div class="mb-desc">${remDesc}</div>
-      <div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;">做梦期（REM）帮助记忆和情绪调节 · 正常 20-25%</div>
-      <div class="mb-status" style="color:${remColor}">${remIcon}</div>
-    </div>
-  `;
+function renderMetrics(metrics) {
+  const items = [
+    [tr('metric_tst'), metricValue(metrics, '总睡眠时长 TST (分钟)'), tr('unit_min')],
+    [tr('metric_se'), metricValue(metrics, '睡眠效率 SE (%)'), '%'],
+    [tr('metric_latency'), metricValue(metrics, '入睡潜伏期 (分钟)'), tr('unit_min')],
+    [tr('metric_waso'), metricValue(metrics, '入睡后清醒 WASO (分钟)'), tr('unit_min')],
+    [tr('metric_nrem'), metricValue(metrics, 'NREM 占比 (%)'), '%'],
+    [tr('metric_rem'), metricValue(metrics, 'REM 占比 (%)'), '%']
+  ];
+  document.getElementById('metricsGrid').innerHTML = items.map(([label, value, unit]) =>
+    '<div class="metric"><span>' + label + '</span><b>' + value + '<small> ' + unit + '</small></b></div>'
+  ).join('');
 }
 
 function renderRecommendations(recs) {
-  if (!recs || recs.length === 0) {
-    document.getElementById('recommendationsList').innerHTML =
-      '<div class="rec-card info" style="text-align:center;"><div class="rec-body-wrap"><div class="rec-icon">&#127881;</div><div class="rec-content"><div class="rec-title">睡眠表现不错！</div><div class="rec-text">各项指标都在正常范围内，继续保持良好的作息习惯。</div></div></div></div>';
+  if (!recs.length) {
+    document.getElementById('recommendationsList').innerHTML = '<div class="rec-card"><h4>' + tr('keep_title') + '</h4><p>' + tr('keep_desc') + '</p></div>';
     return;
   }
-  const iconMap = {
-    efficiency: '&#128164;',
-    fragmentation: '&#128564;',
-    latency: '&#9200;',
-    rem: '&#127752;',
-    general: '&#128161;',
-    insomnia_pattern: '&#128564;',
-    fragmentation_combo: '&#128564;',
-    sleep_restriction: '&#9200;',
-    long_bed: '&#128164;',
-    recovery_sleep: '&#127752;',
-    alcohol_effect: '&#127863;',
-    duration: '&#9200;',
-  };
-  // Conversational rewrite of advice (more detailed)
-  const conversational = {
-    efficiency: se => `你的睡眠效率是 ${se}%，意味着躺在床上的时间有 ${100 - se}% 没有真正睡着。这可能是因为入睡困难、中途醒来，或者太早上床。建议：① 只在真正困的时候才上床；② 如果躺了 20 分钟还睡不着，起来做点安静的事（比如看纸质书），等困了再回床上；③ 每天固定时间起床，包括周末，帮助身体建立规律的生物钟。`,
-    fragmentation: waso => `你昨晚中途醒了 ${waso} 分钟，睡眠被打断了。这会让你第二天感觉疲惫，即使总睡眠时间够长。常见原因：① 睡前喝了太多水或酒；② 卧室太亮、太吵或太热；③ 压力大、焦虑。试试：睡前 2 小时少喝水，保持卧室安静黑暗（可以用耳塞和遮光窗帘），温度控制在 18-22°C。如果经常半夜醒，建议记录睡眠日记，看看有没有规律。`,
-    latency: lat => `你花了 ${lat} 分钟才入睡，比理想的 15-20 分钟慢了一些。这通常和睡前习惯有关。试试：① 睡前 1 小时放下手机，蓝光会抑制褪黑素分泌；② 做 10 分钟深呼吸或渐进式肌肉放松（从脚趾开始，逐步绷紧再放松全身肌肉）；③ 下午 2 点后避免咖啡、茶、可乐；④ 睡前泡脚 10 分钟，帮助身体降温，促进困意。如果超过 30 分钟还睡不着，别焦虑，起来做点无聊的事。`,
-    rem: pct => pct > 28 ? `你的做梦期占比 ${pct}%，高于正常的 20-25%。这在医学上叫「REM 反弹」——身体在补偿之前被压制的做梦时间。常见原因：① 近期睡眠不足，身体在补觉时优先补回 REM；② 戒酒或停用某些药物（如抗抑郁药、安眠药），这些会抑制 REM，停用后身体会反弹性增加 REM；③ 近期经历了较大压力，大脑通过增加 REM 来调节情绪。REM 反弹是身体的自我修复机制，短期出现属于正常。如果持续偏高，建议保持规律作息、减少饮酒，必要时咨询医生。` : `你的做梦期只占 ${pct}%，低于正常的 20-25%。做梦期是大脑整理记忆和调节情绪的关键阶段——少了它，第二天容易健忘、情绪波动。常见原因：① 饮酒（哪怕一杯也会压制做梦）；② 某些药物（如抗抑郁药）；③ 作息不规律；④ 长期压力。建议：减少饮酒，保持固定的睡眠时间表，确保每晚睡够 7-8 小时。`,
-  };
-
   document.getElementById('recommendationsList').innerHTML = recs.map(r => {
-    const cat = r.category || 'general';
-    const icon = iconMap[cat] || iconMap.general;
-    // Extract numbers for conversational rewrite
-    let text = r.advice;
-    if (cat === 'efficiency' && conversational.efficiency) {
-      const seMatch = r.issue.match(/(\d+)%/);
-      if (seMatch) text = conversational.efficiency(seMatch[1]);
-    } else if (cat === 'fragmentation' && conversational.fragmentation) {
-      const wasoMatch = r.issue.match(/(\d+)\s*分钟/);
-      if (wasoMatch) text = conversational.fragmentation(wasoMatch[1]);
-    } else if (cat === 'latency' && conversational.latency) {
-      const latMatch = r.issue.match(/(\d+)\s*分钟/);
-      if (latMatch) text = conversational.latency(latMatch[1]);
-    } else if (cat === 'rem' && conversational.rem) {
-      const remMatch = r.issue.match(/(\d+)%/);
-      if (remMatch) text = conversational.rem(remMatch[1]);
-    }
-    return `<div class="rec-card ${r.severity}">
-      <div class="rec-body-wrap">
-        <div class="rec-icon">${icon}</div>
-        <div class="rec-content">
-          <div class="rec-title">${r.issue}</div>
-          <div class="rec-text">${text}</div>
-        </div>
-      </div>
-    </div>`;
+    const cls = r.severity === 'critical' ? 'critical' : (r.severity === 'warning' ? 'warning' : '');
+    return '<div class="rec-card ' + cls + '"><h4>' + (r.issue || tr('advice')) + '</h4><p>' + (r.advice || '') + '</p></div>';
   }).join('');
 }
 
-// ── Resize handler for hypnogram ──
-window.addEventListener('resize', () => {
-  if (App.currentData && App.currentData.epochs) {
-    renderHypnogram(App.currentData.epochs, App.currentData.epochs_total, App.currentData.sleep_start_time);
-  }
-});
-
-// ── Report Downloads ──
 document.getElementById('btnHtmlReport').addEventListener('click', async () => {
-  if (!App.sessionId) return showToast('请先上传数据', 'error');
+  if (!App.sessionId) return showToast(tr('need_upload'), 'error');
   showLoading(true);
   try {
     const resp = await fetch('/api/report/html', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session_id: App.sessionId }),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: App.sessionId })
     });
     const data = await resp.json();
-    if (data.html) {
-      const blob = new Blob([data.html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = 'sleep_report.html'; a.click();
-      URL.revokeObjectURL(url);
-      showToast('报告已下载', 'success');
-    } else { showToast(data.error || '生成失败', 'error'); }
-  } catch (err) { showToast('错误: ' + err.message, 'error'); }
+    if (!data.html) throw new Error(data.error || tr('report_failed'));
+    const blob = new Blob([data.html], { type: 'text/html' });
+    downloadBlob(blob, 'sleep_report.html');
+    showToast(tr('html_ready'), 'success');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
   showLoading(false);
 });
 
 document.getElementById('btnDocxReport').addEventListener('click', async () => {
-  if (!App.sessionId) return showToast('请先上传数据', 'error');
+  if (!App.sessionId) return showToast(tr('need_upload'), 'error');
   showLoading(true);
   try {
     const resp = await fetch('/api/report/docx', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session_id: App.sessionId }),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: App.sessionId })
     });
-    if (resp.ok) {
-      const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = 'sleep_report.docx'; a.click();
-      URL.revokeObjectURL(url);
-      showToast('报告已下载', 'success');
-    } else {
-      const data = await resp.json();
-      showToast(data.error || '生成失败', 'error');
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.error || tr('report_failed'));
     }
-  } catch (err) { showToast('错误: ' + err.message, 'error'); }
+    const blob = await resp.blob();
+    downloadBlob(blob, 'sleep_report.docx');
+    showToast(tr('docx_ready'), 'success');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
   showLoading(false);
 });
 
-// ── Accordion ──
-document.querySelectorAll('.accordion-trigger').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const content = btn.nextElementSibling;
-    const isOpen = content.classList.contains('open');
-    document.querySelectorAll('.accordion-content.open').forEach(c => c.classList.remove('open'));
-    document.querySelectorAll('.accordion-trigger.open').forEach(b => b.classList.remove('open'));
-    if (!isOpen) { content.classList.add('open'); btn.classList.add('open'); }
-  });
-});
-
-// ── QR Code ──
-fetch('/api/qr').then(r => r.blob()).then(blob => {
-  document.getElementById('qrImage').src = URL.createObjectURL(blob);
-}).catch(() => {});
-
-// ── Utilities ──
-function showLoading(on) { document.getElementById('loadingOverlay').classList.toggle('active', on); }
-function showToast(msg, type) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.className = 'toast ' + type + ' show';
-  clearTimeout(toast._t);
-  toast._t = setTimeout(() => toast.classList.remove('show'), 3000);
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
-// Keyboard shortcut: Escape closes accordions
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    document.querySelectorAll('.accordion-content.open').forEach(c => c.classList.remove('open'));
-    document.querySelectorAll('.accordion-trigger.open').forEach(b => b.classList.remove('open'));
-  }
+fetch('/api/qr')
+  .then(r => r.blob())
+  .then(blob => { document.getElementById('qrImage').src = URL.createObjectURL(blob); })
+  .catch(() => {});
+
+window.addEventListener('resize', () => {
+  if (App.currentData && App.currentData.epochs) renderTimeline(App.currentData.epochs);
 });
+
+function showLoading(on) {
+  document.getElementById('loadingOverlay').classList.toggle('active', !!on);
+}
+
+function showToast(message, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast ' + (type || '') + ' show';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('show'), 3200);
+}
+
+setupPreview();
+applyLanguage();
 </script>
 </body>
 </html>
