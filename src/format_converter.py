@@ -74,15 +74,17 @@ def detect_format(file_bytes: bytes, filename: str) -> tuple:
     """
     text = None
     try:
-        text = file_bytes.decode("utf-8", errors="ignore")
+        text = file_bytes[:8192].decode("utf-8", errors="ignore")
     except Exception:
         pass
 
     ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
 
     # XML detection
-    if ext == "xml" or (text and text.strip().startswith("<?xml")) or (text and "<HealthData" in text[:2000]):
-        return ("apple_health_xml", 0.95)
+    if ext == "xml" or (text and text.lstrip("\ufeff \t\r\n").startswith("<?xml")):
+        if text and ("<HealthData" in text or "<!DOCTYPE HealthData" in text):
+            return ("apple_health_xml", 0.95)
+        return ("unknown", 0.0)
 
     if not text:
         return ("unknown", 0.0)
@@ -119,6 +121,46 @@ def detect_format(file_bytes: bytes, filename: str) -> tuple:
     return ("unknown", 0.0)
 
 
+def _pick_latest_sleep_session(sleep_records: list) -> list:
+    """Return the latest contiguous Apple Health sleep session."""
+    valid = [
+        r for r in sleep_records
+        if r.get("start") and r.get("end")
+        and r["end"] > r["start"]
+        and _stage_value_to_label(r.get("value")) != UNKNOWN_STAGE
+    ]
+    if not valid:
+        return []
+
+    valid.sort(key=lambda r: (r["start"], r["end"]))
+    sessions = []
+    current = []
+    current_end = None
+    max_gap = timedelta(hours=4)
+
+    for rec in valid:
+        if current and rec["start"] - current_end > max_gap:
+            sessions.append(current)
+            current = []
+        current.append(rec)
+        current_end = max(current_end, rec["end"]) if current_end else rec["end"]
+
+    if current:
+        sessions.append(current)
+
+    def session_bounds(session):
+        start = min(r["start"] for r in session)
+        end = max(r["end"] for r in session)
+        return start, end
+
+    useful_sessions = [
+        s for s in sessions
+        if (session_bounds(s)[1] - session_bounds(s)[0]) >= timedelta(minutes=20)
+    ] or sessions
+
+    return max(useful_sessions, key=lambda s: session_bounds(s)[1])
+
+
 def parse_apple_health_xml(file_bytes: bytes) -> pd.DataFrame:
     """Parse Apple Health export.xml to 30-second epoch features.
 
@@ -130,8 +172,8 @@ def parse_apple_health_xml(file_bytes: bytes) -> pd.DataFrame:
     sleep_records = []
     hr_records = []
     try:
-        context = iterparse(io.BytesIO(file_bytes), events=("start", "end"))
-        for event, elem in context:
+        context = iterparse(io.BytesIO(file_bytes), events=("end",))
+        for _, elem in context:
             if elem.tag != "Record":
                 elem.clear()
                 continue
@@ -151,13 +193,17 @@ def parse_apple_health_xml(file_bytes: bytes) -> pd.DataFrame:
                     except ValueError:
                         pass
             elem.clear()
-    except Exception:
-        pass
+    except Exception as e:
+        raise ValueError(f"Apple Health XML 解析失败: {str(e)}") from e
 
     if not sleep_records:
         raise ValueError("No sleep data found in Apple Health XML. Ensure your watch tracks sleep stages.")
 
-    # Phase 2: Find time bounds
+    sleep_records = _pick_latest_sleep_session(sleep_records)
+    if not sleep_records:
+        raise ValueError("No usable sleep stage records found in Apple Health XML.")
+
+    # Phase 2: Find time bounds for the latest sleep session
     all_starts = [r["start"] for r in sleep_records if r["start"]]
     all_ends = [r["end"] for r in sleep_records if r["end"]]
     if not all_starts:
@@ -182,17 +228,20 @@ def parse_apple_health_xml(file_bytes: bytes) -> pd.DataFrame:
         for i in range(start_idx, end_idx):
             stages[i] = stage_label
 
-    # Fill unknown epochs: interpolate from neighbors
+    # Fill unknown epochs from nearest known neighbors.
+    last_stage = UNKNOWN_STAGE
     for i in range(n_epochs):
-        if stages[i] == UNKNOWN_STAGE:
-            # Find nearest known stage
-            for d in range(1, max(n_epochs, 10)):
-                if i - d >= 0 and stages[i - d] != UNKNOWN_STAGE:
-                    stages[i] = stages[i - d]
-                    break
-                if i + d < n_epochs and stages[i + d] != UNKNOWN_STAGE:
-                    stages[i] = stages[i + d]
-                    break
+        if stages[i] == UNKNOWN_STAGE and last_stage != UNKNOWN_STAGE:
+            stages[i] = last_stage
+        elif stages[i] != UNKNOWN_STAGE:
+            last_stage = stages[i]
+
+    next_stage = UNKNOWN_STAGE
+    for i in range(n_epochs - 1, -1, -1):
+        if stages[i] == UNKNOWN_STAGE and next_stage != UNKNOWN_STAGE:
+            stages[i] = next_stage
+        elif stages[i] != UNKNOWN_STAGE:
+            next_stage = stages[i]
 
     # Phase 4: Build HR per epoch
     hr_records.sort(key=lambda r: r["time"])

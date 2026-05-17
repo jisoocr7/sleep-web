@@ -284,21 +284,22 @@ img, canvas { max-width: 100%; display: block; }
 .btn-light { border-color: var(--line); color: var(--charcoal); background: #fffaf0; }
 
 .main {
-  max-width: 1240px;
+  width: min(calc(100% - 80px), 1320px);
+  max-width: none;
   margin: 0 auto;
-  padding: 72px 28px 86px;
+  padding: 78px 0 104px;
 }
 
 .section {
-  margin-bottom: 78px;
+  margin-bottom: 88px;
 }
 
 .section-head {
   display: grid;
-  grid-template-columns: minmax(0, 0.82fr) minmax(280px, 0.46fr);
-  gap: 38px;
+  grid-template-columns: minmax(0, 0.88fr) minmax(300px, 0.48fr);
+  gap: 46px;
   align-items: end;
-  margin-bottom: 28px;
+  margin-bottom: 30px;
 }
 
 .section-kicker {
@@ -326,20 +327,20 @@ img, canvas { max-width: 100%; display: block; }
 
 .intro-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.82fr);
-  gap: 18px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(390px, 0.95fr);
+  gap: 20px;
 }
 
 .panel {
-  border: 1px solid var(--line);
+  border: 1px solid rgba(13, 21, 23, 0.1);
   border-radius: var(--radius);
-  background: rgba(255, 250, 240, 0.72);
-  box-shadow: 0 16px 50px rgba(17,23,22,0.07);
+  background: rgba(255, 252, 245, 0.86);
+  box-shadow: 0 18px 48px rgba(17,23,22,0.08);
 }
 
 .intro-copy {
-  padding: 34px;
-  font-size: 1.05rem;
+  padding: 32px;
+  font-size: 1.03rem;
   color: #4e554f;
 }
 
@@ -353,18 +354,18 @@ img, canvas { max-width: 100%; display: block; }
 
 .feature-item {
   display: grid;
-  grid-template-columns: 38px 1fr;
-  gap: 12px;
+  grid-template-columns: 42px 1fr;
+  gap: 14px;
   align-items: start;
-  padding: 14px;
+  padding: 16px;
   border: 1px solid rgba(17,23,22,0.08);
   border-radius: var(--radius);
-  background: rgba(255,255,255,0.42);
+  background: rgba(255,255,255,0.64);
 }
 
 .feature-icon {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: var(--radius);
   display: grid;
   place-items: center;
@@ -373,12 +374,13 @@ img, canvas { max-width: 100%; display: block; }
 }
 
 .feature-item h3 { margin: 0 0 2px; font-size: 1rem; }
-.feature-item p { margin: 0; color: #67706a; font-size: 0.9rem; }
+.feature-item p { margin: 0; color: #67706a; font-size: 0.9rem; line-height: 1.55; }
 
 .pipeline-card {
-  padding: 26px;
+  padding: 28px;
   background: var(--charcoal);
   color: var(--ink);
+  box-shadow: 0 22px 54px rgba(17,23,22,0.16);
 }
 
 .pipeline-title {
@@ -393,23 +395,23 @@ img, canvas { max-width: 100%; display: block; }
 
 .pipeline-steps {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .pipe-step {
   display: grid;
-  grid-template-columns: 38px 1fr;
+  grid-template-columns: 42px 1fr;
   gap: 14px;
   align-items: center;
-  padding: 15px;
+  padding: 16px;
   border: 1px solid var(--line-dark);
   border-radius: var(--radius);
   background: rgba(247,242,232,0.055);
 }
 
 .pipe-num {
-  width: 38px;
-  height: 38px;
+  width: 42px;
+  height: 42px;
   border-radius: var(--radius);
   display: grid;
   place-items: center;
@@ -428,7 +430,7 @@ img, canvas { max-width: 100%; display: block; }
 }
 
 .model-card {
-  padding: 25px;
+  padding: 28px;
   min-height: 210px;
   display: flex;
   flex-direction: column;
@@ -440,16 +442,16 @@ img, canvas { max-width: 100%; display: block; }
   color: var(--ink);
 }
 
-.model-card h3 { margin: 0 0 12px; font-size: 1.35rem; letter-spacing: -0.03em; }
-.model-card p { margin: 0; color: #69706a; }
+.model-card h3 { margin: 0 0 12px; font-size: 1.32rem; letter-spacing: -0.03em; }
+.model-card p { margin: 0; color: #69706a; font-size: 0.96rem; line-height: 1.65; }
 .model-card.dark p { color: rgba(247,242,232,0.65); }
 .model-tag { width: fit-content; padding: 7px 10px; border-radius: var(--radius); border: 1px solid var(--line); color: #646961; font-size: 0.78rem; font-weight: 800; }
 .model-card.dark .model-tag { border-color: var(--line-dark); color: var(--gold-2); }
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(0, 0.78fr) minmax(360px, 0.52fr);
-  gap: 18px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(380px, 0.78fr);
+  gap: 20px;
   align-items: start;
 }
 
@@ -483,7 +485,7 @@ img, canvas { max-width: 100%; display: block; }
 .demo-preview {
   border-radius: var(--radius);
   border: 1px solid var(--line);
-  min-height: 280px;
+  min-height: 285px;
   background:
     linear-gradient(180deg, rgba(17,23,22,0.02), rgba(17,23,22,0.06)),
     #fffaf0;
@@ -502,7 +504,7 @@ img, canvas { max-width: 100%; display: block; }
 .preview-pill { padding: 6px 10px; border-radius: var(--radius); background: rgba(216,126,100,0.13); color: #9b442e; font-size: 0.78rem; font-weight: 900; }
 
 .preview-chart {
-  height: 120px;
+  height: 126px;
   display: grid;
   grid-template-columns: repeat(28, minmax(4px, 1fr));
   gap: 4px;
@@ -523,17 +525,17 @@ img, canvas { max-width: 100%; display: block; }
 .preview-meta {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 16px;
+  gap: 12px;
+  margin-top: 18px;
 }
 
 .preview-meta div {
-  padding: 12px;
+  padding: 13px;
   border-radius: var(--radius);
   background: rgba(17,23,22,0.045);
 }
 
-.preview-meta b { display: block; font-size: 1.15rem; letter-spacing: -0.04em; }
+.preview-meta b { display: block; font-size: 1.16rem; letter-spacing: -0.04em; }
 .preview-meta span { display: block; color: #73786f; font-size: 0.78rem; }
 
 .upload-zone {
@@ -542,7 +544,7 @@ img, canvas { max-width: 100%; display: block; }
   background:
     linear-gradient(135deg, rgba(201,155,100,0.11), rgba(143,212,187,0.08)),
     #fffaf0;
-  min-height: 310px;
+  min-height: 318px;
   padding: 34px;
   display: grid;
   place-items: center;
@@ -568,8 +570,8 @@ img, canvas { max-width: 100%; display: block; }
   color: var(--gold-2);
 }
 
-.upload-zone h3 { margin: 0 0 8px; font-size: 1.35rem; letter-spacing: -0.03em; }
-.upload-zone p { margin: 0 auto; max-width: 360px; color: #657069; }
+.upload-zone h3 { margin: 0 0 8px; font-size: 1.34rem; letter-spacing: -0.03em; }
+.upload-zone p { margin: 0 auto; max-width: 350px; color: #657069; }
 .file-input { display: none; }
 
 .format-row {
@@ -609,12 +611,12 @@ img, canvas { max-width: 100%; display: block; }
 
 .result-grid {
   display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 18px;
+  grid-template-columns: 340px 1fr;
+  gap: 20px;
 }
 
 .score-card, .metrics-card, .chart-card, .tips-card {
-  padding: 24px;
+  padding: 26px;
 }
 
 .score-ring {
@@ -650,14 +652,14 @@ img, canvas { max-width: 100%; display: block; }
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
 .metric {
   border: 1px solid rgba(17,23,22,0.08);
   border-radius: var(--radius);
   background: rgba(255,255,255,0.42);
-  padding: 15px;
+  padding: 18px;
 }
 
 .metric span { display: block; color: #747a72; font-size: 0.78rem; font-weight: 800; }
@@ -670,7 +672,7 @@ img, canvas { max-width: 100%; display: block; }
   border: 1px solid rgba(17,23,22,0.08);
 }
 
-#hypnoBar { width: 100%; height: 56px; }
+#hypnoBar { width: 100%; height: 72px; }
 
 .legend {
   display: flex;
@@ -704,8 +706,8 @@ img, canvas { max-width: 100%; display: block; }
 
 .phone-section {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 310px;
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 20px;
   align-items: stretch;
 }
 
@@ -718,15 +720,15 @@ img, canvas { max-width: 100%; display: block; }
 .phone-copy p { color: rgba(247,242,232,0.66); margin: 12px 0 0; }
 
 .qr-card {
-  padding: 26px;
+  padding: 28px;
   display: grid;
   place-items: center;
   text-align: center;
 }
 
 .qr-frame {
-  width: 190px;
-  height: 190px;
+  width: 205px;
+  height: 205px;
   border-radius: var(--radius);
   background: #fff;
   padding: 12px;
@@ -738,12 +740,12 @@ img, canvas { max-width: 100%; display: block; }
 .faq-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: 18px;
 }
 
-.faq-item { padding: 23px; }
-.faq-item h3 { margin: 0 0 9px; font-size: 1.08rem; }
-.faq-item p { margin: 0; color: #646d67; font-size: 0.94rem; }
+.faq-item { padding: 24px; }
+.faq-item h3 { margin: 0 0 10px; font-size: 1.05rem; }
+.faq-item p { margin: 0; color: #646d67; font-size: 0.93rem; line-height: 1.65; }
 
 .footer {
   padding: 32px 28px;
@@ -812,6 +814,7 @@ img, canvas { max-width: 100%; display: block; }
     grid-template-columns: 1fr;
   }
   .hero-inner { min-height: auto; padding-top: 64px; }
+  .feature-list { grid-template-columns: 1fr; }
   .model-grid, .faq-grid { grid-template-columns: 1fr; }
 }
 
@@ -923,7 +926,7 @@ img, canvas { max-width: 100%; display: block; }
       <div class="eyebrow" data-i18n="hero_eyebrow">Wearable Sleep Intelligence</div>
       <h1 data-i18n-html="hero_title"><span class="title-line">睡眠分期</span><span class="title-line">质量评估平台</span></h1>
       <p class="hero-copy" data-i18n="hero_copy">
-        上传手表或睡眠 App 数据，自动完成分期预测、质量评分、解释分析和报告生成。
+        上传手表或睡眠 App 数据，自动完成 Wake / NREM / REM 分期预测、基础指标汇总和报告生成。
       </p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="#demo" data-i18n="hero_demo">查看 Demo</a>
@@ -940,12 +943,11 @@ img, canvas { max-width: 100%; display: block; }
         <div class="section-kicker">Introduction</div>
         <h2 data-i18n="intro_title">从数据到报告</h2>
       </div>
-      <p data-i18n="intro_sub">先展示产品气质，再展示流程，最后进入 Demo。</p>
     </div>
     <div class="intro-grid">
       <div class="panel intro-copy">
         <p data-i18n-html="intro_copy">
-          <b>SleepInsight</b> 面向课程展示和个人健康管理场景。用户不需要理解模型细节，只要上传睡眠相关数据，就能得到整晚睡眠阶段、核心指标、睡眠评分和建议。
+          <b>SleepInsight</b> 面向个人睡眠记录分析场景。用户上传睡眠相关数据后，系统输出整晚 Wake / NREM / REM 分期时间线、阶段占比和基础统计指标。
         </p>
         <div class="feature-list">
           <div class="feature-item">
@@ -954,7 +956,7 @@ img, canvas { max-width: 100%; display: block; }
           </div>
           <div class="feature-item">
             <div class="feature-icon">02</div>
-            <div><h3 data-i18n="feature2_title">睡眠质量评分</h3><p data-i18n="feature2_desc">综合睡眠效率、总时长、入睡潜伏期、WASO、REM 比例等指标。</p></div>
+            <div><h3 data-i18n="feature2_title">基础指标汇总</h3><p data-i18n="feature2_desc">由分期序列直接计算总睡眠时长、睡眠效率、WASO、阶段占比等指标。</p></div>
           </div>
           <div class="feature-item">
             <div class="feature-icon">03</div>
@@ -968,7 +970,7 @@ img, canvas { max-width: 100%; display: block; }
           <div class="pipe-step"><div class="pipe-num">1</div><div><b data-i18n="pipe1_title">数据导入</b><span data-i18n="pipe1_desc">CSV/XML 读取、字段检查、格式转换</span></div></div>
           <div class="pipe-step"><div class="pipe-num">2</div><div><b data-i18n="pipe2_title">特征构建</b><span data-i18n="pipe2_desc">为每个 epoch 加入前后文窗口</span></div></div>
           <div class="pipe-step"><div class="pipe-num">3</div><div><b data-i18n="pipe3_title">模型预测</b><span data-i18n="pipe3_desc">输出 Wake、NREM、REM 阶段概率</span></div></div>
-          <div class="pipe-step"><div class="pipe-num">4</div><div><b data-i18n="pipe4_title">解释与报告</b><span data-i18n="pipe4_desc">计算指标、生成建议、导出报告</span></div></div>
+          <div class="pipe-step"><div class="pipe-num">4</div><div><b data-i18n="pipe4_title">指标与报告</b><span data-i18n="pipe4_desc">汇总分期结果、导出报告</span></div></div>
         </div>
       </div>
     </div>
@@ -980,7 +982,6 @@ img, canvas { max-width: 100%; display: block; }
         <div class="section-kicker">Model</div>
         <h2 data-i18n="model_title">模型不是黑盒展示</h2>
       </div>
-      <p data-i18n="model_sub">睡眠小贴士由指标规则生成；分期模型使用 HGB + 上下文特征；解释部分用特征重要性辅助说明。</p>
     </div>
     <div class="model-grid">
       <div class="panel model-card">
@@ -990,7 +991,7 @@ img, canvas { max-width: 100%; display: block; }
         <div><div class="model-tag">Classifier</div><h3>HistGradientBoosting</h3><p data-i18n="model_cls_desc">基于树模型完成三分类预测，并通过上下文窗口减少孤立跳变。</p></div>
       </div>
       <div class="panel model-card">
-        <div><div class="model-tag">Output</div><h3 data-i18n="model_out_title">评分与建议</h3><p data-i18n="model_out_desc">输出分期、睡眠效率、REM/NREM 占比、入睡潜伏期、WASO 和个性化建议。</p></div>
+        <div><div class="model-tag">Output</div><h3 data-i18n="model_out_title">分期与指标</h3><p data-i18n="model_out_desc">输出 Wake / NREM / REM 分期、阶段概率、阶段占比和基础睡眠统计指标。</p></div>
       </div>
     </div>
   </section>
@@ -1001,7 +1002,6 @@ img, canvas { max-width: 100%; display: block; }
         <div class="section-kicker">Demo</div>
         <h2 data-i18n="demo_title">先看示例，再上传自己的数据</h2>
       </div>
-      <p data-i18n="demo_sub">示例按钮会调用后端样例文件并走同一条分析链路，不是静态假图。</p>
     </div>
     <div class="workspace">
       <div class="panel demo-card">
@@ -1018,7 +1018,7 @@ img, canvas { max-width: 100%; display: block; }
           </div>
           <div class="preview-chart" aria-hidden="true" id="previewChart"></div>
           <div class="preview-meta">
-            <div><b id="previewScore">30</b><span data-i18n="preview_score">预期评分</span></div>
+            <div><b id="previewScore">840</b><span data-i18n="preview_score">Epoch 数</span></div>
             <div><b id="previewDuration">6.5h</b><span data-i18n="preview_duration">卧床窗口</span></div>
             <div><b id="previewSignal">WASO high</b><span data-i18n="preview_signal">主要问题</span></div>
           </div>
@@ -1051,10 +1051,9 @@ img, canvas { max-width: 100%; display: block; }
     <div class="results" id="resultsContainer">
       <div class="result-grid">
         <div class="panel score-card">
-          <div class="score-ring" id="scoreGauge"></div>
-          <div class="grade-badge" id="gradeBadge">--</div>
-          <div class="score-summary" id="scoreSummary"></div>
-          <div class="subscore-bars" id="subscoreBars"></div>
+          <h3 data-i18n="result_stage_summary">分期统计</h3>
+          <div class="metrics-grid" id="stageCounts"></div>
+          <p class="score-summary" data-i18n="result_stage_note">仅展示模型输出的 Wake / NREM / REM 分期结果，不再生成自定义评分或改善建议。</p>
         </div>
         <div>
           <div class="panel chart-card">
@@ -1067,8 +1066,8 @@ img, canvas { max-width: 100%; display: block; }
             <div class="metrics-grid" id="metricsGrid"></div>
           </div>
           <div class="panel tips-card">
-            <h3 data-i18n="result_tips">睡眠小贴士</h3>
-            <div class="rec-list" id="recommendationsList"></div>
+            <h3 data-i18n="result_tips">分期报告</h3>
+            <p class="score-summary" data-i18n="result_report_note">报告只包含睡眠分期时间线、阶段分布和基础统计指标。</p>
             <div class="report-actions">
               <button class="btn btn-dark" id="btnHtmlReport" type="button" data-i18n="download_html">下载 HTML 报告</button>
               <button class="btn btn-light" id="btnDocxReport" type="button" data-i18n="download_docx">下载 DOCX 报告</button>
@@ -1099,10 +1098,9 @@ img, canvas { max-width: 100%; display: block; }
         <div class="section-kicker">FAQ</div>
         <h2 data-i18n="faq_title">常见问题</h2>
       </div>
-      <p data-i18n="faq_sub">答辩时常见问题集中放在这里，首页不再堆太多小字。</p>
     </div>
     <div class="faq-grid">
-      <div class="panel faq-item"><h3 data-i18n="faq1_q">睡眠建议是大模型生成的吗？</h3><p data-i18n="faq1_a">当前不是实时大模型生成，而是根据睡眠效率、入睡潜伏期、WASO、REM 比例等指标触发规则模板，更可控。</p></div>
+      <div class="panel faq-item"><h3 data-i18n="faq1_q">上传什么数据可以分析？</h3><p data-i18n="faq1_a">支持原始 epoch 特征 CSV，也支持部分可穿戴设备或睡眠 App 导出的 CSV/XML。系统会先识别格式，再转换成模型需要的 30 秒 epoch 特征。</p></div>
       <div class="panel faq-item"><h3 data-i18n="faq2_q">模型怎么验证？</h3><p data-i18n="faq2_a">需要带金标准标签的数据才能严格计算 accuracy、precision、recall、F1 和混淆矩阵；无标签样例只能做功能演示。</p></div>
       <div class="panel faq-item"><h3 data-i18n="faq3_q">结果能当诊断吗？</h3><p data-i18n="faq3_a">不能。可穿戴数据和模型输出只适合健康管理参考，持续失眠或异常应咨询医生。</p></div>
     </div>
@@ -1110,7 +1108,7 @@ img, canvas { max-width: 100%; display: block; }
 </main>
 
 <footer class="footer">
-  <span data-i18n="footer_text">SleepInsight MVP · HGB + Context Features · 仅供健康管理和课程展示参考，不构成医疗诊断</span>
+  <span data-i18n="footer_text">SleepInsight MVP · HGB + Context Features · 仅供健康管理参考，不构成医疗诊断</span>
 </footer>
 
 <div class="loading-overlay" id="loadingOverlay">
@@ -1124,7 +1122,7 @@ img, canvas { max-width: 100%; display: block; }
 <script>
 const I18N = {
   zh: {
-    page_title: 'SleepInsight | 睡眠分期与质量评估平台',
+    page_title: 'SleepInsight | 睡眠分期预测平台',
     brand_sub: '睡眠分期平台',
     nav_intro: '平台介绍',
     nav_model: '模型方法',
@@ -1134,17 +1132,17 @@ const I18N = {
     nav_faq: '问题解答',
     nav_start: '开始分析',
     hero_eyebrow: 'Wearable Sleep Intelligence',
-    hero_title: '<span class="title-line">睡眠分期</span><span class="title-line">质量评估平台</span>',
-    hero_copy: '上传手表或睡眠 App 数据，自动完成分期预测、质量评分、解释分析和报告生成。',
+    hero_title: '<span class="title-line">睡眠分期</span><span class="title-line">预测平台</span>',
+    hero_copy: '上传手表或睡眠 App 数据，自动完成 Wake / NREM / REM 分期预测、基础指标汇总和报告生成。',
     hero_demo: '查看 Demo',
     hero_upload: '上传自己的数据',
     intro_title: '从数据到报告',
-    intro_sub: '先展示产品气质，再展示流程，最后进入 Demo。',
-    intro_copy: '<b>SleepInsight</b> 面向课程展示和个人健康管理场景。用户不需要理解模型细节，只要上传睡眠相关数据，就能得到整晚睡眠阶段、核心指标、睡眠评分和建议。',
+    intro_sub: '',
+    intro_copy: '<b>SleepInsight</b> 面向个人睡眠记录分析场景。用户上传睡眠相关数据后，系统输出整晚 Wake / NREM / REM 分期时间线、阶段占比和基础统计指标。',
     feature1_title: '格式自动识别',
     feature1_desc: '支持 Apple Health XML、AutoSleep CSV、Sleep Cycle CSV 和原始特征 CSV。',
-    feature2_title: '睡眠质量评分',
-    feature2_desc: '综合睡眠效率、总时长、入睡潜伏期、WASO、REM 比例等指标。',
+    feature2_title: '基础指标汇总',
+    feature2_desc: '由分期序列直接计算总睡眠时长、睡眠效率、WASO、阶段占比等指标。',
     feature3_title: '报告与移动端',
     feature3_desc: '可下载 HTML/DOCX 报告，也可以扫码在手机端打开上传入口。',
     pipe1_title: '数据导入',
@@ -1153,22 +1151,22 @@ const I18N = {
     pipe2_desc: '为每个 epoch 加入前后文窗口',
     pipe3_title: '模型预测',
     pipe3_desc: '输出 Wake、NREM、REM 阶段概率',
-    pipe4_title: '解释与报告',
-    pipe4_desc: '计算指标、生成建议、导出报告',
+    pipe4_title: '指标与报告',
+    pipe4_desc: '汇总分期结果、导出报告',
     model_title: '模型不是黑盒展示',
-    model_sub: '睡眠小贴士由指标规则生成；分期模型使用 HGB + 上下文特征；解释部分用特征重要性辅助说明。',
+    model_sub: '',
     model_input_title: 'Epoch 特征',
     model_input_desc: '每 30 秒一行，包含运动、时间、可穿戴设备导出的睡眠相关字段。',
     model_cls_desc: '基于树模型完成三分类预测，并通过上下文窗口减少孤立跳变。',
-    model_out_title: '评分与建议',
-    model_out_desc: '输出分期、睡眠效率、REM/NREM 占比、入睡潜伏期、WASO 和个性化建议。',
+    model_out_title: '分期与指标',
+    model_out_desc: '输出 Wake / NREM / REM 分期、阶段概率、阶段占比和基础睡眠统计指标。',
     demo_title: '先看示例，再上传自己的数据',
-    demo_sub: '示例按钮会调用后端样例文件并走同一条分析链路，不是静态假图。',
+    demo_sub: '',
     demo_card_title: '示例数据',
     tab_poor: '睡眠较差样例',
     tab_epoch: '原始特征样例',
     tab_auto: 'AutoSleep 样例',
-    preview_score: '预期评分',
+    preview_score: 'Epoch 数',
     preview_duration: '卧床窗口',
     preview_signal: '主要问题',
     run_demo: '运行当前 Demo',
@@ -1178,25 +1176,30 @@ const I18N = {
     upload_desc: '或点击选择文件，系统会自动识别格式并生成睡眠分期报告。',
     result_timeline: '整晚睡眠分期',
     result_metrics: '关键指标',
-    result_tips: '睡眠小贴士',
+    result_tips: '分期报告',
+    result_stage_summary: '分期统计',
+    result_stage_note: '仅展示模型输出的 Wake / NREM / REM 分期结果，不再生成自定义评分或改善建议。',
+    result_report_note: '报告只包含睡眠分期时间线、阶段分布和基础统计指标。',
     download_html: '下载 HTML 报告',
     download_docx: '下载 DOCX 报告',
     phone_title: '手机扫码上传',
     phone_desc: '手机扫描后进入移动端页面，可以上传手表或健康 App 导出的数据。',
     qr_label: '扫描二维码在手机上打开上传入口',
     faq_title: '常见问题',
-    faq_sub: '答辩时常见问题集中放在这里，首页不再堆太多小字。',
-    faq1_q: '睡眠建议是大模型生成的吗？',
-    faq1_a: '当前不是实时大模型生成，而是根据睡眠效率、入睡潜伏期、WASO、REM 比例等指标触发规则模板，更可控。',
+    faq_sub: '',
+    faq1_q: '上传什么数据可以分析？',
+    faq1_a: '支持原始 epoch 特征 CSV，也支持部分可穿戴设备或睡眠 App 导出的 CSV/XML。系统会先识别格式，再转换成模型需要的 30 秒 epoch 特征。',
     faq2_q: '模型怎么验证？',
     faq2_a: '需要带金标准标签的数据才能严格计算 accuracy、precision、recall、F1 和混淆矩阵；无标签样例只能做功能演示。',
     faq3_q: '结果能当诊断吗？',
     faq3_a: '不能。可穿戴数据和模型输出只适合健康管理参考，持续失眠或异常应咨询医生。',
-    footer_text: 'SleepInsight MVP · HGB + Context Features · 仅供健康管理和课程展示参考，不构成医疗诊断',
+    footer_text: 'SleepInsight MVP · HGB + Context Features · 仅供健康管理参考，不构成医疗诊断',
     analyzing: '正在分析睡眠数据...',
     analysis_done: '分析完成',
     demo_failed: 'Demo 运行失败: ',
     upload_failed: '上传失败',
+    network_failed: '上传连接失败。常见原因是文件过大、服务器超时，或线上环境拒绝了完整 Apple Health 导出。',
+    large_file_hint: '当前文件大小为 {size}，建议先提取最近一晚数据或上传较小的 CSV。',
     detected: '已识别: ',
     epochs: ' epochs',
     need_upload: '请先上传数据',
@@ -1215,7 +1218,7 @@ const I18N = {
     advice: '建议'
   },
   en: {
-    page_title: 'SleepInsight | Sleep Staging and Quality Assessment',
+    page_title: 'SleepInsight | Sleep Staging Prediction',
     brand_sub: 'Sleep staging platform',
     nav_intro: 'Introduction',
     nav_model: 'Model',
@@ -1225,17 +1228,17 @@ const I18N = {
     nav_faq: 'FAQ',
     nav_start: 'Analyze',
     hero_eyebrow: 'Wearable Sleep Intelligence',
-    hero_title: '<span class="title-line">Sleep Staging</span><span class="title-line">Quality Assessment</span>',
-    hero_copy: 'Upload wearable or sleep-app data to generate staging predictions, quality scores, explanations, and reports.',
+    hero_title: '<span class="title-line">Sleep Staging</span><span class="title-line">Prediction Platform</span>',
+    hero_copy: 'Upload wearable or sleep-app data to generate Wake / NREM / REM staging predictions, summary metrics, and reports.',
     hero_demo: 'View Demo',
     hero_upload: 'Upload Your Data',
     intro_title: 'From Data to Report',
-    intro_sub: 'A focused product story, a clear pipeline, then the live demo.',
-    intro_copy: '<b>SleepInsight</b> is designed for course demos and personal health tracking. Users can upload sleep data and receive sleep stages, key metrics, a score, and actionable suggestions.',
+    intro_sub: '',
+    intro_copy: '<b>SleepInsight</b> is designed for course demos and model inspection. Users can upload sleep data and receive the full Wake / NREM / REM timeline, stage proportions, and basic summary metrics.',
     feature1_title: 'Format Detection',
     feature1_desc: 'Supports Apple Health XML, AutoSleep CSV, Sleep Cycle CSV, and raw feature CSV.',
-    feature2_title: 'Sleep Quality Score',
-    feature2_desc: 'Combines sleep efficiency, duration, latency, WASO, and REM proportion.',
+    feature2_title: 'Summary Metrics',
+    feature2_desc: 'Computes duration, sleep efficiency, WASO, and stage proportions directly from the predicted staging sequence.',
     feature3_title: 'Reports and Mobile',
     feature3_desc: 'Download HTML/DOCX reports or scan the QR code to upload from a phone.',
     pipe1_title: 'Import',
@@ -1245,21 +1248,21 @@ const I18N = {
     pipe3_title: 'Prediction',
     pipe3_desc: 'Predict Wake, NREM, and REM probabilities',
     pipe4_title: 'Report',
-    pipe4_desc: 'Compute metrics, generate advice, export reports',
+    pipe4_desc: 'Summarize staging outputs and export reports',
     model_title: 'A Model You Can Explain',
-    model_sub: 'Tips are rule-based from metrics; staging uses HGB with contextual features; importance scores support explanation.',
+    model_sub: '',
     model_input_title: 'Epoch Features',
     model_input_desc: 'One row per 30 seconds with movement, timing, and wearable-derived sleep fields.',
     model_cls_desc: 'A tree-based classifier predicts three stages, while contextual windows reduce isolated jumps.',
-    model_out_title: 'Scores and Advice',
-    model_out_desc: 'Outputs stages, efficiency, REM/NREM ratio, latency, WASO, and personalized guidance.',
+    model_out_title: 'Stages and Metrics',
+    model_out_desc: 'Outputs Wake / NREM / REM stages, class probabilities, stage proportions, and basic sleep statistics.',
     demo_title: 'Try a Demo, Then Upload Yours',
-    demo_sub: 'Demo files call the same backend analysis pipeline as real uploads.',
+    demo_sub: '',
     demo_card_title: 'Sample Data',
     tab_poor: 'Poor Sleep',
     tab_epoch: 'Raw Features',
     tab_auto: 'AutoSleep',
-    preview_score: 'Expected score',
+    preview_score: 'Epoch count',
     preview_duration: 'Sleep window',
     preview_signal: 'Main issue',
     run_demo: 'Run Demo',
@@ -1269,25 +1272,30 @@ const I18N = {
     upload_desc: 'Click or drag a file. The system detects the format and creates a staging report.',
     result_timeline: 'Sleep Timeline',
     result_metrics: 'Key Metrics',
-    result_tips: 'Sleep Tips',
+    result_tips: 'Staging Report',
+    result_stage_summary: 'Stage Summary',
+    result_stage_note: 'Only Wake / NREM / REM staging outputs are shown. Custom scores and advice have been removed.',
+    result_report_note: 'The report contains only the staging timeline, stage distribution, and basic summary metrics.',
     download_html: 'Download HTML',
     download_docx: 'Download DOCX',
     phone_title: 'Scan to Upload',
     phone_desc: 'Scan the QR code to open the mobile upload page for watch or health-app exports.',
     qr_label: 'Scan QR code to open the mobile upload page',
     faq_title: 'FAQ',
-    faq_sub: 'Common defense questions are placed here instead of crowding the hero.',
-    faq1_q: 'Are the tips generated by an LLM?',
-    faq1_a: 'No. Current tips are controlled rule templates triggered by metrics such as efficiency, latency, WASO, and REM ratio.',
+    faq_sub: '',
+    faq1_q: 'What data can I upload?',
+    faq1_a: 'The app supports raw epoch-feature CSV files and selected wearable or sleep-app CSV/XML exports. Files are detected and converted into 30-second epoch features before prediction.',
     faq2_q: 'How do you validate the model?',
     faq2_a: 'Strict accuracy, precision, recall, F1, and confusion matrices require gold-standard labels. Unlabeled samples are only demos.',
     faq3_q: 'Is this a diagnosis?',
     faq3_a: 'No. Wearable data and model outputs are for health reference only. Persistent sleep problems should be discussed with a clinician.',
-    footer_text: 'SleepInsight MVP · HGB + Context Features · For education and health reference only, not medical diagnosis',
+    footer_text: 'SleepInsight MVP · HGB + Context Features · For health reference only, not medical diagnosis',
     analyzing: 'Analyzing sleep data...',
     analysis_done: 'Analysis complete',
     demo_failed: 'Demo failed: ',
     upload_failed: 'Upload failed',
+    network_failed: 'Upload connection failed. Large files, server timeouts, or hosted upload limits commonly cause this with full Apple Health exports.',
+    large_file_hint: 'This file is {size}; extract the latest night or upload a smaller CSV first.',
     detected: 'Detected: ',
     epochs: ' epochs',
     need_upload: 'Please upload data first',
@@ -1313,6 +1321,30 @@ function tr(key) {
   return (I18N[currentLang] && I18N[currentLang][key]) || I18N.zh[key] || key;
 }
 
+function formatFileSize(bytes) {
+  if (!bytes && bytes !== 0) return '';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let size = bytes;
+  let unit = 0;
+  while (size >= 1024 && unit < units.length - 1) {
+    size /= 1024;
+    unit += 1;
+  }
+  return `${size.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
+}
+
+function uploadFailureMessage(file, err) {
+  const message = err && err.message ? err.message : '';
+  if (message && !/failed to fetch|networkerror|load failed/i.test(message)) {
+    return message;
+  }
+  let hint = tr('network_failed');
+  if (file && file.size > 50 * 1024 * 1024) {
+    hint += ' ' + tr('large_file_hint').replace('{size}', formatFileSize(file.size));
+  }
+  return hint;
+}
+
 function applyLanguage() {
   document.documentElement.lang = currentLang === 'zh' ? 'zh-CN' : 'en';
   document.title = tr('page_title');
@@ -1336,7 +1368,7 @@ const demoMeta = {
   'poor-sleep': {
     name: 'sample_poor_sleep.csv',
     pill: 'Quality: Poor',
-    score: '30',
+    score: '840',
     duration: '6.5h',
     signal: 'WASO high',
     bars: [42, 24, 26, 68, 74, 33, 29, 80, 52, 47, 73, 71, 38, 35, 77, 85, 42, 27, 23, 70, 64, 38, 78, 45, 34, 83, 76, 30]
@@ -1427,8 +1459,8 @@ async function handleFile(file, manageLoading = true) {
   formData.append('file', file);
   try {
     const resp = await fetch('/api/upload', { method: 'POST', body: formData });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || tr('upload_failed'));
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(data.error || `${tr('upload_failed')} (${resp.status})`);
     App.currentData = data;
     App.sessionId = data.session_id;
     renderResults(data);
@@ -1438,54 +1470,28 @@ async function handleFile(file, manageLoading = true) {
     showToast(tr('analysis_done'), 'success');
     document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (err) {
-    showToast(err.message, 'error');
+    showToast(uploadFailureMessage(file, err), 'error');
   }
   showLoading(false);
 }
 
 function renderResults(data) {
   document.getElementById('resultsContainer').classList.add('visible');
-  renderScore(data.sleep_score);
-  document.getElementById('scoreSummary').textContent = (data.summary && data.summary.plain_summary) || '';
   renderTimeline(data.epochs || []);
+  renderStageCounts(data.label_counts || {});
   renderMetrics(data.metrics || {});
-  renderRecommendations(data.recommendations || []);
 }
 
-function renderScore(scoreData) {
-  if (!scoreData) return;
-  const score = Number(scoreData.total_score || 0);
-  const grade = scoreData.grade || '--';
-  const gradeLabel = scoreData.grade_label || '';
-  const color = score >= 80 ? 'var(--ok)' : (score >= 60 ? 'var(--warn)' : 'var(--bad)');
-  const r = 58;
-  const circ = 2 * Math.PI * r;
-  const off = circ * (1 - score / 100);
-  document.getElementById('scoreGauge').innerHTML =
-    '<svg width="178" height="178" viewBox="0 0 178 178" aria-label="睡眠评分">' +
-      '<circle cx="89" cy="89" r="' + r + '" fill="none" stroke="rgba(17,23,22,0.09)" stroke-width="15"/>' +
-      '<circle cx="89" cy="89" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="15" stroke-linecap="round" stroke-dasharray="' + circ + '" stroke-dashoffset="' + off + '" transform="rotate(-90 89 89)"/>' +
-      '<text x="89" y="83" text-anchor="middle" font-size="42" font-weight="800" fill="#111716">' + score + '</text>' +
-      '<text x="89" y="108" text-anchor="middle" font-size="13" font-weight="800" fill="#7e817a">/ 100</text>' +
-    '</svg>';
-  const badge = document.getElementById('gradeBadge');
-  badge.style.background = color;
-  badge.textContent = grade + (gradeLabel ? ' · ' + gradeLabel : '');
-  renderSubscores(scoreData.subscores || {});
-}
-
-function renderSubscores(subscores) {
-  const names = {
-    sleep_efficiency: '效率',
-    total_sleep_time: '时长',
-    waso: '清醒',
-    sleep_latency: '入睡',
-    rem_proportion: 'REM'
-  };
-  document.getElementById('subscoreBars').innerHTML = Object.entries(subscores).map(([key, item]) => {
-    const pct = item.max ? Math.round(item.score / item.max * 100) : 0;
-    const color = pct >= 75 ? 'var(--ok)' : (pct >= 45 ? 'var(--warn)' : 'var(--bad)');
-    return '<div class="subscore-row"><span>' + (names[key] || key) + '</span><div class="subscore-track"><div class="subscore-fill" style="width:' + pct + '%;background:' + color + '"></div></div><span class="subscore-val" style="color:' + color + '">' + pct + '%</span></div>';
+function renderStageCounts(counts) {
+  const total = (counts.Wake || 0) + (counts.NREM || 0) + (counts.REM || 0) || 1;
+  const rows = [
+    ['Wake', counts.Wake || 0, 'var(--wake)'],
+    ['NREM', counts.NREM || 0, 'var(--nrem)'],
+    ['REM', counts.REM || 0, 'var(--rem)']
+  ];
+  document.getElementById('stageCounts').innerHTML = rows.map(([label, value, color]) => {
+    const pct = Math.round(value / total * 100);
+    return '<div class="metric"><span>' + label + '</span><b style="color:' + color + '">' + value + '<small> epochs / ' + pct + '%</small></b></div>';
   }).join('');
 }
 
@@ -1535,17 +1541,6 @@ function renderMetrics(metrics) {
   document.getElementById('metricsGrid').innerHTML = items.map(([label, value, unit]) =>
     '<div class="metric"><span>' + label + '</span><b>' + value + '<small> ' + unit + '</small></b></div>'
   ).join('');
-}
-
-function renderRecommendations(recs) {
-  if (!recs.length) {
-    document.getElementById('recommendationsList').innerHTML = '<div class="rec-card"><h4>' + tr('keep_title') + '</h4><p>' + tr('keep_desc') + '</p></div>';
-    return;
-  }
-  document.getElementById('recommendationsList').innerHTML = recs.map(r => {
-    const cls = r.severity === 'critical' ? 'critical' : (r.severity === 'warning' ? 'warning' : '');
-    return '<div class="rec-card ' + cls + '"><h4>' + (r.issue || tr('advice')) + '</h4><p>' + (r.advice || '') + '</p></div>';
-  }).join('');
 }
 
 document.getElementById('btnHtmlReport').addEventListener('click', async () => {

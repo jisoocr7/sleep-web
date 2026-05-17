@@ -344,6 +344,30 @@ const App = { sessionId: null, currentData: null };
 const uploadZone = document.getElementById('uploadZone');
 const fileInput = document.getElementById('fileInput');
 
+function formatFileSize(bytes) {
+  if (!bytes && bytes !== 0) return '';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let size = bytes;
+  let unit = 0;
+  while (size >= 1024 && unit < units.length - 1) {
+    size /= 1024;
+    unit += 1;
+  }
+  return `${size.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
+}
+
+function uploadFailureMessage(file, err) {
+  const message = err && err.message ? err.message : '';
+  if (message && !/failed to fetch|networkerror|load failed/i.test(message)) {
+    return message;
+  }
+  let hint = '上传连接失败，常见原因是文件过大、服务器超时，或线上环境拒绝了完整 Apple Health 导出。';
+  if (file && file.size > 50 * 1024 * 1024) {
+    hint += ` 当前文件大小为 ${formatFileSize(file.size)}，建议先提取最近一晚数据或上传较小的 CSV。`;
+  }
+  return hint;
+}
+
 uploadZone.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
 
@@ -362,9 +386,9 @@ async function handleFile(file) {
 
   try {
     const resp = await fetch('/api/upload', { method: 'POST', body: formData });
-    const data = await resp.json();
+    const data = await resp.json().catch(() => ({}));
     if (!resp.ok) {
-      showToast(data.error || '上传失败', 'error');
+      showToast(data.error || `上传失败 (${resp.status})`, 'error');
       document.getElementById('detectBadge').style.display = 'none';
       showLoading(false);
       return;
@@ -377,7 +401,7 @@ async function handleFile(file) {
     document.getElementById('detectBadge').textContent = '✓ 检测到: ' + data.format_label;
     document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth' });
   } catch (err) {
-    showToast('网络错误: ' + err.message, 'error');
+    showToast(uploadFailureMessage(file, err), 'error');
   }
   showLoading(false);
 }

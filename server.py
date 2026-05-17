@@ -24,12 +24,6 @@ from src.feature_builder import build_context_features
 from src.predict import predict, load_schema, load_model
 from src.metrics import compute_sleep_metrics, get_metric_reference, get_metric_reference_v2
 from src.format_converter import convert_to_epoch_features, REQUIRED_FEATURES
-from src.sleep_scoring import (
-    compute_sleep_score,
-    generate_recommendations,
-    generate_reference_comparison,
-    generate_summary_text,
-)
 from src.explain import (
     get_global_importance,
     compute_shap_for_upload,
@@ -204,30 +198,20 @@ def api_upload():
     # Step 5: Metrics
     metrics = compute_sleep_metrics(predictions)
 
-    # Step 6: Sleep scoring
-    score_data = compute_sleep_score(metrics)
-    recs = generate_recommendations(metrics, score_data.get("subscores"))
-    ref_comp = generate_reference_comparison(metrics)
-    summary = generate_summary_text(score_data, recs)
-
-    # Step 7: Charts (matplotlib)
+    # Step 6: Charts (matplotlib)
     hypno_fig = plot_hypnogram(predictions)
     hypno_b64 = fig_to_base64(hypno_fig)
 
     dist_fig = plot_stage_distribution(predictions)
     dist_b64 = fig_to_base64(dist_fig)
 
-    # Step 8: Store in session (SHAP computed async in background)
+    # Step 7: Store in session (SHAP computed async in background)
     session_id = str(hash(file.filename + str(datetime.now().timestamp())))
     with SESSION_LOCK:
         SESSION[session_id] = {
             "predictions": predictions,
             "metrics": metrics,
             "df_context": df_context,
-            "sleep_score": score_data,
-            "recommendations": recs,
-            "ref_comparison": ref_comp,
-            "summary": summary,
             "upload_importance": None,
             "explanation_text": "",
             "shap_top": [],
@@ -297,10 +281,6 @@ def api_upload():
         },
         "metrics": {k: (v if isinstance(v, str) else (round(v, 1) if isinstance(v, float) else v))
                     for k, v in metrics.items()},
-        "sleep_score": score_data,
-        "recommendations": recs,
-        "ref_comparison": {k: v for k, v in ref_comp.items()},
-        "summary": summary,
         "hypno_b64": hypno_b64,
         "dist_b64": dist_b64,
         "shap_ready": False,
@@ -327,17 +307,9 @@ def api_score():
         return jsonify({"error": "Session 已过期，请重新上传。"}), 404
 
     metrics = session.get("metrics", {})
-    score_data = compute_sleep_score(metrics)
-    recs = generate_recommendations(metrics, score_data.get("subscores"))
-    ref_comp = generate_reference_comparison(metrics)
-    summary = generate_summary_text(score_data, recs)
-
     return jsonify({
-        "sleep_score": score_data,
-        "recommendations": recs,
-        "ref_comparison": ref_comp,
-        "summary": summary,
-    })
+        "error": "Sleep scoring and recommendation rules have been removed. Use /api/upload for staging predictions and raw sleep metrics."
+    }), 410
 
 
 # ─── SHAP Status (async polling) ─────────────────────────────────
@@ -417,9 +389,6 @@ def api_report_html():
     html = generate_html_report(
         session["predictions"],
         session["metrics"],
-        sleep_score=session.get("sleep_score"),
-        recommendations=session.get("recommendations"),
-        ref_comparison=session.get("ref_comparison"),
         shap_importance=session.get("upload_importance"),
         explanation_text=session.get("explanation_text", ""),
         upload_filename=session.get("filename", ""),
@@ -443,9 +412,6 @@ def api_report_docx():
     docx_buf = generate_docx_report(
         session["predictions"],
         session["metrics"],
-        sleep_score=session.get("sleep_score"),
-        recommendations=session.get("recommendations"),
-        ref_comparison=session.get("ref_comparison"),
         shap_importance=session.get("upload_importance"),
         explanation_text=session.get("explanation_text", ""),
         upload_filename=session.get("filename", ""),

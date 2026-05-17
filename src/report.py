@@ -897,3 +897,250 @@ def generate_docx_report(
     doc.save(buf)
     buf.seek(0)
     return buf
+
+
+# ---------------------------------------------------------------------------
+# Evidence-focused report generators
+# ---------------------------------------------------------------------------
+# These definitions intentionally override the earlier richer report functions.
+# The generated reports now focus on model outputs: staging predictions,
+# stage distribution, and directly computed sleep metrics. Custom quality
+# scores, grades, and recommendation rules are not included.
+
+
+def _stage_summary(predictions: pd.DataFrame) -> list:
+    labels = predictions["predicted_stage"].astype(str)
+    total = len(labels)
+    rows = []
+    for stage in ["Wake", "NREM", "REM"]:
+        count = int((labels == stage).sum())
+        minutes = round(count * 30 / 60, 1)
+        pct = round(count / total * 100, 1) if total else 0
+        rows.append({"stage": stage, "epochs": count, "minutes": minutes, "pct": pct})
+    return rows
+
+
+def _html_escape(value) -> str:
+    import html
+    return html.escape(str(value))
+
+
+def generate_html_report(
+    predictions: pd.DataFrame,
+    metrics: dict,
+    sleep_score: dict = None,
+    recommendations: list = None,
+    ref_comparison: dict = None,
+    shap_importance: pd.DataFrame = None,
+    explanation_text: str = "",
+    upload_filename: str = "",
+    format_metadata: dict = None,
+) -> str:
+    """Generate an evidence-focused HTML report without scores or advice."""
+    hypo_b64 = fig_to_base64(plot_hypnogram(predictions))
+    dist_b64 = fig_to_base64(plot_stage_distribution(predictions))
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    stage_rows = "".join(
+        f"<tr><td>{row['stage']}</td><td>{row['epochs']}</td><td>{row['minutes']}</td><td>{row['pct']}%</td></tr>"
+        for row in _stage_summary(predictions)
+    )
+    metric_rows = "".join(
+        f"<tr><td>{_html_escape(k)}</td><td>{_html_escape(v)}</td></tr>"
+        for k, v in metrics.items()
+    )
+
+    quality_items = ""
+    if format_metadata:
+        for note in format_metadata.get("conversion_notes", []):
+            quality_items += f"<li>{_html_escape(note)}</li>"
+        real = format_metadata.get("features_real", [])
+        synth = format_metadata.get("features_synthesized", [])
+        if real:
+            quality_items += f"<li>Real input features: {_html_escape(', '.join(real))}</li>"
+        if synth:
+            quality_items += f"<li>Estimated/synthesized features: {_html_escape(', '.join(synth))}</li>"
+
+    explanation_section = ""
+    if explanation_text:
+        explanation_section = f"""
+  <section>
+    <h2>模型解释</h2>
+    <p>{_html_escape(explanation_text)}</p>
+  </section>"""
+
+    data_quality_section = ""
+    if quality_items:
+        data_quality_section = f"""
+  <section>
+    <h2>数据处理说明</h2>
+    <ul>{quality_items}</ul>
+  </section>"""
+
+    return f"""<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>睡眠分期预测报告</title>
+  <style>
+    body {{ margin: 0; background: #f7f2ea; color: #17211d; font-family: "Microsoft YaHei", Arial, sans-serif; }}
+    .wrap {{ max-width: 920px; margin: 0 auto; padding: 40px 22px 72px; }}
+    header, section {{ background: #fffaf3; border: 1px solid #eadfce; border-radius: 16px; padding: 24px; margin-bottom: 18px; box-shadow: 0 12px 34px rgba(35, 30, 24, 0.06); }}
+    h1 {{ margin: 0 0 8px; font-size: 30px; }}
+    h2 {{ margin: 0 0 16px; font-size: 20px; }}
+    .meta {{ color: #70695f; font-size: 14px; }}
+    table {{ width: 100%; border-collapse: collapse; }}
+    th, td {{ padding: 11px 12px; border-bottom: 1px solid #eadfce; text-align: left; }}
+    th {{ color: #70695f; font-size: 13px; }}
+    img {{ max-width: 100%; border-radius: 12px; }}
+    .note {{ color: #5d625d; line-height: 1.8; }}
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>睡眠分期预测报告</h1>
+    <div class="meta">生成时间: {now_str} | 数据来源: {_html_escape(upload_filename or "上传数据")}</div>
+    <p class="note">本报告只展示模型预测得到的 Wake / NREM / REM 分期结果，以及由分期序列直接汇总得到的基础统计指标。</p>
+  </header>
+
+  <section>
+    <h2>整晚睡眠分期图</h2>
+    <img src="data:image/png;base64,{hypo_b64}" alt="睡眠分期图">
+  </section>
+
+  <section>
+    <h2>睡眠阶段分布</h2>
+    <img src="data:image/png;base64,{dist_b64}" alt="睡眠阶段分布" style="max-width:420px;display:block;margin:auto;">
+    <table>
+      <thead><tr><th>阶段</th><th>Epoch 数</th><th>时长（分钟）</th><th>占比</th></tr></thead>
+      <tbody>{stage_rows}</tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>由分期结果汇总的基础指标</h2>
+    <table>
+      <thead><tr><th>指标</th><th>数值</th></tr></thead>
+      <tbody>{metric_rows}</tbody>
+    </table>
+  </section>
+{explanation_section}
+{data_quality_section}
+  <section>
+    <h2>重要说明</h2>
+    <p class="note">本结果来自可穿戴/睡眠应用数据和机器学习模型推断，不等同于临床多导睡眠图（PSG）诊断。当前模型使用整晚离线数据和上下文窗口进行三分类预测，适合课程展示和算法分析，不作为医疗诊断或治疗建议。</p>
+  </section>
+</main>
+</body>
+</html>"""
+
+
+def generate_docx_report(
+    predictions: pd.DataFrame,
+    metrics: dict,
+    sleep_score: dict = None,
+    recommendations: list = None,
+    ref_comparison: dict = None,
+    shap_importance: pd.DataFrame = None,
+    explanation_text: str = "",
+    upload_filename: str = "",
+    format_metadata: dict = None,
+) -> BytesIO:
+    """Generate an evidence-focused DOCX report without scores or advice."""
+    try:
+        from docx import Document
+        from docx.shared import Inches, Pt, RGBColor
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+        from docx.enum.table import WD_TABLE_ALIGNMENT
+    except ImportError:
+        return None
+
+    doc = Document()
+    style = doc.styles["Normal"]
+    style.font.name = "Microsoft YaHei"
+    style.font.size = Pt(10)
+
+    title = doc.add_heading("睡眠分期预测报告", 0)
+    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    meta = doc.add_paragraph()
+    meta.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = meta.add_run(
+        f"生成时间: {now_str} | 数据来源: {upload_filename or '上传数据'}\n"
+        "模型版本: HGB + Context (±2) | 输出: Wake / NREM / REM"
+    )
+    run.font.size = Pt(9)
+    run.font.color.rgb = RGBColor(0x75, 0x70, 0x68)
+
+    doc.add_paragraph(
+        "本报告只展示模型预测得到的睡眠分期结果，以及由分期序列直接汇总得到的基础统计指标。"
+    )
+
+    doc.add_heading("整晚睡眠分期图", 1)
+    hypo_fig = plot_hypnogram(predictions, figsize=(8, 3))
+    hypo_buf = BytesIO()
+    hypo_fig.savefig(hypo_buf, format="png", dpi=150, bbox_inches="tight", facecolor=hypo_fig.get_facecolor())
+    hypo_buf.seek(0)
+    plt.close(hypo_fig)
+    doc.add_picture(hypo_buf, width=Inches(6))
+
+    doc.add_heading("睡眠阶段分布", 1)
+    dist_fig = plot_stage_distribution(predictions)
+    dist_buf = BytesIO()
+    dist_fig.savefig(dist_buf, format="png", dpi=150, bbox_inches="tight", facecolor=dist_fig.get_facecolor())
+    dist_buf.seek(0)
+    plt.close(dist_fig)
+    doc.add_picture(dist_buf, width=Inches(3.5))
+
+    stage_table = doc.add_table(rows=1 + 3, cols=4)
+    stage_table.style = "Light Shading Accent 1"
+    stage_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    for j, h in enumerate(["阶段", "Epoch 数", "时长（分钟）", "占比"]):
+        stage_table.cell(0, j).text = h
+    for i, row in enumerate(_stage_summary(predictions), 1):
+        stage_table.cell(i, 0).text = row["stage"]
+        stage_table.cell(i, 1).text = str(row["epochs"])
+        stage_table.cell(i, 2).text = str(row["minutes"])
+        stage_table.cell(i, 3).text = f"{row['pct']}%"
+
+    doc.add_heading("由分期结果汇总的基础指标", 1)
+    metric_table = doc.add_table(rows=len(metrics) + 1, cols=2)
+    metric_table.style = "Light Shading Accent 1"
+    metric_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    metric_table.cell(0, 0).text = "指标"
+    metric_table.cell(0, 1).text = "数值"
+    for i, (key, value) in enumerate(metrics.items(), 1):
+        metric_table.cell(i, 0).text = str(key)
+        metric_table.cell(i, 1).text = str(value)
+
+    if format_metadata:
+        doc.add_heading("数据处理说明", 1)
+        for note in format_metadata.get("conversion_notes", []):
+            doc.add_paragraph(str(note), style="List Bullet")
+        real = format_metadata.get("features_real", [])
+        synth = format_metadata.get("features_synthesized", [])
+        if real:
+            doc.add_paragraph("Real input features: " + ", ".join(real), style="List Bullet")
+        if synth:
+            doc.add_paragraph("Estimated/synthesized features: " + ", ".join(synth), style="List Bullet")
+
+    if explanation_text:
+        doc.add_heading("模型解释", 1)
+        doc.add_paragraph(explanation_text.replace("**", "").replace("*", ""))
+
+    doc.add_heading("重要说明", 1)
+    disclaimer = doc.add_paragraph()
+    d_run = disclaimer.add_run(
+        "本结果来自可穿戴/睡眠应用数据和机器学习模型推断，不等同于临床多导睡眠图（PSG）诊断。"
+        "当前模型使用整晚离线数据和上下文窗口进行三分类预测，适合课程展示和算法分析，不作为医疗诊断或治疗建议。"
+    )
+    d_run.font.size = Pt(9)
+    d_run.font.color.rgb = RGBColor(0xE6, 0x51, 0x00)
+
+    buf = BytesIO()
+    doc.save(buf)
+    buf.seek(0)
+    return buf
