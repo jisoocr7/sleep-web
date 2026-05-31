@@ -106,6 +106,229 @@ h3 { font-size: 1rem; font-weight: 600; }
   margin-bottom: 16px;
 }
 
+.permission-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  margin: 8px 0 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.permission-panel h2 {
+  margin-bottom: 6px;
+  text-align: left;
+}
+
+.permission-copy {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+
+.scope-group {
+  margin-top: 16px;
+}
+
+.scope-title {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.segment-row,
+.metric-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.segment,
+.metric-toggle,
+.privacy-consent {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-cream);
+  padding: 7px 11px;
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.segment input,
+.metric-toggle input,
+.privacy-consent input {
+  accent-color: var(--accent);
+}
+
+.custom-dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.custom-dates input {
+  min-height: 38px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.privacy-consent {
+  width: 100%;
+  align-items: flex-start;
+  border-radius: var(--radius);
+  margin-top: 14px;
+  line-height: 1.55;
+}
+
+.privacy-note {
+  border-top: 1px solid var(--border);
+  margin-top: 14px;
+  padding-top: 12px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  line-height: 1.8;
+}
+
+.privacy-note strong {
+  color: var(--text-primary);
+}
+
+.scope-summary {
+  display: grid;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.scope-summary b {
+  color: var(--text-primary);
+}
+
+.mobile-file-inspector {
+  display: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  margin: 0 0 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.mobile-file-inspector.visible {
+  display: block;
+}
+
+.mobile-file-inspector h3 {
+  margin-bottom: 5px;
+}
+
+.inspect-message,
+.inspect-meta {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.65;
+}
+
+.inspect-meta {
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.mobile-window-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 6px 6px 6px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  scrollbar-color: var(--accent) var(--bg-cream);
+  scrollbar-width: thin;
+}
+
+.mobile-window-toolbar {
+  display: grid;
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.mobile-window-count {
+  display: block;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(244,237,226,0.68);
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.mobile-window-choice {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 8px;
+  align-items: start;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-cream);
+  padding: 9px;
+}
+
+.mobile-window-choice input {
+  margin-top: 4px;
+  accent-color: var(--accent);
+}
+
+.mobile-window-choice strong,
+.mobile-window-choice span {
+  display: block;
+}
+
+.mobile-window-choice strong {
+  font-size: 0.82rem;
+}
+
+.mobile-window-choice span {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.mobile-inspector-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.mobile-action-btn {
+  min-height: 42px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+}
+
+.mobile-action-btn.secondary {
+  background: var(--bg-cream);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
 /* ── Results ── */
 .results-container { display: none; animation: fadeUp 0.4s var(--ease); }
 .results-container.visible { display: block; }
@@ -262,13 +485,45 @@ h3 { font-size: 1rem; font-weight: 600; }
   <!-- Hero -->
   <header class="hero">
     <h1>了解你的睡眠</h1>
-    <p class="subtitle">上传数据，获取睡眠分析</p>
+    <p class="subtitle">先选择开放范围，再上传手表或健康 App 数据</p>
   </header>
+
+  <!-- Permission Scope -->
+  <section class="permission-panel" aria-label="本次数据授权范围">
+    <h2>本次开放范围</h2>
+    <p class="permission-copy">浏览器不会直接读取手表。请先选择本次允许分析的指标和时间段，再从手机文件中上传 Apple Health / 睡眠 App 导出的 CSV 或 XML。</p>
+    <div class="scope-group">
+      <span class="scope-title">分析时间段</span>
+      <div class="segment-row">
+        <label class="segment"><input type="radio" name="mobileTimeRange" value="latest-night" checked>最近一晚</label>
+        <label class="segment"><input type="radio" name="mobileTimeRange" value="last-7-days">最近 7 天</label>
+        <label class="segment"><input type="radio" name="mobileTimeRange" value="custom">自定义</label>
+      </div>
+      <div class="custom-dates">
+        <input type="date" id="mobileStartDate" aria-label="开始日期">
+        <input type="date" id="mobileEndDate" aria-label="结束日期">
+      </div>
+    </div>
+    <div class="scope-group">
+      <span class="scope-title">允许用于分析的指标</span>
+      <div class="metric-grid">
+        <label class="metric-toggle"><input type="checkbox" name="mobileMetricScope" value="sleep_stage" checked>睡眠阶段</label>
+        <label class="metric-toggle"><input type="checkbox" name="mobileMetricScope" value="heart_rate" checked>心率</label>
+        <label class="metric-toggle"><input type="checkbox" name="mobileMetricScope" value="steps" checked>步数/活动</label>
+        <label class="metric-toggle"><input type="checkbox" name="mobileMetricScope" value="motion" checked>运动估计</label>
+      </div>
+    </div>
+    <label class="privacy-consent">
+      <input type="checkbox" id="mobilePrivacyAck" checked>
+      <span>我已了解：不需要姓名、手机号或 Apple ID；文件只用于本次分析；临时 session 24 小时后清理；结果不作为医疗诊断。</span>
+    </label>
+    <p class="privacy-note"><strong>匿名处理：</strong>报告默认只包含文件名、分期结果、基础指标和本次授权范围。不用于商业画像、保险评估或二次用途。</p>
+  </section>
 
   <!-- Upload -->
   <div class="upload-zone" id="uploadZone">
     <div class="upload-icon">&#10514;</div>
-    <h3>选择或拍照上传文件</h3>
+    <h3>选择手表数据文件</h3>
     <p>支持 .csv 和 .xml 格式</p>
     <div class="format-badges">
       <span class="format-badge">export.xml</span>
@@ -280,16 +535,27 @@ h3 { font-size: 1rem; font-weight: 600; }
   <div class="detect-badge" id="detectBadge"></div>
   <input type="file" id="fileInput" class="file-input" accept=".csv,.xml" capture="environment">
 
+  <div class="mobile-file-inspector" id="mobileFileInspector">
+    <h3>选择一晚分析</h3>
+    <div class="inspect-message" id="mobileInspectMessage">选择文件后，系统会扫描其中包含的日期或睡眠窗口。</div>
+    <div class="inspect-meta" id="mobileInspectMeta"></div>
+    <div class="mobile-window-toolbar" id="mobileWindowToolbar" hidden>
+      <span class="mobile-window-count" id="mobileWindowSelectionCount">一次只能分析一晚，默认选择最新一晚</span>
+    </div>
+    <div class="mobile-window-list" id="mobileDateWindowList"></div>
+    <div class="mobile-inspector-actions">
+      <button class="mobile-action-btn" id="mobileAnalyzeSelectedBtn" type="button">分析这一晚</button>
+      <button class="mobile-action-btn secondary" id="mobileClearFileBtn" type="button">重新选择文件</button>
+    </div>
+  </div>
+
   <!-- Results -->
   <div class="results-container" id="resultsContainer">
 
-    <!-- Score -->
+    <!-- Scope Summary -->
     <div class="card">
-      <div class="score-display">
-        <div id="scoreGauge" style="display:flex;justify-content:center;margin-bottom:6px;"></div>
-        <div class="grade-badge" id="gradeBadge"></div>
-        <p class="score-description" id="scoreSummary"></p>
-      </div>
+      <h3 style="margin-bottom:12px;">本次数据范围</h3>
+      <div class="scope-summary" id="scopeSummary"></div>
     </div>
 
     <!-- Stage Summary -->
@@ -308,12 +574,6 @@ h3 { font-size: 1rem; font-weight: 600; }
     <div class="card">
       <h3 style="margin-bottom:12px;">关键指标</h3>
       <ul class="metrics-list" id="metricsList"></ul>
-    </div>
-
-    <!-- Top Recommendation -->
-    <div class="card">
-      <h3 style="margin-bottom:12px;">首要建议</h3>
-      <div id="topRecommendation"></div>
     </div>
 
     <!-- Full Report Link -->
@@ -338,7 +598,7 @@ h3 { font-size: 1rem; font-weight: 600; }
 <div class="toast" id="toast"></div>
 
 <script>
-const App = { sessionId: null, currentData: null };
+const App = { sessionId: null, currentData: null, pendingFile: null, inspectData: null };
 
 // ── Upload ──
 const uploadZone = document.getElementById('uploadZone');
@@ -356,6 +616,12 @@ function formatFileSize(bytes) {
   return `${size.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
 }
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
+
 function uploadFailureMessage(file, err) {
   const message = err && err.message ? err.message : '';
   if (message && !/failed to fetch|networkerror|load failed/i.test(message)) {
@@ -369,7 +635,7 @@ function uploadFailureMessage(file, err) {
 }
 
 uploadZone.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+fileInput.addEventListener('change', e => { if (e.target.files[0]) inspectMobileFile(e.target.files[0]); });
 
 // Prevent double-tap zoom on upload zone
 uploadZone.addEventListener('touchstart', function(e) {
@@ -379,10 +645,122 @@ uploadZone.addEventListener('touchstart', function(e) {
   }
 });
 
-async function handleFile(file) {
+function collectMobileUploadScope(formData) {
+  const timeRange = document.querySelector('input[name="mobileTimeRange"]:checked');
+  formData.append('time_range', timeRange ? timeRange.value : 'latest-night');
+  formData.append('start_date', document.getElementById('mobileStartDate')?.value || '');
+  formData.append('end_date', document.getElementById('mobileEndDate')?.value || '');
+  document.querySelectorAll('input[name="mobileMetricScope"]:checked').forEach(input => {
+    formData.append('metrics', input.value);
+  });
+  const selectedWindow = document.querySelector('input[name="mobileDateWindow"]:checked');
+  if (selectedWindow) formData.append('selected_windows', selectedWindow.value);
+  formData.append('privacy_ack', document.getElementById('mobilePrivacyAck')?.checked ? 'true' : 'false');
+}
+
+document.getElementById('mobileAnalyzeSelectedBtn').addEventListener('click', () => analyzeMobileSelectedFile());
+document.getElementById('mobileClearFileBtn').addEventListener('click', () => {
+  App.pendingFile = null;
+  App.inspectData = null;
+  fileInput.value = '';
+  document.getElementById('mobileFileInspector').classList.remove('visible');
+  document.getElementById('detectBadge').style.display = 'none';
+});
+function validateMobileUploadControls() {
+  if (!document.getElementById('mobilePrivacyAck')?.checked) {
+    showToast('请先确认匿名处理与隐私说明。', 'error');
+    return false;
+  }
+  if (!document.querySelectorAll('input[name="mobileMetricScope"]:checked').length) {
+    showToast('请至少开放一个指标用于分析。', 'error');
+    return false;
+  }
+  const timeRange = document.querySelector('input[name="mobileTimeRange"]:checked')?.value;
+  if (timeRange === 'custom' && (!document.getElementById('mobileStartDate')?.value || !document.getElementById('mobileEndDate')?.value)) {
+    showToast('请选择自定义时间段的开始和结束日期。', 'error');
+    return false;
+  }
+  const selectedWindows = document.querySelectorAll('input[name="mobileDateWindow"]:checked');
+  if (App.inspectData?.can_filter && selectedWindows.length !== 1) {
+    showToast('请只选择一个睡眠窗口。', 'error');
+    return false;
+  }
+  return true;
+}
+
+async function inspectMobileFile(file) {
+  App.pendingFile = file;
+  App.inspectData = null;
   showLoading(true);
   const formData = new FormData();
   formData.append('file', file);
+  try {
+    const resp = await fetch('/api/inspect-file', { method: 'POST', body: formData });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(data.error || data.message || '日期范围识别失败');
+    App.inspectData = data;
+    renderMobileFileInspector(data, file);
+    if (!data.can_filter) {
+      await analyzeMobileSelectedFile(false);
+    } else {
+      document.getElementById('mobileFileInspector').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      showToast(data.message || '已识别文件日期', 'success');
+    }
+  } catch (err) {
+    showToast(uploadFailureMessage(file, err), 'error');
+  }
+  showLoading(false);
+}
+
+function renderMobileFileInspector(data, file) {
+  const panel = document.getElementById('mobileFileInspector');
+  const list = document.getElementById('mobileDateWindowList');
+  const toolbar = document.getElementById('mobileWindowToolbar');
+  const defaultIds = new Set(data.default_window_ids || []);
+  panel.classList.add('visible');
+  document.getElementById('mobileInspectMessage').textContent = data.message || '已完成日期扫描。';
+  document.getElementById('mobileInspectMeta').textContent = (data.format_label || file.name) + ' · ' + file.name + ' · ' + formatFileSize(file.size);
+  if (!data.windows || !data.windows.length) {
+    toolbar.hidden = true;
+    list.innerHTML = '<div class="inspect-message">未识别到可选日期，将分析整个文件。</div>';
+    document.getElementById('mobileAnalyzeSelectedBtn').textContent = '分析整个文件';
+    return;
+  }
+  toolbar.hidden = false;
+  document.getElementById('mobileAnalyzeSelectedBtn').textContent = '分析这一晚';
+  const windows = [...data.windows].sort((a, b) => String(b.start || '').localeCompare(String(a.start || '')));
+  list.innerHTML = windows.map((w, idx) => {
+    const checked = defaultIds.has(w.id) || (!defaultIds.size && idx === 0);
+    const detail = (w.start || '').replace('T', ' ').slice(0, 16) + ' - ' + (w.end || '').replace('T', ' ').slice(0, 16);
+    return '<label class="mobile-window-choice">' +
+      '<input type="radio" name="mobileDateWindow" value="' + escapeHtml(w.id) + '"' + (checked ? ' checked' : '') + '>' +
+      '<span><strong>' + escapeHtml(w.label) + '</strong><span>' + escapeHtml(detail) + '</span></span>' +
+    '</label>';
+  }).join('');
+  list.querySelectorAll('input[name="mobileDateWindow"]').forEach(input => {
+    input.addEventListener('change', updateMobileWindowSelectionCount);
+  });
+  updateMobileWindowSelectionCount();
+}
+
+function updateMobileWindowSelectionCount() {
+  const boxes = Array.from(document.querySelectorAll('input[name="mobileDateWindow"]'));
+  const selected = boxes.filter(box => box.checked).length;
+  const el = document.getElementById('mobileWindowSelectionCount');
+  if (!el) return;
+  el.textContent = `一次仅分析一晚 · 已选择 ${selected}/${boxes.length} 个睡眠窗口`;
+}
+
+async function analyzeMobileSelectedFile(manageLoading = true) {
+  if (!App.pendingFile) {
+    showToast('请先选择文件。', 'error');
+    return;
+  }
+  if (!validateMobileUploadControls()) return;
+  if (manageLoading) showLoading(true);
+  const formData = new FormData();
+  formData.append('file', App.pendingFile);
+  collectMobileUploadScope(formData);
 
   try {
     const resp = await fetch('/api/upload', { method: 'POST', body: formData });
@@ -401,7 +779,7 @@ async function handleFile(file) {
     document.getElementById('detectBadge').textContent = '✓ 检测到: ' + data.format_label;
     document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth' });
   } catch (err) {
-    showToast(uploadFailureMessage(file, err), 'error');
+    showToast(uploadFailureMessage(App.pendingFile, err), 'error');
   }
   showLoading(false);
 }
@@ -411,11 +789,31 @@ function renderResults(data) {
   const container = document.getElementById('resultsContainer');
   container.classList.add('visible');
 
-  renderScore(data.sleep_score, data.summary);
+  renderScopeSummary(data.format_metadata?.upload_scope);
   renderStageSummary(data.label_counts);
   renderHypnoImage(data.hypno_b64);
-  renderTopMetrics(data.metrics, data.ref_comparison);
-  renderTopRecommendation(data.recommendations);
+  renderTopMetrics(data.metrics, null);
+}
+
+function renderScopeSummary(scope) {
+  const el = document.getElementById('scopeSummary');
+  if (!el) return;
+  if (!scope) {
+    el.innerHTML = '<span>未记录授权范围</span>';
+    return;
+  }
+  const selectedWindows = scope.selected_windows || [];
+  const timeText = selectedWindows.length
+    ? selectedWindows.map(w => w.label).join('、')
+    : scope.time_range === 'custom'
+    ? `${scope.start_date || '未指定'} 至 ${scope.end_date || '未指定'}`
+    : (scope.time_range_label || '最近一晚');
+  const metrics = (scope.metric_labels || []).join('、') || '未指定';
+  el.innerHTML = `
+    <div><b>时间段：</b>${timeText}</div>
+    <div><b>指标：</b>${metrics}</div>
+    <div><b>匿名处理：</b>${scope.privacy_acknowledged ? '已确认' : '未确认'}</div>
+  `;
 }
 
 function renderScore(scoreData, summary) {

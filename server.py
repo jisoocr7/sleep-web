@@ -7,6 +7,8 @@ import base64
 import tempfile
 import threading
 import time
+import os
+import socket
 from pathlib import Path
 from datetime import datetime
 from io import BytesIO
@@ -23,7 +25,7 @@ from src.data_check import validate_csv
 from src.feature_builder import build_context_features
 from src.predict import predict, load_schema, load_model
 from src.metrics import compute_sleep_metrics, get_metric_reference, get_metric_reference_v2
-from src.format_converter import convert_to_epoch_features, REQUIRED_FEATURES
+from src.format_converter import convert_to_epoch_features, inspect_sleep_windows, REQUIRED_FEATURES
 from src.explain import (
     get_global_importance,
     compute_shap_for_upload,
@@ -49,6 +51,53 @@ SESSION_LOCK = threading.Lock()
 SESSION_TTL = 86400  # 24 hours
 
 
+def parse_upload_scope(form) -> dict:
+    """Parse consent/scope controls submitted with an upload."""
+    metric_labels = {
+        "sleep_stage": "睡眠阶段",
+        "heart_rate": "心率",
+        "steps": "步数/活动",
+        "motion": "运动估计",
+    }
+    range_labels = {
+        "latest-night": "最近一晚",
+        "last-7-days": "最近 7 天",
+        "custom": "自定义时间段",
+    }
+
+    raw_metrics = form.getlist("metrics")
+    if len(raw_metrics) == 1 and "," in raw_metrics[0]:
+        raw_metrics = [m.strip() for m in raw_metrics[0].split(",")]
+    selected_metrics = [m for m in raw_metrics if m in metric_labels]
+    if not selected_metrics:
+        selected_metrics = ["sleep_stage", "heart_rate", "steps", "motion"]
+
+    time_range = form.get("time_range", "latest-night")
+    if time_range not in range_labels:
+        time_range = "latest-night"
+
+    privacy_ack = str(form.get("privacy_ack", "")).lower() in {"1", "true", "yes", "on"}
+
+    return {
+        "time_range": time_range,
+        "time_range_label": range_labels[time_range],
+        "start_date": form.get("start_date", ""),
+        "end_date": form.get("end_date", ""),
+        "selected_window_ids": _form_list(form, "selected_windows"),
+        "metrics": selected_metrics,
+        "metric_labels": [metric_labels[m] for m in selected_metrics],
+        "privacy_acknowledged": privacy_ack,
+        "scope_note": "该范围用于本次分析授权记录；浏览器版仍以用户实际上传的 CSV/XML 文件内容为准。",
+    }
+
+
+def _form_list(form, key: str) -> list:
+    values = form.getlist(key)
+    if len(values) == 1 and "," in values[0]:
+        values = [v.strip() for v in values[0].split(",")]
+    return [v for v in values if v]
+
+
 def cleanup_sessions():
     """Remove expired sessions."""
     now = time.time()
@@ -67,6 +116,46 @@ def start_cleanup_thread():
             cleanup_sessions()
     t = threading.Thread(target=_cleanup_loop, daemon=True)
     t.start()
+
+
+def get_lan_ip() -> str:
+    """Return a LAN-reachable IP for QR codes when the site is opened via localhost."""
+    env_host = os.environ.get("MOBILE_HOST", "").strip()
+    if env_host:
+        return env_host
+
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.connect(("8.8.8.8", 80))
+            ip = sock.getsockname()[0]
+            if ip and not ip.startswith(("127.", "169.254.")):
+                return ip
+    except OSError:
+        pass
+
+    try:
+        ip = socket.gethostbyname(socket.gethostname())
+        if ip and not ip.startswith(("127.", "169.254.")):
+            return ip
+    except OSError:
+        pass
+
+    return request.host.split(":", 1)[0]
+
+
+def mobile_upload_url() -> str:
+    """Build the URL a phone on the same LAN should use for the mobile upload page."""
+    override = os.environ.get("MOBILE_BASE_URL", "").strip()
+    if override:
+        override = override.rstrip("/")
+        return override if override.endswith("/mobile") else override + "/mobile"
+
+    host = request.host.split(":", 1)[0]
+    port = request.host.split(":", 1)[1] if ":" in request.host else ""
+    if host in {"127.0.0.1", "localhost", "0.0.0.0", "::1"}:
+        host = get_lan_ip()
+    netloc = f"{host}:{port}" if port else host
+    return f"{request.scheme}://{netloc}/mobile"
 
 
 start_cleanup_thread()
@@ -118,6 +207,27 @@ def api_detect_format():
     })
 
 
+@app.route("/api/inspect-file", methods=["POST"])
+def api_inspect_file():
+    """Inspect an uploaded file and return selectable date/sleep windows."""
+    if "file" not in request.files:
+        return jsonify({"error": "未找到文件"}), 400
+
+    file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"error": "文件名为空"}), 400
+
+    try:
+        file_bytes = file.read()
+    except Exception as e:
+        return jsonify({"error": f"文件读取失败: {str(e)}"}), 400
+
+    result = inspect_sleep_windows(file_bytes, file.filename or "")
+    if not result.get("success"):
+        return jsonify({"error": result.get("message", "日期范围识别失败"), **result}), 400
+    return jsonify(result)
+
+
 @app.route("/api/convert", methods=["POST"])
 def api_convert():
     """Convert an uploaded file and return a preview."""
@@ -165,8 +275,25 @@ def api_upload():
     except Exception as e:
         return jsonify({"error": f"文件读取失败: {str(e)}"}), 400
 
+    upload_scope = parse_upload_scope(request.form)
+    selected_window_ids = list(dict.fromkeys(upload_scope.get("selected_window_ids", [])))
+    upload_scope["selected_window_ids"] = selected_window_ids
+    if len(selected_window_ids) > 1:
+        return jsonify({
+            "error": "当前模型一次只能分析一晚，请只选择一个睡眠窗口。"
+        }), 400
+    if not selected_window_ids:
+        inspect_result = inspect_sleep_windows(file_bytes, file.filename or "")
+        if inspect_result.get("success") and inspect_result.get("default_window_ids"):
+            selected_window_ids = inspect_result["default_window_ids"]
+            upload_scope["selected_window_ids"] = selected_window_ids
+
     # Step 1: Format detection + conversion
-    convert_result = convert_to_epoch_features(file_bytes, file.filename or "")
+    convert_result = convert_to_epoch_features(
+        file_bytes,
+        file.filename or "",
+        selected_window_ids=selected_window_ids,
+    )
     if not convert_result["success"]:
         return jsonify({
             "error": convert_result["error"],
@@ -175,6 +302,15 @@ def api_upload():
 
     df = convert_result["df"]
     fmt_meta = convert_result["metadata"]
+    upload_scope["selected_windows"] = fmt_meta.get("selected_windows", [])
+    fmt_meta["upload_scope"] = upload_scope
+    fmt_meta["privacy_process"] = [
+        "无需姓名、手机号、Apple ID 或账号登录。",
+        "上传文件只用于本次睡眠分期分析，结果通过临时 session 保存。",
+        "临时 session 24 小时后自动清理；报告默认只包含文件名、分期结果和基础指标。",
+        "用户可在上传前选择本次允许用于分析的指标类别和时间范围。",
+        "结果仅供健康管理和课程/研究展示参考，不作为医疗诊断或治疗建议。",
+    ]
 
     # Step 2: Validate
     report = validate_csv(df)
@@ -447,7 +583,7 @@ def api_qr():
     except ImportError:
         return jsonify({"error": "QR code generation not available"}), 500
 
-    url = request.args.get("url", request.host_url.rstrip("/") + "/mobile")
+    url = request.args.get("url") or mobile_upload_url()
 
     qr = qrcode.QRCode(
         version=1,
@@ -464,7 +600,9 @@ def api_qr():
     buf = BytesIO()
     img.save(buf, format="PNG")
     buf.seek(0)
-    return send_file(buf, mimetype="image/png")
+    response = send_file(buf, mimetype="image/png")
+    response.headers["X-QR-URL"] = url
+    return response
 
 
 # ─── Sample Data ─────────────────────────────────────────────────
@@ -538,6 +676,32 @@ def api_docs():
                                             "type": "string",
                                             "format": "binary",
                                             "description": "睡眠数据文件"
+                                        },
+                                        "time_range": {
+                                            "type": "string",
+                                            "enum": ["latest-night", "last-7-days", "custom"],
+                                            "description": "用户选择的本次分析时间范围"
+                                        },
+                                        "start_date": {
+                                            "type": "string",
+                                            "description": "自定义开始日期，可选"
+                                        },
+                                        "end_date": {
+                                            "type": "string",
+                                            "description": "自定义结束日期，可选"
+                                        },
+                                        "metrics": {
+                                            "type": "array",
+                                            "items": {"type": "string"},
+                                            "description": "用户允许用于分析的指标类别"
+                                        },
+                                        "selected_windows": {
+                                            "type": "string",
+                                            "description": "文件内睡眠窗口 ID。当前模型一次只接受一个窗口。"
+                                        },
+                                        "privacy_ack": {
+                                            "type": "boolean",
+                                            "description": "用户是否已确认匿名处理与隐私说明"
                                         }
                                     }
                                 }
@@ -552,6 +716,12 @@ def api_docs():
             },
             "/api/detect-format": {
                 "post": {"summary": "检测文件格式，不上传分析"}
+            },
+            "/api/inspect-file": {
+                "post": {
+                    "summary": "识别文件内可选择的日期/睡眠窗口",
+                    "description": "上传文件后先扫描其中包含的日期范围，按最新优先返回可供用户选择的单晚睡眠窗口。"
+                }
             },
             "/api/convert": {
                 "post": {"summary": "转换文件并返回预览"}
@@ -591,7 +761,7 @@ def api_docs():
                     "parameters": [{
                         "name": "url",
                         "in": "query",
-                        "description": "QR 码目标 URL（可选，默认为本站 /mobile）",
+                        "description": "QR 码目标 URL（可选；默认使用局域网可访问的 /mobile 地址）",
                         "schema": {"type": "string"}
                     }]
                 }

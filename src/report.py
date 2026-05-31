@@ -952,6 +952,16 @@ def generate_html_report(
 
     quality_items = ""
     if format_metadata:
+        scope = format_metadata.get("upload_scope") or {}
+        if scope:
+            metrics_label = ", ".join(scope.get("metric_labels", [])) or "未指定"
+            if scope.get("time_range") == "custom":
+                time_label = f"{scope.get('start_date') or '未指定'} 至 {scope.get('end_date') or '未指定'}"
+            else:
+                time_label = scope.get("time_range_label", "未指定")
+            quality_items += f"<li>本次授权时间范围: {_html_escape(time_label)}</li>"
+            quality_items += f"<li>本次授权指标类别: {_html_escape(metrics_label)}</li>"
+            quality_items += f"<li>隐私确认: {_html_escape('已确认' if scope.get('privacy_acknowledged') else '未确认')}</li>"
         for note in format_metadata.get("conversion_notes", []):
             quality_items += f"<li>{_html_escape(note)}</li>"
         real = format_metadata.get("features_real", [])
@@ -960,6 +970,8 @@ def generate_html_report(
             quality_items += f"<li>Real input features: {_html_escape(', '.join(real))}</li>"
         if synth:
             quality_items += f"<li>Estimated/synthesized features: {_html_escape(', '.join(synth))}</li>"
+        for item in format_metadata.get("privacy_process", []):
+            quality_items += f"<li>{_html_escape(item)}</li>"
 
     explanation_section = ""
     if explanation_text:
@@ -1118,6 +1130,19 @@ def generate_docx_report(
 
     if format_metadata:
         doc.add_heading("数据处理说明", 1)
+        scope = format_metadata.get("upload_scope") or {}
+        if scope:
+            if scope.get("time_range") == "custom":
+                time_label = f"{scope.get('start_date') or '未指定'} 至 {scope.get('end_date') or '未指定'}"
+            else:
+                time_label = scope.get("time_range_label", "未指定")
+            metrics_label = ", ".join(scope.get("metric_labels", [])) or "未指定"
+            doc.add_paragraph(f"本次授权时间范围: {time_label}", style="List Bullet")
+            doc.add_paragraph(f"本次授权指标类别: {metrics_label}", style="List Bullet")
+            doc.add_paragraph(
+                "隐私确认: " + ("已确认" if scope.get("privacy_acknowledged") else "未确认"),
+                style="List Bullet",
+            )
         for note in format_metadata.get("conversion_notes", []):
             doc.add_paragraph(str(note), style="List Bullet")
         real = format_metadata.get("features_real", [])
@@ -1126,6 +1151,8 @@ def generate_docx_report(
             doc.add_paragraph("Real input features: " + ", ".join(real), style="List Bullet")
         if synth:
             doc.add_paragraph("Estimated/synthesized features: " + ", ".join(synth), style="List Bullet")
+        for item in format_metadata.get("privacy_process", []):
+            doc.add_paragraph(str(item), style="List Bullet")
 
     if explanation_text:
         doc.add_heading("模型解释", 1)

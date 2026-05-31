@@ -602,6 +602,126 @@ img, canvas { max-width: 100%; display: block; }
   font-size: 0.88rem;
 }
 
+.file-inspector {
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid rgba(17,23,22,0.1);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.55);
+}
+
+.file-inspector[hidden] {
+  display: none;
+}
+
+.inspector-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.inspector-head h4 {
+  margin: 0 0 4px;
+  font-size: 0.98rem;
+}
+
+.inspector-head p,
+.inspector-meta {
+  margin: 0;
+  color: #657069;
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+.inspector-format {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border-radius: var(--radius);
+  background: rgba(201,155,100,0.13);
+  color: #8a582a;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.date-window-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 6px 7px 6px 0;
+  border-top: 1px solid rgba(17,23,22,0.08);
+  border-bottom: 1px solid rgba(17,23,22,0.08);
+  scrollbar-color: rgba(201,155,100,0.65) rgba(17,23,22,0.06);
+  scrollbar-width: thin;
+}
+
+.date-window-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.date-window-list::-webkit-scrollbar-track {
+  background: rgba(17,23,22,0.06);
+  border-radius: 99px;
+}
+
+.date-window-list::-webkit-scrollbar-thumb {
+  background: rgba(201,155,100,0.7);
+  border-radius: 99px;
+}
+
+.window-toolbar {
+  margin-top: 12px;
+}
+
+.window-count {
+  display: block;
+  padding: 9px 11px;
+  border: 1px solid rgba(17,23,22,0.08);
+  border-radius: var(--radius);
+  background: rgba(245,239,229,0.65);
+  color: #657069;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.date-window-choice {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 9px 11px;
+  border: 1px solid rgba(17,23,22,0.1);
+  border-radius: var(--radius);
+  background: rgba(255,250,240,0.72);
+}
+
+.date-window-choice input {
+  margin-top: 4px;
+  accent-color: var(--clay);
+}
+
+.date-window-choice strong {
+  display: block;
+  color: #27312d;
+  font-size: 0.86rem;
+}
+
+.date-window-choice span {
+  display: block;
+  color: #71786f;
+  font-size: 0.76rem;
+}
+
+.inspector-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
 .results {
   display: none;
   margin-top: 22px;
@@ -737,6 +857,24 @@ img, canvas { max-width: 100%; display: block; }
 
 .qr-label { margin-top: 14px; color: #6a716b; font-size: 0.9rem; }
 
+.qr-url-hint {
+  max-width: 260px;
+  margin-top: 10px;
+  color: #8a582a;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.qr-help {
+  max-width: 260px;
+  margin-top: 8px;
+  color: #747a73;
+  font-size: 0.74rem;
+  line-height: 1.55;
+}
+
 .faq-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -746,6 +884,166 @@ img, canvas { max-width: 100%; display: block; }
 .faq-item { padding: 24px; }
 .faq-item h3 { margin: 0 0 10px; font-size: 1.05rem; }
 .faq-item p { margin: 0; color: #646d67; font-size: 0.93rem; line-height: 1.65; }
+
+.consent-controls {
+  margin: 20px 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(17,23,22,0.1);
+}
+
+.consent-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.consent-head h4 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.consent-head p,
+.scope-help,
+.privacy-copy {
+  margin: 0;
+  color: #657069;
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.scope-badge {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border-radius: var(--radius);
+  background: rgba(117,208,189,0.14);
+  color: #237461;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.scope-block {
+  margin-top: 14px;
+}
+
+.scope-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #303a35;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.scope-choice-row,
+.metric-choice-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.scope-choice,
+.metric-choice,
+.privacy-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 8px 11px;
+  border: 1px solid rgba(17,23,22,0.12);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.54);
+  color: #3d4742;
+  font-size: 0.83rem;
+  font-weight: 800;
+}
+
+.scope-choice input,
+.metric-choice input,
+.privacy-check input {
+  accent-color: var(--clay);
+}
+
+.date-range {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.date-range input {
+  min-height: 40px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(17,23,22,0.13);
+  background: #fffaf0;
+  color: var(--charcoal);
+  padding: 0 10px;
+}
+
+.privacy-check {
+  margin-top: 14px;
+  width: 100%;
+  justify-content: flex-start;
+  background: rgba(201,155,100,0.1);
+}
+
+.phone-flow {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.phone-step {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.phone-step b {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  background: rgba(201,155,100,0.18);
+  color: var(--gold-2);
+}
+
+.phone-step strong {
+  display: block;
+  color: var(--ink);
+}
+
+.phone-step span {
+  display: block;
+  color: rgba(247,242,232,0.62);
+  font-size: 0.9rem;
+}
+
+.privacy-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.privacy-item {
+  padding: 24px;
+}
+
+.privacy-item h3 {
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+}
+
+.privacy-item ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #646d67;
+  font-size: 0.92rem;
+  line-height: 1.75;
+}
 
 .footer {
   padding: 32px 28px;
@@ -815,7 +1113,7 @@ img, canvas { max-width: 100%; display: block; }
   }
   .hero-inner { min-height: auto; padding-top: 64px; }
   .feature-list { grid-template-columns: 1fr; }
-  .model-grid, .faq-grid { grid-template-columns: 1fr; }
+  .model-grid, .faq-grid, .privacy-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 620px) {
@@ -888,6 +1186,11 @@ img, canvas { max-width: 100%; display: block; }
   }
   .intro-copy, .pipeline-card, .demo-card, .upload-card, .phone-copy { padding: 22px; }
   .preview-meta, .metrics-grid { grid-template-columns: 1fr; }
+  .consent-head, .date-range { grid-template-columns: 1fr; }
+  .consent-head { display: grid; }
+  .date-window-list {
+    max-height: 260px;
+  }
   .upload-zone { min-height: 250px; padding: 26px 18px; }
   .subscore-row { grid-template-columns: 70px 1fr 46px; }
   .toast { left: 16px; right: 16px; max-width: none; }
@@ -911,6 +1214,7 @@ img, canvas { max-width: 100%; display: block; }
       <a href="#demo" data-i18n="nav_demo">Demo展示</a>
       <a href="#upload" data-i18n="nav_upload">上传数据</a>
       <a href="#phone" data-i18n="nav_phone">手机扫码</a>
+      <a href="#privacy" data-i18n="nav_privacy">隐私伦理</a>
       <a href="#faq" data-i18n="nav_faq">问题解答</a>
     </div>
     <div class="nav-actions">
@@ -1031,6 +1335,41 @@ img, canvas { max-width: 100%; display: block; }
 
       <div class="panel upload-card" id="upload">
         <h3 data-i18n="upload_title">上传分析</h3>
+        <div class="consent-controls" aria-label="数据授权范围">
+          <div class="consent-head">
+            <div>
+              <h4 data-i18n="scope_title">本次授权范围</h4>
+              <p data-i18n="scope_desc">先选择允许用于分析的手表指标和时间段，再上传对应导出的 CSV/XML 文件。</p>
+            </div>
+            <span class="scope-badge" data-i18n="scope_badge">仅本次分析</span>
+          </div>
+          <div class="scope-block">
+            <span class="scope-label" data-i18n="scope_time">分析时间段</span>
+            <div class="scope-choice-row">
+              <label class="scope-choice"><input type="radio" name="timeRange" value="latest-night" checked><span data-i18n="time_latest">最近一晚</span></label>
+              <label class="scope-choice"><input type="radio" name="timeRange" value="last-7-days"><span data-i18n="time_week">最近 7 天</span></label>
+              <label class="scope-choice"><input type="radio" name="timeRange" value="custom"><span data-i18n="time_custom">自定义</span></label>
+            </div>
+            <div class="date-range">
+              <input type="date" id="scopeStartDate" aria-label="开始日期">
+              <input type="date" id="scopeEndDate" aria-label="结束日期">
+            </div>
+          </div>
+          <div class="scope-block">
+            <span class="scope-label" data-i18n="scope_metrics">开放指标</span>
+            <div class="metric-choice-grid">
+              <label class="metric-choice"><input type="checkbox" name="metricScope" value="sleep_stage" checked><span data-i18n="metric_sleep">睡眠阶段</span></label>
+              <label class="metric-choice"><input type="checkbox" name="metricScope" value="heart_rate" checked><span data-i18n="metric_hr">心率</span></label>
+              <label class="metric-choice"><input type="checkbox" name="metricScope" value="steps" checked><span data-i18n="metric_steps">步数/活动</span></label>
+              <label class="metric-choice"><input type="checkbox" name="metricScope" value="motion" checked><span data-i18n="metric_motion">运动估计</span></label>
+            </div>
+            <p class="scope-help" data-i18n="scope_help">模型需要最小必要字段；若上传文件缺少必需指标，系统会提示无法分析。</p>
+          </div>
+          <label class="privacy-check">
+            <input type="checkbox" id="privacyAck" checked>
+            <span data-i18n="privacy_ack">我已了解：文件仅用于本次分析，系统不要求姓名、手机号或 Apple ID，临时会话 24 小时后清理。</span>
+          </label>
+        </div>
         <div class="upload-zone" id="uploadZone">
           <div>
             <div class="upload-icon" aria-hidden="true">
@@ -1045,6 +1384,24 @@ img, canvas { max-width: 100%; display: block; }
           <input class="file-input" id="fileInput" type="file" accept=".csv,.xml">
         </div>
         <div class="detect-badge" id="detectBadge"></div>
+        <div class="file-inspector" id="fileInspector" hidden>
+          <div class="inspector-head">
+            <div>
+              <h4 data-i18n="inspect_title">选择一晚分析</h4>
+              <p id="inspectMessage" data-i18n="inspect_wait">选择文件后，系统会先扫描可分析的日期/睡眠窗口。</p>
+            </div>
+            <span class="inspector-format" id="inspectFormat">--</span>
+          </div>
+          <div class="inspector-meta" id="inspectMeta"></div>
+          <div class="window-toolbar" id="windowToolbar" hidden>
+            <span class="window-count" id="windowSelectionCount">一次只能分析一晚，默认选择最新一晚</span>
+          </div>
+          <div class="date-window-list" id="dateWindowList"></div>
+          <div class="inspector-actions">
+            <button class="btn btn-dark" id="analyzeSelectedBtn" type="button" data-i18n="analyze_selected">分析这一晚</button>
+            <button class="btn btn-light" id="clearFileBtn" type="button" data-i18n="clear_file">重新选择文件</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1084,10 +1441,52 @@ img, canvas { max-width: 100%; display: block; }
         <div class="section-kicker">Mobile Upload</div>
         <h2 data-i18n="phone_title">手机扫码上传</h2>
         <p data-i18n="phone_desc">手机扫描后进入移动端页面，可以上传手表或健康 App 导出的数据。</p>
+        <div class="phone-flow">
+          <div class="phone-step"><b>1</b><div><strong data-i18n="phone_step1_title">手机扫码打开上传页</strong><span data-i18n="phone_step1_desc">在手机上选择 Health / 手表导出的文件，避免电脑传文件。</span></div></div>
+          <div class="phone-step"><b>2</b><div><strong data-i18n="phone_step2_title">选择开放范围</strong><span data-i18n="phone_step2_desc">上传前勾选本次允许分析的指标和时间段。</span></div></div>
+          <div class="phone-step"><b>3</b><div><strong data-i18n="phone_step3_title">匿名生成报告</strong><span data-i18n="phone_step3_desc">不需要账号身份，临时 session 保存分析结果并自动过期。</span></div></div>
+        </div>
       </div>
       <div class="panel qr-card">
         <div class="qr-frame"><img id="qrImage" alt="手机端上传二维码"></div>
         <div class="qr-label" data-i18n="qr_label">扫描二维码在手机上打开上传入口</div>
+        <div class="qr-url-hint" id="qrUrlHint"></div>
+        <div class="qr-help" data-i18n="qr_help">打不开时，请确认手机和电脑连接同一个 Wi-Fi；也可以在手机浏览器手动输入上方地址。</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="privacy">
+    <div class="section-head">
+      <div>
+        <div class="section-kicker">Privacy & Ethics</div>
+        <h2 data-i18n="privacy_title">匿名处理与隐私伦理</h2>
+      </div>
+    </div>
+    <div class="privacy-grid">
+      <div class="panel privacy-item">
+        <h3 data-i18n="privacy1_title">匿名处理过程</h3>
+        <ul>
+          <li data-i18n="privacy1_a">不要求姓名、手机号、Apple ID 或账号登录。</li>
+          <li data-i18n="privacy1_b">分析结果使用临时 session 标识，24 小时后自动清理。</li>
+          <li data-i18n="privacy1_c">报告默认只写入文件名、分期结果、基础指标和本次授权范围。</li>
+        </ul>
+      </div>
+      <div class="panel privacy-item">
+        <h3 data-i18n="privacy2_title">用户自主授权</h3>
+        <ul>
+          <li data-i18n="privacy2_a">上传前可选择本次分析的指标类别和时间段。</li>
+          <li data-i18n="privacy2_b">未点击上传前，文件不会发送到服务器。</li>
+          <li data-i18n="privacy2_c">浏览器版以用户主动选择的导出文件为数据来源。</li>
+        </ul>
+      </div>
+      <div class="panel privacy-item">
+        <h3 data-i18n="privacy3_title">伦理边界</h3>
+        <ul>
+          <li data-i18n="privacy3_a">结果仅用于健康管理参考和课程/研究展示。</li>
+          <li data-i18n="privacy3_b">不用于医疗诊断、治疗建议、保险评估或商业画像。</li>
+          <li data-i18n="privacy3_c">持续失眠、呼吸暂停疑似症状或严重异常应咨询医生。</li>
+        </ul>
       </div>
     </div>
   </section>
@@ -1129,6 +1528,7 @@ const I18N = {
     nav_demo: 'Demo展示',
     nav_upload: '上传数据',
     nav_phone: '手机扫码',
+    nav_privacy: '隐私伦理',
     nav_faq: '问题解答',
     nav_start: '开始分析',
     hero_eyebrow: 'Wearable Sleep Intelligence',
@@ -1174,6 +1574,25 @@ const I18N = {
     upload_title: '上传分析',
     upload_drop: '拖拽文件到这里',
     upload_desc: '或点击选择文件，系统会自动识别格式并生成睡眠分期报告。',
+    inspect_title: '选择一晚分析',
+    inspect_wait: '选择文件后，系统会先扫描可分析的日期/睡眠窗口。',
+    inspect_no_windows: '这个文件没有可识别日期，将直接分析整个文件。',
+    analyze_selected: '分析这一晚',
+    clear_file: '重新选择文件',
+    scope_title: '本次授权范围',
+    scope_desc: '先选择允许用于分析的手表指标和时间段，再上传对应导出的 CSV/XML 文件。',
+    scope_badge: '仅本次分析',
+    scope_time: '分析时间段',
+    time_latest: '最近一晚',
+    time_week: '最近 7 天',
+    time_custom: '自定义',
+    scope_metrics: '开放指标',
+    metric_sleep: '睡眠阶段',
+    metric_hr: '心率',
+    metric_steps: '步数/活动',
+    metric_motion: '运动估计',
+    scope_help: '模型需要最小必要字段；若上传文件缺少必需指标，系统会提示无法分析。',
+    privacy_ack: '我已了解：文件仅用于本次分析，系统不要求姓名、手机号或 Apple ID，临时会话 24 小时后清理。',
     result_timeline: '整晚睡眠分期',
     result_metrics: '关键指标',
     result_tips: '分期报告',
@@ -1184,7 +1603,27 @@ const I18N = {
     download_docx: '下载 DOCX 报告',
     phone_title: '手机扫码上传',
     phone_desc: '手机扫描后进入移动端页面，可以上传手表或健康 App 导出的数据。',
+    phone_step1_title: '手机扫码打开上传页',
+    phone_step1_desc: '在手机上选择 Health / 手表导出的文件，避免电脑传文件。',
+    phone_step2_title: '选择开放范围',
+    phone_step2_desc: '上传前勾选本次允许分析的指标和时间段。',
+    phone_step3_title: '匿名生成报告',
+    phone_step3_desc: '不需要账号身份，临时 session 保存分析结果并自动过期。',
     qr_label: '扫描二维码在手机上打开上传入口',
+    qr_help: '打不开时，请确认手机和电脑连接同一个 Wi-Fi；也可以在手机浏览器手动输入上方地址。',
+    privacy_title: '匿名处理与隐私伦理',
+    privacy1_title: '匿名处理过程',
+    privacy1_a: '不要求姓名、手机号、Apple ID 或账号登录。',
+    privacy1_b: '分析结果使用临时 session 标识，24 小时后自动清理。',
+    privacy1_c: '报告默认只写入文件名、分期结果、基础指标和本次授权范围。',
+    privacy2_title: '用户自主授权',
+    privacy2_a: '上传前可选择本次分析的指标类别和时间段。',
+    privacy2_b: '未点击上传前，文件不会发送到服务器。',
+    privacy2_c: '浏览器版以用户主动选择的导出文件为数据来源。',
+    privacy3_title: '伦理边界',
+    privacy3_a: '结果仅用于健康管理参考和课程/研究展示。',
+    privacy3_b: '不用于医疗诊断、治疗建议、保险评估或商业画像。',
+    privacy3_c: '持续失眠、呼吸暂停疑似症状或严重异常应咨询医生。',
     faq_title: '常见问题',
     faq_sub: '',
     faq1_q: '上传什么数据可以分析？',
@@ -1225,6 +1664,7 @@ const I18N = {
     nav_demo: 'Demo',
     nav_upload: 'Upload',
     nav_phone: 'Mobile',
+    nav_privacy: 'Privacy',
     nav_faq: 'FAQ',
     nav_start: 'Analyze',
     hero_eyebrow: 'Wearable Sleep Intelligence',
@@ -1270,6 +1710,25 @@ const I18N = {
     upload_title: 'Upload',
     upload_drop: 'Drop file here',
     upload_desc: 'Click or drag a file. The system detects the format and creates a staging report.',
+    inspect_title: 'Choose One Night',
+    inspect_wait: 'After you choose a file, the system scans selectable dates or sleep windows first.',
+    inspect_no_windows: 'No selectable dates were detected. The whole file will be analyzed.',
+    analyze_selected: 'Analyze This Night',
+    clear_file: 'Choose Another File',
+    scope_title: 'Data Scope',
+    scope_desc: 'Choose the watch metrics and time window allowed for this analysis, then upload the matching CSV/XML export.',
+    scope_badge: 'This session only',
+    scope_time: 'Time window',
+    time_latest: 'Latest night',
+    time_week: 'Last 7 days',
+    time_custom: 'Custom',
+    scope_metrics: 'Allowed metrics',
+    metric_sleep: 'Sleep stages',
+    metric_hr: 'Heart rate',
+    metric_steps: 'Steps/activity',
+    metric_motion: 'Motion estimates',
+    scope_help: 'The model requires minimum fields; missing required metrics will be reported before analysis.',
+    privacy_ack: 'I understand: the file is used only for this analysis, no name/phone/Apple ID is required, and the temporary session expires after 24 hours.',
     result_timeline: 'Sleep Timeline',
     result_metrics: 'Key Metrics',
     result_tips: 'Staging Report',
@@ -1280,7 +1739,27 @@ const I18N = {
     download_docx: 'Download DOCX',
     phone_title: 'Scan to Upload',
     phone_desc: 'Scan the QR code to open the mobile upload page for watch or health-app exports.',
+    phone_step1_title: 'Open on phone',
+    phone_step1_desc: 'Choose the Health or watch export directly on the phone instead of moving files to a computer.',
+    phone_step2_title: 'Choose scope',
+    phone_step2_desc: 'Select the metrics and time window allowed for this upload.',
+    phone_step3_title: 'Anonymous report',
+    phone_step3_desc: 'No account identity is required; a temporary session stores the result and expires automatically.',
     qr_label: 'Scan QR code to open the mobile upload page',
+    qr_help: 'If it does not open, make sure your phone and computer are on the same Wi-Fi, or type the address above on your phone.',
+    privacy_title: 'Anonymization and Ethics',
+    privacy1_title: 'Anonymization',
+    privacy1_a: 'No name, phone number, Apple ID, or account login is required.',
+    privacy1_b: 'Analysis uses a temporary session identifier and is cleaned after 24 hours.',
+    privacy1_c: 'Reports include only filename, staging results, basic metrics, and this upload scope by default.',
+    privacy2_title: 'User Control',
+    privacy2_a: 'Choose metric categories and time window before uploading.',
+    privacy2_b: 'No file is sent before the upload action.',
+    privacy2_c: 'The web version uses only the export file selected by the user.',
+    privacy3_title: 'Ethical Limits',
+    privacy3_a: 'Results are for health reference and course/research demonstration.',
+    privacy3_b: 'Not for diagnosis, treatment advice, insurance review, or commercial profiling.',
+    privacy3_c: 'Persistent insomnia, suspected apnea, or severe anomalies should be discussed with a clinician.',
     faq_title: 'FAQ',
     faq_sub: '',
     faq1_q: 'What data can I upload?',
@@ -1333,6 +1812,12 @@ function formatFileSize(bytes) {
   return `${size.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
 }
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
+
 function uploadFailureMessage(file, err) {
   const message = err && err.message ? err.message : '';
   if (message && !/failed to fetch|networkerror|load failed/i.test(message)) {
@@ -1361,7 +1846,9 @@ function applyLanguage() {
 const App = {
   sessionId: null,
   currentData: null,
-  selectedDemo: 'poor-sleep'
+  selectedDemo: 'poor-sleep',
+  pendingFile: null,
+  inspectData: null
 };
 
 const demoMeta = {
@@ -1423,7 +1910,7 @@ const fileInput = document.getElementById('fileInput');
 
 uploadZone.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', e => {
-  if (e.target.files[0]) handleFile(e.target.files[0]);
+  if (e.target.files[0]) inspectFile(e.target.files[0]);
 });
 uploadZone.addEventListener('dragover', e => {
   e.preventDefault();
@@ -1433,7 +1920,7 @@ uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag
 uploadZone.addEventListener('drop', e => {
   e.preventDefault();
   uploadZone.classList.remove('dragover');
-  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  if (e.dataTransfer.files[0]) inspectFile(e.dataTransfer.files[0]);
 });
 
 document.getElementById('runDemoBtn').addEventListener('click', async () => {
@@ -1446,17 +1933,133 @@ document.getElementById('runDemoBtn').addEventListener('click', async () => {
     }
     const blob = await resp.blob();
     const file = new File([blob], demoMeta[App.selectedDemo].name, { type: blob.type || 'text/csv' });
-    await handleFile(file, false);
+    await inspectFile(file, false, true);
   } catch (err) {
     showToast(tr('demo_failed') + err.message, 'error');
     showLoading(false);
   }
 });
 
-async function handleFile(file, manageLoading = true) {
+document.getElementById('analyzeSelectedBtn').addEventListener('click', () => analyzeSelectedFile());
+document.getElementById('clearFileBtn').addEventListener('click', () => {
+  App.pendingFile = null;
+  App.inspectData = null;
+  fileInput.value = '';
+  document.getElementById('fileInspector').hidden = true;
+  document.getElementById('detectBadge').style.display = 'none';
+});
+function collectUploadScope(formData) {
+  const timeRange = document.querySelector('input[name="timeRange"]:checked');
+  formData.append('time_range', timeRange ? timeRange.value : 'latest-night');
+  formData.append('start_date', document.getElementById('scopeStartDate')?.value || '');
+  formData.append('end_date', document.getElementById('scopeEndDate')?.value || '');
+  document.querySelectorAll('input[name="metricScope"]:checked').forEach(input => {
+    formData.append('metrics', input.value);
+  });
+  const selectedWindow = document.querySelector('input[name="dateWindow"]:checked');
+  if (selectedWindow) formData.append('selected_windows', selectedWindow.value);
+  formData.append('privacy_ack', document.getElementById('privacyAck')?.checked ? 'true' : 'false');
+}
+
+function validateUploadControls() {
+  if (!document.getElementById('privacyAck')?.checked) {
+    showToast(currentLang === 'zh' ? '请先确认匿名处理与隐私说明。' : 'Please acknowledge the anonymization and privacy notice.', 'error');
+    return false;
+  }
+  const checkedMetrics = document.querySelectorAll('input[name="metricScope"]:checked');
+  if (!checkedMetrics.length) {
+    showToast(currentLang === 'zh' ? '请至少开放一个指标用于分析。' : 'Please allow at least one metric for analysis.', 'error');
+    return false;
+  }
+  const timeRange = document.querySelector('input[name="timeRange"]:checked')?.value;
+  if (timeRange === 'custom' && (!document.getElementById('scopeStartDate')?.value || !document.getElementById('scopeEndDate')?.value)) {
+    showToast(currentLang === 'zh' ? '请选择自定义时间段的开始和结束日期。' : 'Please select both start and end dates.', 'error');
+    return false;
+  }
+  const selectedWindows = document.querySelectorAll('input[name="dateWindow"]:checked');
+  if (App.inspectData?.can_filter && selectedWindows.length !== 1) {
+    showToast(currentLang === 'zh' ? '请只选择一个睡眠窗口。' : 'Please choose exactly one sleep window.', 'error');
+    return false;
+  }
+  return true;
+}
+
+async function inspectFile(file, manageLoading = true, autoAnalyze = false) {
+  App.pendingFile = file;
+  App.inspectData = null;
   if (manageLoading) showLoading(true);
   const formData = new FormData();
   formData.append('file', file);
+  try {
+    const resp = await fetch('/api/inspect-file', { method: 'POST', body: formData });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(data.error || data.message || '日期范围识别失败');
+    App.inspectData = data;
+    renderFileInspector(data, file);
+    if (autoAnalyze || !data.can_filter) {
+      await analyzeSelectedFile(false);
+    } else {
+      document.getElementById('fileInspector').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      showToast(data.message || tr('inspect_title'), 'success');
+    }
+  } catch (err) {
+    showToast(uploadFailureMessage(file, err), 'error');
+  }
+  showLoading(false);
+}
+
+function renderFileInspector(data, file) {
+  const panel = document.getElementById('fileInspector');
+  const list = document.getElementById('dateWindowList');
+  const toolbar = document.getElementById('windowToolbar');
+  const defaultIds = new Set(data.default_window_ids || []);
+  panel.hidden = false;
+  document.getElementById('inspectFormat').textContent = data.format_label || file.name;
+  document.getElementById('inspectMessage').textContent = data.message || tr('inspect_wait');
+  document.getElementById('inspectMeta').textContent = file.name + ' · ' + formatFileSize(file.size);
+  if (!data.windows || !data.windows.length) {
+    toolbar.hidden = true;
+    list.innerHTML = '<div class="inspector-meta">' + tr('inspect_no_windows') + '</div>';
+    document.getElementById('analyzeSelectedBtn').textContent = currentLang === 'zh' ? '分析整个文件' : 'Analyze Whole File';
+    return;
+  }
+  toolbar.hidden = false;
+  document.getElementById('analyzeSelectedBtn').textContent = tr('analyze_selected');
+  const windows = [...data.windows].sort((a, b) => String(b.start || '').localeCompare(String(a.start || '')));
+  list.innerHTML = windows.map((w, idx) => {
+    const checked = defaultIds.has(w.id) || (!defaultIds.size && idx === 0);
+    const detail = (w.start || '').replace('T', ' ').slice(0, 16) + ' - ' + (w.end || '').replace('T', ' ').slice(0, 16);
+    return '<label class="date-window-choice">' +
+      '<input type="radio" name="dateWindow" value="' + escapeHtml(w.id) + '"' + (checked ? ' checked' : '') + '>' +
+      '<span><strong>' + escapeHtml(w.label) + '</strong><span>' + escapeHtml(detail) + '</span></span>' +
+    '</label>';
+  }).join('');
+  list.querySelectorAll('input[name="dateWindow"]').forEach(input => {
+    input.addEventListener('change', updateWindowSelectionCount);
+  });
+  updateWindowSelectionCount();
+}
+
+function updateWindowSelectionCount() {
+  const boxes = Array.from(document.querySelectorAll('input[name="dateWindow"]'));
+  const selected = boxes.filter(box => box.checked).length;
+  const el = document.getElementById('windowSelectionCount');
+  if (!el) return;
+  el.textContent = currentLang === 'zh'
+    ? `一次仅分析一晚 · 已选择 ${selected}/${boxes.length} 个睡眠窗口`
+    : `One night at a time · ${selected}/${boxes.length} selected`;
+}
+
+async function analyzeSelectedFile(manageLoading = true) {
+  if (!App.pendingFile) {
+    showToast(currentLang === 'zh' ? '请先选择文件。' : 'Please choose a file first.', 'error');
+    return;
+  }
+  if (!validateUploadControls()) return;
+  if (manageLoading) showLoading(true);
+  const formData = new FormData();
+  formData.append('file', App.pendingFile);
+  collectUploadScope(formData);
   try {
     const resp = await fetch('/api/upload', { method: 'POST', body: formData });
     const data = await resp.json().catch(() => ({}));
@@ -1470,7 +2073,7 @@ async function handleFile(file, manageLoading = true) {
     showToast(tr('analysis_done'), 'success');
     document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (err) {
-    showToast(uploadFailureMessage(file, err), 'error');
+    showToast(uploadFailureMessage(App.pendingFile, err), 'error');
   }
   showLoading(false);
 }
@@ -1597,7 +2200,12 @@ function downloadBlob(blob, filename) {
 }
 
 fetch('/api/qr')
-  .then(r => r.blob())
+  .then(r => {
+    const target = r.headers.get('X-QR-URL');
+    const hint = document.getElementById('qrUrlHint');
+    if (target && hint) hint.textContent = target;
+    return r.blob();
+  })
   .then(blob => { document.getElementById('qrImage').src = URL.createObjectURL(blob); })
   .catch(() => {});
 
