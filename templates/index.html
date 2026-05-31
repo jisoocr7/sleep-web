@@ -882,8 +882,134 @@ img, canvas { max-width: 100%; display: block; }
 }
 
 .faq-item { padding: 24px; }
+.faq-guide { grid-column: 1 / -1; }
 .faq-item h3 { margin: 0 0 10px; font-size: 1.05rem; }
 .faq-item p { margin: 0; color: #646d67; font-size: 0.93rem; line-height: 1.65; }
+.faq-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.faq-title-row h3 {
+  margin: 0;
+}
+.faq-number {
+  min-width: 52px;
+  height: 34px;
+  flex: 0 0 auto;
+  padding: 0 12px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(231,101,74,0.26);
+  border-radius: 999px;
+  background: rgba(231,101,74,0.1);
+  color: #9b4d2e;
+  font-size: 0.92rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+.faq-item ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #646d67;
+  font-size: 0.93rem;
+  line-height: 1.75;
+}
+.faq-item li + li { margin-top: 4px; }
+
+.guide-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.guide-head p {
+  max-width: 760px;
+  margin-top: 6px;
+}
+
+.guide-badge {
+  flex: 0 0 auto;
+  padding: 9px 12px;
+  border-radius: var(--radius);
+  background: rgba(231,101,74,0.12);
+  color: #9b4d2e;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.export-guide {
+  display: grid;
+  gap: 12px;
+}
+
+.guide-row {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(17,23,22,0.08);
+}
+
+.guide-marker {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+  background: #0b1514;
+  color: #f4d091;
+  font-weight: 900;
+  font-size: 0.82rem;
+}
+
+.guide-content h4 {
+  margin: 0 0 8px;
+  font-size: 0.96rem;
+}
+
+.guide-route {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+
+.route-chip {
+  padding: 6px 9px;
+  border: 1px solid rgba(17,23,22,0.1);
+  border-radius: var(--radius);
+  background: #fffaf0;
+  color: #35413c;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.route-arrow {
+  color: #b88a53;
+  font-weight: 900;
+}
+
+.guide-boundary {
+  display: grid;
+  gap: 5px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(201,155,100,0.32);
+  border-radius: var(--radius);
+  background: rgba(245,239,229,0.7);
+  color: #59635d;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.guide-boundary strong {
+  color: #27312d;
+}
 
 .consent-controls {
   margin: 20px 0;
@@ -1188,6 +1314,15 @@ img, canvas { max-width: 100%; display: block; }
   .preview-meta, .metrics-grid { grid-template-columns: 1fr; }
   .consent-head, .date-range { grid-template-columns: 1fr; }
   .consent-head { display: grid; }
+  .guide-head {
+    display: grid;
+  }
+  .guide-badge {
+    width: fit-content;
+  }
+  .guide-row {
+    grid-template-columns: 1fr;
+  }
   .date-window-list {
     max-height: 260px;
   }
@@ -1499,9 +1634,64 @@ img, canvas { max-width: 100%; display: block; }
       </div>
     </div>
     <div class="faq-grid">
-      <div class="panel faq-item"><h3 data-i18n="faq1_q">上传什么数据可以分析？</h3><p data-i18n="faq1_a">支持原始 epoch 特征 CSV，也支持部分可穿戴设备或睡眠 App 导出的 CSV/XML。系统会先识别格式，再转换成模型需要的 30 秒 epoch 特征。</p></div>
-      <div class="panel faq-item"><h3 data-i18n="faq2_q">模型怎么验证？</h3><p data-i18n="faq2_a">需要带金标准标签的数据才能严格计算 accuracy、precision、recall、F1 和混淆矩阵；无标签样例只能做功能演示。</p></div>
-      <div class="panel faq-item"><h3 data-i18n="faq3_q">结果能当诊断吗？</h3><p data-i18n="faq3_a">不能。可穿戴数据和模型输出只适合健康管理参考，持续失眠或异常应咨询医生。</p></div>
+      <div class="panel faq-item faq-guide">
+        <div class="guide-head">
+          <div>
+            <div class="faq-title-row"><span class="faq-number">Q1</span><h3 data-i18n="faq0_q">导出数据操作指南</h3></div>
+            <p data-i18n="faq0_intro">网站主要面向 Apple Watch 或其他可穿戴设备用户。先从健康 App 或睡眠 App 导出文件，再上传到这里分析。</p>
+          </div>
+          <span class="guide-badge" data-i18n="faq0_badge">适用：手表 / 可穿戴设备数据</span>
+        </div>
+        <div class="export-guide">
+          <div class="guide-row">
+            <div class="guide-marker">01</div>
+            <div class="guide-content">
+              <h4 data-i18n="faq0_health_title">Apple Watch + 健康 App</h4>
+              <div class="guide-route" aria-label="Apple Health export path">
+                <span class="route-chip" data-i18n="faq0_health_step1">健康 App</span><span class="route-arrow">→</span>
+                <span class="route-chip" data-i18n="faq0_health_step2">右上角头像</span><span class="route-arrow">→</span>
+                <span class="route-chip" data-i18n="faq0_health_step3">导出所有健康数据</span><span class="route-arrow">→</span>
+                <span class="route-chip" data-i18n="faq0_health_step4">解压 zip</span><span class="route-arrow">→</span>
+                <span class="route-chip" data-i18n="faq0_health_step5">上传 export.xml</span>
+              </div>
+              <p data-i18n="faq0_health_note">完整 Apple Health 文件可能较大，上传后系统会自动识别里面的睡眠窗口，再选择其中一晚分析。</p>
+            </div>
+          </div>
+          <div class="guide-row">
+            <div class="guide-marker">02</div>
+            <div class="guide-content">
+              <h4 data-i18n="faq0_auto_title">AutoSleep</h4>
+              <div class="guide-route" aria-label="AutoSleep export path">
+                <span class="route-chip" data-i18n="faq0_auto_step1">打开 AutoSleep</span><span class="route-arrow">→</span>
+                <span class="route-chip" data-i18n="faq0_auto_step2">找到导出 / Export</span><span class="route-arrow">→</span>
+                <span class="route-chip" data-i18n="faq0_auto_step3">保存 CSV</span><span class="route-arrow">→</span>
+                <span class="route-chip" data-i18n="faq0_auto_step4">上传 .csv</span>
+              </div>
+              <p data-i18n="faq0_auto_note">如果 App 里有多种导出选项，优先选择包含睡眠时间、心率或阶段信息的 CSV。</p>
+            </div>
+          </div>
+          <div class="guide-row">
+            <div class="guide-marker">03</div>
+            <div class="guide-content">
+              <h4 data-i18n="faq0_cycle_title">Sleep Cycle 或其他睡眠 App</h4>
+              <div class="guide-route" aria-label="Sleep app export path">
+                <span class="route-chip" data-i18n="faq0_cycle_step1">打开睡眠 App</span><span class="route-arrow">→</span>
+                <span class="route-chip" data-i18n="faq0_cycle_step2">设置 / 数据</span><span class="route-arrow">→</span>
+                <span class="route-chip" data-i18n="faq0_cycle_step3">导出 CSV</span><span class="route-arrow">→</span>
+                <span class="route-chip" data-i18n="faq0_cycle_step4">上传 .csv</span>
+              </div>
+              <p data-i18n="faq0_cycle_note">目前优先适配 Apple Health XML、AutoSleep CSV 和 Sleep Cycle CSV；其他 App 文件会先尝试自动识别。</p>
+            </div>
+          </div>
+        </div>
+        <div class="guide-boundary">
+          <strong data-i18n="faq0_boundary_title">边界说明</strong>
+          <span data-i18n="faq0_boundary_text">如果没有手表或可穿戴设备记录，可能缺少心率、运动等必要数据；上传后系统会自动检查，缺少关键字段时会提示无法分析。</span>
+        </div>
+      </div>
+      <div class="panel faq-item"><div class="faq-title-row"><span class="faq-number">Q2</span><h3 data-i18n="faq1_q">上传什么数据可以分析？</h3></div><p data-i18n="faq1_a">支持原始 epoch 特征 CSV，也支持部分可穿戴设备或睡眠 App 导出的 CSV/XML。系统会先识别格式，再转换成模型需要的 30 秒 epoch 特征。</p></div>
+      <div class="panel faq-item"><div class="faq-title-row"><span class="faq-number">Q3</span><h3 data-i18n="faq2_q">模型怎么验证？</h3></div><p data-i18n="faq2_a">需要带金标准标签的数据才能严格计算 accuracy、precision、recall、F1 和混淆矩阵；无标签样例只能做功能演示。</p></div>
+      <div class="panel faq-item"><div class="faq-title-row"><span class="faq-number">Q4</span><h3 data-i18n="faq3_q">结果能当诊断吗？</h3></div><p data-i18n="faq3_a">不能。可穿戴数据和模型输出只适合健康管理参考，持续失眠或异常应咨询医生。</p></div>
     </div>
   </section>
 </main>
@@ -1626,6 +1816,30 @@ const I18N = {
     privacy3_c: '持续失眠、呼吸暂停疑似症状或严重异常应咨询医生。',
     faq_title: '常见问题',
     faq_sub: '',
+    faq0_q: '导出数据操作指南',
+    faq0_intro: '网站主要面向 Apple Watch 或其他可穿戴设备用户。先从健康 App 或睡眠 App 导出文件，再上传到这里分析。',
+    faq0_badge: '适用：手表 / 可穿戴设备数据',
+    faq0_health_title: 'Apple Watch + 健康 App',
+    faq0_health_step1: '健康 App',
+    faq0_health_step2: '右上角头像',
+    faq0_health_step3: '导出所有健康数据',
+    faq0_health_step4: '解压 zip',
+    faq0_health_step5: '上传 export.xml',
+    faq0_health_note: '完整 Apple Health 文件可能较大，上传后系统会自动识别里面的睡眠窗口，再选择其中一晚分析。',
+    faq0_auto_title: 'AutoSleep',
+    faq0_auto_step1: '打开 AutoSleep',
+    faq0_auto_step2: '找到导出 / Export',
+    faq0_auto_step3: '保存 CSV',
+    faq0_auto_step4: '上传 .csv',
+    faq0_auto_note: '如果 App 里有多种导出选项，优先选择包含睡眠时间、心率或阶段信息的 CSV。',
+    faq0_cycle_title: 'Sleep Cycle 或其他睡眠 App',
+    faq0_cycle_step1: '打开睡眠 App',
+    faq0_cycle_step2: '设置 / 数据',
+    faq0_cycle_step3: '导出 CSV',
+    faq0_cycle_step4: '上传 .csv',
+    faq0_cycle_note: '目前优先适配 Apple Health XML、AutoSleep CSV 和 Sleep Cycle CSV；其他 App 文件会先尝试自动识别。',
+    faq0_boundary_title: '边界说明',
+    faq0_boundary_text: '如果没有手表或可穿戴设备记录，可能缺少心率、运动等必要数据；上传后系统会自动检查，缺少关键字段时会提示无法分析。',
     faq1_q: '上传什么数据可以分析？',
     faq1_a: '支持原始 epoch 特征 CSV，也支持部分可穿戴设备或睡眠 App 导出的 CSV/XML。系统会先识别格式，再转换成模型需要的 30 秒 epoch 特征。',
     faq2_q: '模型怎么验证？',
@@ -1762,6 +1976,30 @@ const I18N = {
     privacy3_c: 'Persistent insomnia, suspected apnea, or severe anomalies should be discussed with a clinician.',
     faq_title: 'FAQ',
     faq_sub: '',
+    faq0_q: 'Data Export Guide',
+    faq0_intro: 'This site is mainly for Apple Watch or other wearable users. Export a file from Health or a sleep app first, then upload it here.',
+    faq0_badge: 'For watch / wearable data',
+    faq0_health_title: 'Apple Watch + Health app',
+    faq0_health_step1: 'Health app',
+    faq0_health_step2: 'Profile photo',
+    faq0_health_step3: 'Export All Health Data',
+    faq0_health_step4: 'Unzip',
+    faq0_health_step5: 'Upload export.xml',
+    faq0_health_note: 'A full Apple Health export can be large. After upload, the system detects sleep windows and asks you to choose one night.',
+    faq0_auto_title: 'AutoSleep',
+    faq0_auto_step1: 'Open AutoSleep',
+    faq0_auto_step2: 'Find Export',
+    faq0_auto_step3: 'Save CSV',
+    faq0_auto_step4: 'Upload .csv',
+    faq0_auto_note: 'If there are several export options, choose a CSV that includes sleep time, heart rate, or stage information.',
+    faq0_cycle_title: 'Sleep Cycle or other sleep apps',
+    faq0_cycle_step1: 'Open sleep app',
+    faq0_cycle_step2: 'Settings / Data',
+    faq0_cycle_step3: 'Export CSV',
+    faq0_cycle_step4: 'Upload .csv',
+    faq0_cycle_note: 'Apple Health XML, AutoSleep CSV, and Sleep Cycle CSV are the main supported formats; other app files will be auto-detected first.',
+    faq0_boundary_title: 'Boundary',
+    faq0_boundary_text: 'Without watch or wearable records, heart-rate, motion, or other required data may be missing. The system checks the file after upload and reports missing key fields.',
     faq1_q: 'What data can I upload?',
     faq1_a: 'The app supports raw epoch-feature CSV files and selected wearable or sleep-app CSV/XML exports. Files are detected and converted into 30-second epoch features before prediction.',
     faq2_q: 'How do you validate the model?',
