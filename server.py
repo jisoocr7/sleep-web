@@ -1,788 +1,271 @@
-"""Flask API backend for sleep staging web app."""
-import sys
+"""Flask server for the BSPC submission-safe research prototype."""
+
+from __future__ import annotations
+
 import io
-import json
-import pickle
-import base64
-import tempfile
+import os
+import secrets
 import threading
 import time
-import os
-import socket
 from pathlib import Path
-from datetime import datetime
-from io import BytesIO
 
-import numpy as np
-import pandas as pd
-from flask import Flask, request, jsonify, send_file, render_template
-from flask_cors import CORS
+import qrcode
+from flask import Flask, jsonify, render_template, request, send_file
+from werkzeug.exceptions import RequestEntityTooLarge
 
-BASE_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(BASE_DIR))
-
-from src.data_check import validate_csv
-from src.feature_builder import build_context_features
-from src.predict import predict, load_schema, load_model
-from src.metrics import compute_sleep_metrics, get_metric_reference, get_metric_reference_v2
-from src.format_converter import convert_to_epoch_features, inspect_sleep_windows, REQUIRED_FEATURES
-from src.explain import (
-    get_global_importance,
-    compute_shap_for_upload,
-    natural_language_explanation,
+from src.errors import SafeWebError
+from src.metrics import summarize_predictions
+from src.pipeline import (
+    MAX_FILE_BYTES,
+    load_model,
+    model_id,
+    parse_raw_epoch_csv,
+    predict_raw_epochs,
 )
-from src.report import (
-    plot_hypnogram,
-    plot_stage_distribution,
-    fig_to_base64,
-    generate_html_report,
-    generate_docx_report,
-)
-
-app = Flask(__name__)
-app.config['TEMPLATES_AUTO_RELOAD'] = True
-
-# Enable CORS for all routes (allow cross-origin requests from frontend)
-CORS(app)
-
-# Session storage with TTL
-SESSION = {}
-SESSION_LOCK = threading.Lock()
-SESSION_TTL = 86400  # 24 hours
+from src.reporting import generate_docx_report, generate_html_report
 
 
-def parse_upload_scope(form) -> dict:
-    """Parse consent/scope controls submitted with an upload."""
-    metric_labels = {
-        "sleep_stage": "睡眠阶段",
-        "heart_rate": "心率",
-        "steps": "步数/活动",
-        "motion": "运动估计",
-    }
-    range_labels = {
-        "latest-night": "最近一晚",
-        "last-7-days": "最近 7 天",
-        "custom": "自定义时间段",
-    }
-
-    raw_metrics = form.getlist("metrics")
-    if len(raw_metrics) == 1 and "," in raw_metrics[0]:
-        raw_metrics = [m.strip() for m in raw_metrics[0].split(",")]
-    selected_metrics = [m for m in raw_metrics if m in metric_labels]
-    if not selected_metrics:
-        selected_metrics = ["sleep_stage", "heart_rate", "steps", "motion"]
-
-    time_range = form.get("time_range", "latest-night")
-    if time_range not in range_labels:
-        time_range = "latest-night"
-
-    privacy_ack = str(form.get("privacy_ack", "")).lower() in {"1", "true", "yes", "on"}
-
-    return {
-        "time_range": time_range,
-        "time_range_label": range_labels[time_range],
-        "start_date": form.get("start_date", ""),
-        "end_date": form.get("end_date", ""),
-        "selected_window_ids": _form_list(form, "selected_windows"),
-        "metrics": selected_metrics,
-        "metric_labels": [metric_labels[m] for m in selected_metrics],
-        "privacy_acknowledged": privacy_ack,
-        "scope_note": "该范围用于本次分析授权记录；浏览器版仍以用户实际上传的 CSV/XML 文件内容为准。",
-    }
+PROJECT_ROOT = Path(__file__).resolve().parent
+EXAMPLES_DIR = PROJECT_ROOT / "examples"
+SESSION_TTL_SECONDS = 30 * 60
 
 
-def _form_list(form, key: str) -> list:
-    values = form.getlist(key)
-    if len(values) == 1 and "," in values[0]:
-        values = [v.strip() for v in values[0].split(",")]
-    return [v for v in values if v]
+class ResultStore:
+    """In-memory, non-identifying prediction results with a short TTL."""
+
+    def __init__(self):
+        self._items = {}
+        self._lock = threading.Lock()
+
+    def put(self, payload: dict) -> str:
+        self.cleanup()
+        session_id = secrets.token_urlsafe(24)
+        with self._lock:
+            self._items[session_id] = {
+                "expires_at": time.time() + SESSION_TTL_SECONDS,
+                "payload": payload,
+            }
+        return session_id
+
+    def get(self, session_id: str) -> dict:
+        self.cleanup()
+        with self._lock:
+            item = self._items.get(session_id)
+            if not item:
+                raise SafeWebError("SESSION_EXPIRED", status=404)
+            return item["payload"]
+
+    def cleanup(self) -> None:
+        now = time.time()
+        with self._lock:
+            expired = [key for key, item in self._items.items() if item["expires_at"] <= now]
+            for key in expired:
+                self._items.pop(key, None)
 
 
-def cleanup_sessions():
-    """Remove expired sessions."""
-    now = time.time()
-    with SESSION_LOCK:
-        expired = [sid for sid, s in SESSION.items()
-                   if now - s.get("_created", 0) > SESSION_TTL]
-        for sid in expired:
-            del SESSION[sid]
+RESULTS = ResultStore()
 
 
-def start_cleanup_thread():
-    """Start a background thread for periodic session cleanup."""
-    def _cleanup_loop():
-        while True:
-            time.sleep(900)  # every 15 minutes
-            cleanup_sessions()
-    t = threading.Thread(target=_cleanup_loop, daemon=True)
-    t.start()
-
-
-def get_lan_ip() -> str:
-    """Return a LAN-reachable IP for QR codes when the site is opened via localhost."""
-    env_host = os.environ.get("MOBILE_HOST", "").strip()
-    if env_host:
-        return env_host
-
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-            sock.connect(("8.8.8.8", 80))
-            ip = sock.getsockname()[0]
-            if ip and not ip.startswith(("127.", "169.254.")):
-                return ip
-    except OSError:
-        pass
-
-    try:
-        ip = socket.gethostbyname(socket.gethostname())
-        if ip and not ip.startswith(("127.", "169.254.")):
-            return ip
-    except OSError:
-        pass
-
-    return request.host.split(":", 1)[0]
-
-
-def mobile_upload_url() -> str:
-    """Build the URL a phone on the same LAN should use for the mobile upload page."""
-    override = os.environ.get("MOBILE_BASE_URL", "").strip()
-    if override:
-        override = override.rstrip("/")
-        return override if override.endswith("/mobile") else override + "/mobile"
-
-    host = request.host.split(":", 1)[0]
-    port = request.host.split(":", 1)[1] if ":" in request.host else ""
-    if host in {"127.0.0.1", "localhost", "0.0.0.0", "::1"}:
-        host = get_lan_ip()
-    netloc = f"{host}:{port}" if port else host
-    return f"{request.scheme}://{netloc}/mobile"
-
-
-start_cleanup_thread()
-
-
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-
-@app.route("/mobile")
-def mobile():
-    return render_template("mobile.html")
-
-
-# ─── Format Detection ────────────────────────────────────────────
-
-@app.route("/api/detect-format", methods=["POST"])
-def api_detect_format():
-    """Detect the format of an uploaded file without full analysis."""
-    if "file" not in request.files:
-        return jsonify({"error": "未找到文件"}), 400
-
-    file = request.files["file"]
-    if file.filename == "":
-        return jsonify({"error": "文件名为空"}), 400
-
-    try:
-        file_bytes = file.read()
-    except Exception as e:
-        return jsonify({"error": f"文件读取失败: {str(e)}"}), 400
-
-    from src.format_converter import detect_format
-    format_name, confidence = detect_format(file_bytes, file.filename or "")
-
-    format_labels = {
-        "apple_health_xml": "Apple Health XML (手表原生导出)",
-        "autosleep_csv": "AutoSleep CSV",
-        "sleep_cycle_csv": "Sleep Cycle CSV",
-        "health_auto_export_csv": "Health Auto Export CSV",
-        "raw_epoch": "Raw Epoch CSV (原始特征数据)",
-        "unknown": "未知格式",
-    }
-
-    return jsonify({
-        "format_name": format_name,
-        "format_label": format_labels.get(format_name, "未知格式"),
-        "confidence": round(confidence, 2),
-    })
-
-
-@app.route("/api/inspect-file", methods=["POST"])
-def api_inspect_file():
-    """Inspect an uploaded file and return selectable date/sleep windows."""
-    if "file" not in request.files:
-        return jsonify({"error": "未找到文件"}), 400
-
-    file = request.files["file"]
-    if file.filename == "":
-        return jsonify({"error": "文件名为空"}), 400
-
-    try:
-        file_bytes = file.read()
-    except Exception as e:
-        return jsonify({"error": f"文件读取失败: {str(e)}"}), 400
-
-    result = inspect_sleep_windows(file_bytes, file.filename or "")
-    if not result.get("success"):
-        return jsonify({"error": result.get("message", "日期范围识别失败"), **result}), 400
-    return jsonify(result)
-
-
-@app.route("/api/convert", methods=["POST"])
-def api_convert():
-    """Convert an uploaded file and return a preview."""
-    if "file" not in request.files:
-        return jsonify({"error": "未找到文件"}), 400
-
-    file = request.files["file"]
-    if file.filename == "":
-        return jsonify({"error": "文件名为空"}), 400
-
-    try:
-        file_bytes = file.read()
-    except Exception as e:
-        return jsonify({"error": f"文件读取失败: {str(e)}"}), 400
-
-    result = convert_to_epoch_features(file_bytes, file.filename or "")
-
-    if not result["success"]:
-        return jsonify({"error": result["error"]}), 400
-
-    return jsonify({
-        "format_detected": result["format_detected"],
-        "format_label": result["format_label"],
-        "row_count": len(result["df"]),
-        "preview_rows": result["preview_rows"],
-        "warnings": result["warnings"],
-        "metadata": result["metadata"],
-    })
-
-
-# ─── Main Upload & Analysis ──────────────────────────────────────
-
-@app.route("/api/upload", methods=["POST"])
-def api_upload():
-    """Upload file (any supported format), analyze, return all results."""
-    if "file" not in request.files:
-        return jsonify({"error": "未找到文件"}), 400
-
-    file = request.files["file"]
-    if file.filename == "":
-        return jsonify({"error": "文件名为空"}), 400
-
-    try:
-        file_bytes = file.read()
-    except Exception as e:
-        return jsonify({"error": f"文件读取失败: {str(e)}"}), 400
-
-    upload_scope = parse_upload_scope(request.form)
-    selected_window_ids = list(dict.fromkeys(upload_scope.get("selected_window_ids", [])))
-    upload_scope["selected_window_ids"] = selected_window_ids
-    if len(selected_window_ids) > 1:
-        return jsonify({
-            "error": "当前模型一次只能分析一晚，请只选择一个睡眠窗口。"
-        }), 400
-    if not selected_window_ids:
-        inspect_result = inspect_sleep_windows(file_bytes, file.filename or "")
-        if inspect_result.get("success") and inspect_result.get("default_window_ids"):
-            selected_window_ids = inspect_result["default_window_ids"]
-            upload_scope["selected_window_ids"] = selected_window_ids
-
-    # Step 1: Format detection + conversion
-    convert_result = convert_to_epoch_features(
-        file_bytes,
-        file.filename or "",
-        selected_window_ids=selected_window_ids,
+def create_app(testing: bool = False) -> Flask:
+    app = Flask(__name__)
+    app.config.update(
+        TESTING=testing,
+        MAX_CONTENT_LENGTH=MAX_FILE_BYTES + 1024 * 1024,
+        JSON_SORT_KEYS=False,
     )
-    if not convert_result["success"]:
-        return jsonify({
-            "error": convert_result["error"],
-            "format_detected": convert_result.get("format_detected", "unknown"),
-        }), 400
 
-    df = convert_result["df"]
-    fmt_meta = convert_result["metadata"]
-    upload_scope["selected_windows"] = fmt_meta.get("selected_windows", [])
-    fmt_meta["upload_scope"] = upload_scope
-    fmt_meta["privacy_process"] = [
-        "无需姓名、手机号、Apple ID 或账号登录。",
-        "上传文件只用于本次睡眠分期分析，结果通过临时 session 保存。",
-        "临时 session 24 小时后自动清理；报告默认只包含文件名、分期结果和基础指标。",
-        "用户可在上传前选择本次允许用于分析的指标类别和时间范围。",
-        "结果仅供健康管理和课程/研究展示参考，不作为医疗诊断或治疗建议。",
-    ]
+    @app.after_request
+    def add_security_headers(response):
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; img-src 'self' data:; style-src 'self'; "
+            "script-src 'self'; connect-src 'self'; font-src 'self'; base-uri 'self'; frame-ancestors 'self'"
+        )
+        if request.path.startswith("/api/"):
+            response.headers["Cache-Control"] = "no-store"
+        return response
 
-    # Step 2: Validate
-    report = validate_csv(df)
-    if not report["valid"]:
-        return jsonify({
-            "error": f"数据验证失败: 缺少必要列 {report['missing']}",
-            "required_columns": REQUIRED_FEATURES,
-        }), 400
+    @app.get("/")
+    def index():
+        return render_template("index.html", mobile_mode=False)
 
-    # Step 3: Build context features
-    df_context = build_context_features(df)
+    @app.get("/mobile")
+    def mobile():
+        return render_template("index.html", mobile_mode=True)
 
-    if len(df_context) < 5:
-        return jsonify({
-            "error": f"上下文构建后仅剩 {len(df_context)} 个 epoch，至少需要 5 个。请确认数据覆盖了至少 1 小时的睡眠。"
-        }), 400
+    @app.get("/favicon.ico")
+    def favicon():
+        return send_file(PROJECT_ROOT / "static" / "favicon.svg", mimetype="image/svg+xml", max_age=86400)
 
-    # Step 4: Predict
-    predictions = predict(df_context)
+    @app.post("/api/upload")
+    def upload():
+        if request.headers.get("X-Privacy-Ack", "").lower() != "true":
+            raise SafeWebError("CONSENT_REQUIRED", status=403)
+        if request.form.get("privacy_ack", "").lower() != "true":
+            raise SafeWebError("CONSENT_REQUIRED", status=403)
 
-    # Step 5: Metrics
-    metrics = compute_sleep_metrics(predictions)
+        upload_file = request.files.get("file")
+        if upload_file is None or not upload_file.filename:
+            raise SafeWebError("FILE_REQUIRED")
 
-    # Step 6: Charts (matplotlib)
-    hypno_fig = plot_hypnogram(predictions)
-    hypno_b64 = fig_to_base64(hypno_fig)
+        file_bytes = upload_file.read(MAX_FILE_BYTES + 1)
+        upload_file.close()
+        if len(file_bytes) > MAX_FILE_BYTES:
+            raise SafeWebError(
+                "FILE_TOO_LARGE",
+                status=413,
+                details={"max_mb": MAX_FILE_BYTES // (1024 * 1024)},
+            )
 
-    dist_fig = plot_stage_distribution(predictions)
-    dist_b64 = fig_to_base64(dist_fig)
-
-    # Step 7: Store in session (SHAP computed async in background)
-    session_id = str(hash(file.filename + str(datetime.now().timestamp())))
-    with SESSION_LOCK:
-        SESSION[session_id] = {
-            "predictions": predictions,
-            "metrics": metrics,
-            "df_context": df_context,
-            "upload_importance": None,
-            "explanation_text": "",
-            "shap_top": [],
-            "shap_ready": False,
-            "hypno_b64": hypno_b64,
-            "dist_b64": dist_b64,
-            "filename": file.filename,
-            "format_metadata": fmt_meta,
-            "row_count_original": len(df),
-            "row_count_context": len(df_context),
-            "_created": time.time(),
+        frame, metadata = parse_raw_epoch_csv(file_bytes, upload_file.filename)
+        prediction = predict_raw_epochs(frame)
+        summary = summarize_predictions(prediction["stages"], metadata["input_epochs"])
+        payload = {
+            "stages": prediction["stages"],
+            "times_seconds": prediction["times_seconds"],
+            "summary": summary,
+            "model_id": model_id(),
         }
+        session_id = RESULTS.put(payload)
 
-    # Launch SHAP computation in background thread
-    def _compute_shap():
-        try:
-            shap_vals, upload_importance = compute_shap_for_upload(df_context, max_samples=300)
-            explanation_text = natural_language_explanation(upload_importance) if upload_importance is not None else ""
-            shap_top = []
-            if upload_importance is not None:
-                for _, row in upload_importance.head(15).iterrows():
-                    shap_top.append({
-                        "feature": row["feature"],
-                        "importance": round(float(row["importance"]), 4),
-                    })
-            with SESSION_LOCK:
-                s = SESSION.get(session_id)
-                if s:
-                    s["upload_importance"] = upload_importance
-                    s["explanation_text"] = explanation_text
-                    s["shap_top"] = shap_top
-                    s["shap_ready"] = True
-        except Exception:
-            with SESSION_LOCK:
-                s = SESSION.get(session_id)
-                if s:
-                    s["shap_ready"] = True  # mark done even on failure
+        return jsonify(
+            {
+                "ok": True,
+                "session_id": session_id,
+                "expires_in_seconds": SESSION_TTL_SECONDS,
+                "model": {
+                    "id": payload["model_id"],
+                    "name": "HGB context model",
+                    "epoch_seconds": 30,
+                    "base_features": 9,
+                    "context_features": 45,
+                    "context": "offline +/-2 epochs",
+                    "classes": ["Wake", "NREM", "REM"],
+                },
+                "input": metadata,
+                "summary": summary,
+                "timeline": {
+                    "stages": payload["stages"],
+                    "times_seconds": payload["times_seconds"],
+                },
+            }
+        )
 
-    threading.Thread(target=_compute_shap, daemon=True).start()
+    @app.get("/api/sample-data/raw")
+    def sample_data():
+        return send_file(
+            EXAMPLES_DIR / "sample_raw_epoch.csv",
+            mimetype="text/csv; charset=utf-8",
+            as_attachment=True,
+            download_name="sample_raw_epoch.csv",
+            max_age=0,
+        )
 
-    # Build response (immediate, no SHAP)
-    label_counts = predictions["predicted_stage"].value_counts().to_dict()
-    epochs_list = []
-    for _, row in predictions.iterrows():
-        epoch_data = {
-            "predicted_label": int(row["predicted_label"]),
-            "predicted_stage": row["predicted_stage"],
-            "prob_Wake": round(float(row["prob_Wake"]), 4),
-            "prob_NREM": round(float(row["prob_NREM"]), 4),
-            "prob_REM": round(float(row["prob_REM"]), 4),
-        }
-        if "t" in predictions.columns:
-            epoch_data["t"] = int(row["t"]) if pd.notna(row["t"]) else None
-        epochs_list.append(epoch_data)
+    @app.get("/api/schema-template")
+    def schema_template():
+        return send_file(
+            EXAMPLES_DIR / "raw_epoch_template.csv",
+            mimetype="text/csv; charset=utf-8",
+            as_attachment=True,
+            download_name="raw_epoch_template.csv",
+            max_age=0,
+        )
 
-    return jsonify({
-        "session_id": session_id,
-        "format_detected": convert_result["format_detected"],
-        "format_label": convert_result["format_label"],
-        "format_metadata": fmt_meta,
-        "row_count_original": len(df),
-        "row_count_context": len(df_context),
-        "label_counts": {
-            "Wake": int(label_counts.get("Wake", 0)),
-            "NREM": int(label_counts.get("NREM", 0)),
-            "REM": int(label_counts.get("REM", 0)),
-        },
-        "metrics": {k: (v if isinstance(v, str) else (round(v, 1) if isinstance(v, float) else v))
-                    for k, v in metrics.items()},
-        "hypno_b64": hypno_b64,
-        "dist_b64": dist_b64,
-        "shap_ready": False,
-        "shap_top": [],
-        "explanation_text": "",
-        "epochs": epochs_list[:200],
-        "epochs_total": len(epochs_list),
-        "sleep_start_time": fmt_meta.get("sleep_start_time"),
-    })
+    @app.post("/api/report/html")
+    def html_report():
+        payload, language = _report_request()
+        report_bytes = generate_html_report(payload, language)
+        return send_file(
+            io.BytesIO(report_bytes),
+            mimetype="text/html; charset=utf-8",
+            as_attachment=True,
+            download_name=f"sleep_staging_research_report_{language}.html",
+            max_age=0,
+        )
 
+    @app.post("/api/report/docx")
+    def docx_report():
+        payload, language = _report_request()
+        report_buffer = generate_docx_report(payload, language)
+        return send_file(
+            report_buffer,
+            mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            as_attachment=True,
+            download_name=f"sleep_staging_research_report_{language}.docx",
+            max_age=0,
+        )
 
-# ─── Scoring (on-demand) ─────────────────────────────────────────
+    def _report_request():
+        body = request.get_json(silent=True) or {}
+        session_id = str(body.get("session_id", ""))
+        if not session_id:
+            raise SafeWebError("SESSION_EXPIRED", status=404)
+        language = "zh" if body.get("language") == "zh" else "en"
+        return RESULTS.get(session_id), language
 
-@app.route("/api/score", methods=["POST"])
-def api_score():
-    """Get sleep score and recommendations for a session."""
-    data = request.get_json()
-    session_id = data.get("session_id", "")
+    @app.get("/api/qr")
+    def qr_code():
+        base_url = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
+        if not base_url:
+            base_url = request.url_root.rstrip("/")
+        target = f"{base_url}/mobile"
+        image = qrcode.make(target, border=2, box_size=8)
+        output = io.BytesIO()
+        image.save(output, format="PNG")
+        output.seek(0)
+        response = send_file(output, mimetype="image/png", max_age=0)
+        response.headers["X-QR-Target"] = target
+        return response
 
-    with SESSION_LOCK:
-        session = SESSION.get(session_id, {})
+    @app.get("/api/health")
+    def health():
+        load_model()
+        return jsonify(
+            {
+                "status": "ok",
+                "model_id": model_id(),
+                "input": "Raw Epoch CSV only",
+                "classes": ["Wake", "NREM", "REM"],
+            }
+        )
 
-    if not session:
-        return jsonify({"error": "Session 已过期，请重新上传。"}), 404
+    @app.errorhandler(SafeWebError)
+    def handle_safe_error(error):
+        return jsonify({"ok": False, "error_code": error.code, "details": error.details}), error.status
 
-    metrics = session.get("metrics", {})
-    return jsonify({
-        "error": "Sleep scoring and recommendation rules have been removed. Use /api/upload for staging predictions and raw sleep metrics."
-    }), 410
-
-
-# ─── SHAP Status (async polling) ─────────────────────────────────
-
-@app.route("/api/shap-status/<session_id>", methods=["GET"])
-def api_shap_status(session_id):
-    """Poll for async SHAP computation results."""
-    with SESSION_LOCK:
-        session = SESSION.get(session_id, {})
-
-    if not session:
-        return jsonify({"error": "Session expired"}), 404
-
-    return jsonify({
-        "shap_ready": session.get("shap_ready", False),
-        "shap_top": session.get("shap_top", []),
-        "explanation_text": session.get("explanation_text", ""),
-    })
-
-
-# ─── Global SHAP ─────────────────────────────────────────────────
-
-@app.route("/api/global-shap", methods=["GET"])
-def api_global_shap():
-    """Return pre-computed global SHAP importance."""
-    imp = get_global_importance()
-    if imp is None:
-        return jsonify({"error": "SHAP data not available"}), 404
-
-    result = []
-    for _, row in imp.iterrows():
-        feat = row["feature"]
-        if "hr_" in feat:
-            family = "heart_rate"
-        elif "acc_" in feat:
-            family = "acceleration"
-        elif "steps" in feat:
-            family = "steps"
-        else:
-            family = "other"
-
-        if "_prev2" in feat:
-            pos = "prev2"
-        elif "_prev1" in feat:
-            pos = "prev1"
-        elif "_next2" in feat:
-            pos = "next2"
-        elif "_next1" in feat:
-            pos = "next1"
-        else:
-            pos = "current"
-
-        result.append({
-            "feature": feat,
-            "importance": round(float(row["importance"]), 4),
-            "family": family,
-            "position": pos,
-        })
-
-    return jsonify({"features": result})
-
-
-# ─── Reports ─────────────────────────────────────────────────────
-
-@app.route("/api/report/html", methods=["POST"])
-def api_report_html():
-    """Generate HTML report for download."""
-    data = request.get_json()
-    session_id = data.get("session_id", "")
-
-    with SESSION_LOCK:
-        session = SESSION.get(session_id, {})
-
-    if not session:
-        return jsonify({"error": "Session 已过期，请重新上传。"}), 404
-
-    html = generate_html_report(
-        session["predictions"],
-        session["metrics"],
-        shap_importance=session.get("upload_importance"),
-        explanation_text=session.get("explanation_text", ""),
-        upload_filename=session.get("filename", ""),
-        format_metadata=session.get("format_metadata"),
-    )
-    return jsonify({"html": html})
-
-
-@app.route("/api/report/docx", methods=["POST"])
-def api_report_docx():
-    """Generate DOCX report for download."""
-    data = request.get_json()
-    session_id = data.get("session_id", "")
-
-    with SESSION_LOCK:
-        session = SESSION.get(session_id, {})
-
-    if not session:
-        return jsonify({"error": "Session 已过期，请重新上传。"}), 404
-
-    docx_buf = generate_docx_report(
-        session["predictions"],
-        session["metrics"],
-        shap_importance=session.get("upload_importance"),
-        explanation_text=session.get("explanation_text", ""),
-        upload_filename=session.get("filename", ""),
-        format_metadata=session.get("format_metadata"),
-    )
-
-    if docx_buf is None:
-        return jsonify({"error": "DOCX 生成失败（缺少 python-docx 库）"}), 500
-
-    return send_file(
-        docx_buf,
-        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        as_attachment=True,
-        download_name=f"sleep_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.docx",
-    )
-
-
-# ─── Metrics Reference ───────────────────────────────────────────
-
-@app.route("/api/metrics-reference", methods=["GET"])
-def api_metrics_reference():
-    """Return reference ranges for sleep metrics."""
-    return jsonify(get_metric_reference_v2())
-
-
-# ─── QR Code ─────────────────────────────────────────────────────
-
-@app.route("/api/qr", methods=["GET"])
-def api_qr():
-    """Generate QR code linking to the mobile upload page."""
-    try:
-        import qrcode
-    except ImportError:
-        return jsonify({"error": "QR code generation not available"}), 500
-
-    url = request.args.get("url") or mobile_upload_url()
-
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_M,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(url)
-    qr.make(fit=True)
-
-    # Use warm color for QR
-    img = qr.make_image(fill_color="#8B6914", back_color="#FEFAF5")
-
-    buf = BytesIO()
-    img.save(buf, format="PNG")
-    buf.seek(0)
-    response = send_file(buf, mimetype="image/png")
-    response.headers["X-QR-URL"] = url
-    return response
-
-
-# ─── Sample Data ─────────────────────────────────────────────────
-
-@app.route("/api/sample-data/<fmt>", methods=["GET"])
-def api_sample_data(fmt):
-    """Serve sample data files for testing."""
-    examples_dir = BASE_DIR / "examples"
-
-    file_map = {
-        "epoch": "sample_epoch_features.csv",
-        "good-sleep": "text-92.csv",
-        "poor-sleep": "sample_poor_sleep.csv",
-        "apple-health": "sample_export.xml",
-        "autosleep": "sample_autosleep.csv",
-        "sleep-cycle": "sample_sleep_cycle.csv",
-        "health-export": "sample_health_export.csv",
-    }
-
-    # Determine mimetype
-    mime_map = {
-        ".csv": "text/csv",
-        ".xml": "application/xml",
-    }
-
-    filename = file_map.get(fmt)
-    if not filename:
-        return jsonify({
-            "error": f"Unknown sample format: {fmt}",
-            "available": list(file_map.keys()),
-        }), 404
-
-    filepath = examples_dir / filename
-    if not filepath.exists():
-        return jsonify({"error": f"Sample file not found: {filename}"}), 404
-
-    ext = Path(filename).suffix
-    mimetype = mime_map.get(ext, "application/octet-stream")
-    return send_file(
-        filepath,
-        mimetype=mimetype,
-        as_attachment=True,
-        download_name=filename,
-    )
-
-
-# ─── API Documentation ───────────────────────────────────────────
-
-@app.route("/api/docs", methods=["GET"])
-def api_docs():
-    """Return API specification."""
-    spec = {
-        "openapi": "3.0.0",
-        "info": {
-            "title": "睡眠分期分析 API",
-            "version": "2.0.0",
-            "description": "上传可穿戴设备数据，获取睡眠分期预测、质量评分和个性化报告。",
-        },
-        "paths": {
-            "/api/upload": {
-                "post": {
-                    "summary": "上传并分析睡眠数据",
-                    "description": "支持 Apple Health XML、AutoSleep CSV、Sleep Cycle CSV、Health Auto Export CSV、Raw Epoch CSV 等格式。",
-                    "requestBody": {
-                        "content": {
-                            "multipart/form-data": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "file": {
-                                            "type": "string",
-                                            "format": "binary",
-                                            "description": "睡眠数据文件"
-                                        },
-                                        "time_range": {
-                                            "type": "string",
-                                            "enum": ["latest-night", "last-7-days", "custom"],
-                                            "description": "用户选择的本次分析时间范围"
-                                        },
-                                        "start_date": {
-                                            "type": "string",
-                                            "description": "自定义开始日期，可选"
-                                        },
-                                        "end_date": {
-                                            "type": "string",
-                                            "description": "自定义结束日期，可选"
-                                        },
-                                        "metrics": {
-                                            "type": "array",
-                                            "items": {"type": "string"},
-                                            "description": "用户允许用于分析的指标类别"
-                                        },
-                                        "selected_windows": {
-                                            "type": "string",
-                                            "description": "文件内睡眠窗口 ID。当前模型一次只接受一个窗口。"
-                                        },
-                                        "privacy_ack": {
-                                            "type": "boolean",
-                                            "description": "用户是否已确认匿名处理与隐私说明"
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "responses": {
-                        "200": {"description": "分析完成，返回睡眠分期、指标、评分、建议"},
-                        "400": {"description": "文件格式错误或数据不完整"}
-                    }
+    @app.errorhandler(RequestEntityTooLarge)
+    def handle_too_large(_error):
+        return (
+            jsonify(
+                {
+                    "ok": False,
+                    "error_code": "FILE_TOO_LARGE",
+                    "details": {"max_mb": MAX_FILE_BYTES // (1024 * 1024)},
                 }
-            },
-            "/api/detect-format": {
-                "post": {"summary": "检测文件格式，不上传分析"}
-            },
-            "/api/inspect-file": {
-                "post": {
-                    "summary": "识别文件内可选择的日期/睡眠窗口",
-                    "description": "上传文件后先扫描其中包含的日期范围，按最新优先返回可供用户选择的单晚睡眠窗口。"
-                }
-            },
-            "/api/convert": {
-                "post": {"summary": "转换文件并返回预览"}
-            },
-            "/api/score": {
-                "post": {
-                    "summary": "获取睡眠评分和建议",
-                    "requestBody": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "session_id": {"type": "string"}
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "/api/report/html": {
-                "post": {"summary": "生成 HTML 睡眠报告"}
-            },
-            "/api/report/docx": {
-                "post": {"summary": "生成 DOCX 睡眠报告"}
-            },
-            "/api/metrics-reference": {
-                "get": {"summary": "获取指标参考范围（结构化）"}
-            },
-            "/api/global-shap": {
-                "get": {"summary": "获取全局 SHAP 特征重要性"}
-            },
-            "/api/qr": {
-                "get": {
-                    "summary": "获取移动端上传页 QR 码",
-                    "parameters": [{
-                        "name": "url",
-                        "in": "query",
-                        "description": "QR 码目标 URL（可选；默认使用局域网可访问的 /mobile 地址）",
-                        "schema": {"type": "string"}
-                    }]
-                }
-            },
-            "/api/sample-data/{format}": {
-                "get": {
-                    "summary": "下载示例数据",
-                    "parameters": [{
-                        "name": "format",
-                        "in": "path",
-                        "description": "格式: epoch, apple-health, autosleep, sleep-cycle, health-export",
-                        "schema": {"type": "string"}
-                    }]
-                }
-            },
-        }
-    }
-    return jsonify(spec)
+            ),
+            413,
+        )
+
+    @app.errorhandler(404)
+    def handle_not_found(_error):
+        return jsonify({"ok": False, "error_code": "NOT_FOUND", "details": {}}), 404
+
+    @app.errorhandler(Exception)
+    def handle_unexpected(error):
+        if app.testing:
+            raise error
+        return jsonify({"ok": False, "error_code": "INTERNAL_ERROR", "details": {}}), 500
+
+    return app
+
+
+app = create_app()
 
 
 if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 8501))
-    app.run(debug=False, port=port, host="0.0.0.0")
+    host = os.environ.get("HOST", "127.0.0.1")
+    port = int(os.environ.get("PORT", "7860"))
+    app.run(host=host, port=port, debug=False)

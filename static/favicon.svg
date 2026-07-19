@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="30-second epoch mark">
+  <rect width="64" height="64" rx="8" fill="#15231e"/>
+  <rect x="8" y="45" width="48" height="7" fill="#7d9f8a"/>
+  <text x="32" y="37" text-anchor="middle" fill="#fffdf8" font-family="Arial, sans-serif" font-size="21" font-weight="700">30s</text>
+</svg>
