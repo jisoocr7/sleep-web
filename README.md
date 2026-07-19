@@ -1,5 +1,7 @@
 # BSPC Submission-Safe Web Prototype
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21445899.svg)](https://doi.org/10.5281/zenodo.21445899)
+
 Independent local research prototype for deterministic three-class wearable sleep staging. The original `0529\sleep_web_mvp` project and the live PythonAnywhere site are not modified.
 
 ## Scope
@@ -14,6 +16,12 @@ Independent local research prototype for deterministic three-class wearable slee
 - Research use only; not for diagnosis or clinical decision-making.
 
 Apple Health, AutoSleep, Sleep Cycle, synthetic feature generation, sleep scores, health grades, normal ranges, and advice are intentionally excluded from this runtime.
+
+## Research Data and Citation
+
+The versioned research-data, code, and model archive supporting this prototype is openly available from Zenodo: [version 1.0.0](https://doi.org/10.5281/zenodo.21445899).
+
+> Xie, Z., Wang, M., Liu, Q., & Yang, F. (2026). *Context-aware wearable sleep staging: strict 25,017-epoch research data, code, and model artifacts* (Version 1.0.0) [Dataset]. Zenodo. https://doi.org/10.5281/zenodo.21445899
 
 ## Run Locally
 
