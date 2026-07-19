@@ -1,0 +1,18 @@
+{
+  "desktop": {
+    "input_epochs": 961,
+    "analyzed_epochs": 957,
+    "timeline_points": 957,
+    "body_scroll_width": 1440,
+    "viewport_width": 1440
+  },
+  "mobile": {
+    "body_scroll_width": 390,
+    "viewport_width": 390,
+    "upload_before_sample": true,
+    "analyzed_epochs": 957
+  },
+  "console_errors": [],
+  "page_errors": [],
+  "http_errors": []
+}
